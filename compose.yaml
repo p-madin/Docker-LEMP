@@ -1,0 +1,18 @@
+services:
+  app:
+    build: .
+    ports:
+      - "80:80"
+    volumes:
+      - ./app:/var/www/html
+  db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: docker_lamp
+      MYSQL_DATABASE: docker_lamp
+      MYSQL_USER: docker_user_lamp
+      MYSQL_PASSWORD: docker_user_lamp
+    volumes:
+      - db_data:/var/lib/mysql
+volumes:
+  db_data:
