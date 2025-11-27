@@ -1,0 +1,14 @@
+CREATE DATABASE IF NOT EXISTS stackDB;
+
+CREATE TABLE stackDB.appUsers(
+    auPK INT NOT NULL AUTO_INCREMENT,
+    name VARCHAR(32) NOT NULL,
+    age INT NOT NULL,
+    city VARCHAR(32) NOT NULL,
+    username VARCHAR(16) NOT NULL,
+    password VARCHAR(32) NOT NULL,
+    email VARCHAR(32) NOT NULL,
+    dateAdded DATETIME NOT NULL DEFAULT NOW(),
+    dateVerified DATETIME,
+    PRIMARY KEY(auPK)
+);
