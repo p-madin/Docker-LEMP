@@ -1,0 +1,76 @@
+#plot {
+    /*font-size: 3vh;*/
+    font-family: sans-serif
+}
+
+.axis div {
+    text-align: right;
+}
+
+#y-axis>text {
+    text-anchor: end;
+}
+
+#y-axis>text:last-child {
+    dominant-baseline: hanging;
+}
+
+#x-axis>text {
+    text-anchor: middle
+}
+
+#x-axis>text:first-child {
+    text-anchor: start
+}
+
+#x-axis>text:last-child {
+    text-anchor: end
+}
+
+#plot-area>line {
+    stroke: black
+}
+
+#doc_path {
+    /* display: none; */
+    stroke-width: 2px;
+}
+
+.axis_grid {
+    vector-effect: non-scaling-stroke
+}
+
+.dot circle {
+    fill: rgba(0, 255, 255, 0.3);
+    stroke: black;
+    pointer-events: none;
+    stroke-width: 1px
+}
+
+.collision {
+    pointer-events: all;
+    fill: none
+}
+
+.collision:hover .window {
+    display: block;
+}
+
+.collision foreignObject {
+    min-width: 300px;
+    width: 30%
+}
+
+.collision .window {
+    background-color: rgba(255, 255, 255, 0.85);
+    border: solid 2px black;
+    border-radius: 5px;
+    display: none;
+    padding-left: 15px;
+}
+
+@media (max-width: 600px) {
+    .minor {
+        display: none;
+    }
+}

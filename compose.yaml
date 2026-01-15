@@ -5,6 +5,8 @@ services:
       - "80:80"
     volumes:
       - ./app:/var/www/html
+    environment:
+      TZ: Australia/Sydney
     networks:
       stack-network:
         ipv4_address: 172.20.0.201
@@ -15,9 +17,10 @@ services:
       MYSQL_DATABASE: stackDB
       MYSQL_USER: docker_user_lemp
       MYSQL_PASSWORD: docker_user_lemp
+      TZ: Australia/Sydney
     volumes:
       - db_data:/var/lib/mysql
-      - ./conf/01_db_ddl.sql:/docker-entrypoint-initdb.d/01_db_ddl.sql
+      - ./conf/:/docker-entrypoint-initdb.d/
     ports:
       - "3306:3306"
     networks:

@@ -27,6 +27,13 @@ class xmlDom{
         $link->setAttribute('href', 'Static/styles.css');
 
         $this->head->appendChild($link);
+        $link = $this->dom->createElement('link');
+
+        $link->setAttribute('rel', 'stylesheet');
+        $link->setAttribute('type', 'text/css');
+        $link->setAttribute('href', 'Static/dataGraphStyles.css');
+
+        $this->head->appendChild($link);
     }
 
     public function appendChild($parent, $tagName, $attributes=array(), $innerContent=""){
@@ -36,7 +43,10 @@ class xmlDom{
             $returnable->setAttribute($key, $value);
         }
 
-        $returnable->nodeValue = $innerContent;
+        if(!empty($innerContent)){
+            $returnable->nodeValue = $innerContent;
+        }
+        
         $parent->appendChild($returnable);
 
         return $returnable;

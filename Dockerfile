@@ -3,7 +3,11 @@ FROM ubuntu:latest
 RUN apt-get update && apt-get install -y \
     build-essential \
     pkg-config \
-    wget tar
+    wget tar \
+    tzdata
+
+ENV TZ=Australia/Sydney
+
 
 RUN apt install libxml2-dev -y
 RUN apt install libsqlite3-dev -y
