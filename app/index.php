@@ -11,6 +11,7 @@ $query->execute();
 $data = $query->fetchAll();
 
 $dom = new xmlDom();
+$dom->decorate_javascript();
 $dom->decorate_cascade();
 
 $wrapper = $dom->appendChild(parent : $dom->body, tagName : "div");
@@ -42,10 +43,15 @@ $heading = $dom->appendChild(parent : $wrapper, tagName : "h1", innerContent : "
 
 $login_form = new xmlForm("login", $dom, $wrapper);
 $login_form->prep("login-action.php", "POST");
-$login_form->addRow('username', 'Username:', 'text');
-$login_form->addRow('password', 'Password:', 'password');
-$login_form->submitRow();
 
+if(!is_null($sessionController->getPrimary('userID'))){
+    $heading = $dom->appendChild(parent : $login_form->formWrapper, tagName : "p", innerContent : "You are already signed in");
+    $heading = $dom->appendChild(parent : $login_form->formWrapper, tagName : "a", innerContent : "Click here to logout", attributes: ["href"=>"logout-action.php"]);
+}else{
+    $login_form->addRow('username', 'Username:', 'text');
+    $login_form->addRow('password', 'Password:', 'password');
+    $login_form->submitRow();
+}
 
 $heading = $dom->appendChild(parent : $wrapper, tagName : "h1", innerContent : "Register form");
 

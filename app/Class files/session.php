@@ -60,6 +60,17 @@ class SessionController{
         }
     }
 
+    public function destroySession() {
+        setcookie("session", "", [
+            'expires' => time() - 3600, 
+            'path' => '/',
+            'domain' => $scvRows['myDomain'],
+            'secure' => false,
+            'httponly' => true,
+            'samesite' => 'Strict'
+        ]);
+    }
+
     private function isList(array $arr) {
         if ($arr === []) return true;
         return array_keys($arr) === range(0, count($arr) - 1);

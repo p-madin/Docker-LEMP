@@ -96,16 +96,16 @@ class DataGraph {
             $plot->yRelPercSep = ($plot->yRel / $this->meta->yDistance) * $this->plotYCanvasRatio * -1 + $this->graphYDistance + $this->plotYCanvasOffset;
 
             if ($pathData === "") {
-                $pathData = "M {$plot->xRelPerc} {$plot->yRelPerc}";
+                $pathData = "M ".$plot->xRelPerc." ".$plot->yRelPerc;
             } else {
-                $pathData .= " L {$plot->xRelPerc} {$plot->yRelPerc}";
+                $pathData .= " L ".$plot->xRelPerc." ".$plot->yRelPerc;
             }
 
             // Dots
             $dotWrapper = $dom->appendChild($rootSvg, "svg", ["class" => "dot"]);
             $dom->appendChild($dotWrapper, "circle", [
-                "cx" => sprintf("%.2f%%", $plot->xRelPercSep + 0.3),
-                "cy" => sprintf("%.2f%%", $plot->yRelPercSep),
+                "cx" => round($plot->xRelPercSep + 0.3, 2) . '%',
+                "cy" => round($plot->yRelPercSep, 2) . '%',
                 "r" => "10px"
             ]);
 
@@ -121,8 +121,8 @@ class DataGraph {
             $collisionWrapper = $dom->appendChild($rootSvg, "svg", ["class" => "collision"]);
             $fo = $dom->appendChild($collisionWrapper, "foreignObject", [
                 "width" => "25%",
-                "x" => sprintf("%.2f%%", $xBuf),
-                "y" => sprintf("%.2f%%", $yBuf),
+                "x" => round($xBuf, 2) . '%',
+                "y" => round($yBuf, 2) . '%',
                 "style" => "overflow:visible;"
             ]);
             $window = $dom->appendChild($fo, "div", ["class" => "window"]);
@@ -138,8 +138,8 @@ class DataGraph {
             $dom->appendChild($collisionWrapper, "rect", [
                 "width" => "4%",
                 "height" => "5%",
-                "x" => sprintf("%.2f%%", $plot->xRelPercSep - 2),
-                "y" => sprintf("%.2f%%", $plot->yRelPercSep - 2)
+                "x" => round($plot->xRelPercSep - 2, 2) . '%',
+                "y" => round($plot->yRelPercSep - 2, 2) . '%'
             ]);
         }
 
@@ -168,9 +168,9 @@ class DataGraph {
             $dom->appendChild($plotArea, "line", [
                 "class" => "axis_grid",
                 "x1" => "0",
-                "x2" => "425",
-                "y1" => sprintf("%.2f", $y),
-                "y2" => sprintf("%.2f", $y)
+                "x2" => $this->graphXDistance,
+                "y1" => round($y, 2),
+                "y2" => round($y, 2)
             ]);
 
             // Label
@@ -197,8 +197,8 @@ class DataGraph {
             // Grid
             $dom->appendChild($plotArea, "line", [
                 "class" => "axis_grid",
-                "x1" => sprintf("%.2f", $x),
-                "x2" => sprintf("%.2f", $x),
+                "x1" => round($x, 2),
+                "x2" => round($x, 2),
                 "y1" => "0",
                 "y2" => "175"
             ]);

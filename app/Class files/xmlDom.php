@@ -19,6 +19,15 @@ class xmlDom{
         $this->html->appendChild($this->body);
     }
 
+    public function decorate_javascript(){
+        $script = $this->dom->createElement('script');
+
+        $script->setAttribute('type', 'text/javascript');
+        $script->setAttribute('src', 'Static/exceptions.js');
+
+        $this->head->appendChild($script);
+    }
+
     public function decorate_cascade(){
         $link = $this->dom->createElement('link');
 

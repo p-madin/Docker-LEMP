@@ -16,7 +16,7 @@ if($user && password_verify($_POST['password'], $user['password'])){
     $sessionController->setPrimary('userID', (int)$user['auPK']);
     exit;
 }else{
-    header("location:/login");
+    header("location:/");
     exit;
 }
 
