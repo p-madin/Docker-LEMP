@@ -18,6 +18,7 @@ RUN apt install libreadline-dev -y
 RUN apt install zlib1g-dev -y
 RUN apt install libpcre3-dev -y
 
+
 RUN mkdir -p /usr/src/php && \
     wget -O php.tar.gz https://www.php.net/distributions/php-8.4.13.tar.gz && \
     tar -xf php.tar.gz -C /usr/src/php --strip-components=1 && \
@@ -55,7 +56,8 @@ RUN mkdir -p /usr/src/nginx && \
         --sbin-path=/usr/local/nginx/nginx \
         --conf-path=/usr/local/nginx/nginx.conf \
         --pid-path=/usr/local/nginx/nginx.pid \
-        --with-http_ssl_module && \
+        --with-http_ssl_module \
+        --with-http_v2_module && \
     make -j$(nproc) && \
     make install
 

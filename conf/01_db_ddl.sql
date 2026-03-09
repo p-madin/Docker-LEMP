@@ -10,6 +10,7 @@ CREATE TABLE stackDB.appUsers(
     email VARCHAR(32) NOT NULL,
     dateAdded DATETIME NOT NULL DEFAULT NOW(),
     dateVerified DATETIME,
+    verified TINYINT(1) NOT NULL DEFAULT 0,
     PRIMARY KEY(auPK)
 );
 

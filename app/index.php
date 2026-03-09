@@ -2,17 +2,10 @@
 
 include_once("Class files/config.php");
 
-include_once("Class files/xmlDom.php");
-include_once("Class files/xmlForm.php");
-
 $query = $db->prepare("SELECT name FROM appUsers");
 
 $query->execute();
 $data = $query->fetchAll();
-
-$dom = new xmlDom();
-$dom->decorate_javascript();
-$dom->decorate_cascade();
 
 $wrapper = $dom->appendChild(parent : $dom->body, tagName : "div");
 
@@ -35,6 +28,7 @@ foreach($graphQuery as $row){
     ];
 }
 $graph = new DataGraph($graphData);
+#$graph_details = $dom->appendChild(parent: $wrapper, tagName: "details", attributes: ["open"=>"open"]);
 $graph_details = $dom->appendChild(parent: $wrapper, tagName: "details");
 $heading = $dom->appendChild(parent : $graph_details, tagName : "summary", innerContent : "Visits per hour");
 $graph->render($dom, $graph_details);

@@ -1,9 +1,9 @@
 -- Passwords - Stack: Stack, Stack_Two: Stack_Two
-INSERT INTO stackDB.appUsers (name, age, city, username, password, email) 
-VALUES ('Stack', 1, 'Stack', 'Stack', '$2y$10$m3vCndDU2/CavRvxwB2Gne5lnusLha8NJpgrARhwbzJN.uqqIePUq', 'Stack');
+INSERT INTO stackDB.appUsers (name, age, city, username, password, email, verified) 
+VALUES ('Stack', 1, 'Stack', 'Stack', '$2y$10$m3vCndDU2/CavRvxwB2Gne5lnusLha8NJpgrARhwbzJN.uqqIePUq', 'Stack', 1);
 
-INSERT INTO stackDB.appUsers (name, age, city, username, password, email) 
-VALUES ('Stack_Two', 2, 'Stack_Two', 'Stack_Two', '$2y$10$fkjGHwVncM0YQ9Jg0gHvku.E7TUTMvXeUbIdmUOwyoDaBcFUm432i', 'Stack_Two');
+INSERT INTO stackDB.appUsers (name, age, city, username, password, email, verified) 
+VALUES ('Stack_Two', 2, 'Stack_Two', 'Stack_Two', '$2y$10$fkjGHwVncM0YQ9Jg0gHvku.E7TUTMvXeUbIdmUOwyoDaBcFUm432i', 'Stack_Two', 1);
 
 INSERT INTO stackDB.sysConfig (scName, scValue) VALUES ('myDomain', 'localhost');
 INSERT INTO stackDB.sysConfig (scName, scValue) VALUES ('myDomainProtocol', 'http');

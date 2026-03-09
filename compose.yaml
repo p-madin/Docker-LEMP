@@ -2,14 +2,14 @@ services:
   app:
     build: .
     ports:
-      - "80:80"
+      - "443:443"
     volumes:
       - ./app:/var/www/html
     environment:
       TZ: Australia/Sydney
     networks:
       stack-network:
-        ipv4_address: 172.20.0.201
+        ipv4_address: 172.20.1.201
   db:
     image: mysql:latest
     environment:
@@ -25,7 +25,7 @@ services:
       - "3306:3306"
     networks:
       stack-network:
-        ipv4_address: 172.20.0.200
+        ipv4_address: 172.20.1.200
 volumes:
   db_data:
 networks:
@@ -33,5 +33,5 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.20.0.0/24
-          gateway: 172.20.0.1
+        - subnet: 172.20.1.0/24
+          gateway: 172.20.1.1

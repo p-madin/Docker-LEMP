@@ -45,6 +45,10 @@ class xmlDom{
         $this->head->appendChild($link);
     }
 
+    public function decorate_navbar($navbar, $sessionController){
+        $navbar->render($this, $sessionController);
+    }
+
     public function appendChild($parent, $tagName, $attributes=array(), $innerContent=""){
         $returnable = $this->dom->createElement($tagName);
 
@@ -61,5 +65,3 @@ class xmlDom{
         return $returnable;
     }
 }
-
-?>

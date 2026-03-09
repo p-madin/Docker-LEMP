@@ -8,6 +8,8 @@ class SessionController{
     }
     public function seed(){
         global $scvRows;
+        // Ensure $scvRows is initialized if global lookup fails in some contexts
+        
         if(isset($_COOKIE["session"])) {
             //we need to check if this is in the database
             $query = $this->db->prepare("SELECT sessPK FROM tblSession WHERE sessChars = :i_sessChars");
@@ -19,11 +21,11 @@ class SessionController{
                 setcookie("session", "", [
                     'expires' => time() - 3600, 
                     'path' => '/',
-                    'domain' => $scvRows['myDomain'],
+                    'domain' => $scvRows['myDomain'] ?? '',
                     'secure' => false,
                     'httponly' => true,
                     'samesite' => 'Strict'
-                 ]);
+                    ]);
                 header("Location: /index.php");
                 exit;
             }else{
@@ -35,32 +37,41 @@ class SessionController{
         }else{
             //we need to set this
             $randString = "";
-            $characters = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            for($i = 0; $i < 64; $i++){
-                $randString = $randString . chr(rand(65, 122));
+            while(!$this->sessPK){
+                $randString = "";
+                $characters = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+                for($i = 0; $i < 64; $i++){
+                    $randString = $randString . chr(rand(65, 122));
+                }
+                $query = $this->db->prepare("INSERT INTO tblSession (sessChars, sessTransactionActive) 
+                                            VALUES (:i_sessChars, 0)");
+                $query->bindParam("i_sessChars", $randString);
+                try{
+                    $query->execute();
+                }catch(Exception $e){
+                    //couldn't insert... try again
+                    error_log("couldnt find a unique cookie string");
+                    continue;
+                }
+                $this->sessPK = $this->db->lastInsertId();
             }
-            $randString = substr(md5(microtime()),0,64);
             
             setcookie("session", $randString, [
-                        'expires' => time() + (3600), 
-                        'path' => '/',
-                        'domain' => $scvRows['myDomain'],
-                        'secure' => false,
-                        'httponly' => true,
-                        'samesite' => 'Strict'
-                     ]
+                      'expires' => time() + (3600), 
+                      'path' => '/',
+                      'domain' => $scvRows['myDomain'] ?? '',
+                      'secure' => false,
+                      'httponly' => true,
+                      'samesite' => 'Strict'
+                      ]
             );
-            $query = $this->db->prepare("INSERT INTO tblSession (sessChars, sessTransactionActive) 
-                                         VALUES (:i_sessChars, 0)");
-            $query->bindParam("i_sessChars", $randString);
-            $query->execute();
-            $this->sessPK = $this->db->lastInsertId();
             
             //$scvRows['myDomain']
         }
     }
 
     public function destroySession() {
+        global $scvRows;
         setcookie("session", "", [
             'expires' => time() - 3600, 
             'path' => '/',
@@ -69,6 +80,11 @@ class SessionController{
             'httponly' => true,
             'samesite' => 'Strict'
         ]);
+        $this->sessPK = null;
+    }
+
+    public function isLoggedIn(){
+        return $this->sessPK !== null;
     }
 
     private function isList(array $arr) {
@@ -263,10 +279,9 @@ class SessionController{
     }
 
     public function setPrimary($key, $array){
-        $this->detachPrimary($key);
-        
         $this->db->beginTransaction();
         try {
+            $this->detachPrimary($key);
             $this->saveNode($key, $array, 'r', $this->sessPK);
             $this->db->commit();
         } catch (Exception $e) {
@@ -286,6 +301,27 @@ class SessionController{
         }
         return null;
     }
-}
 
-?>
+    /**
+     * Generates or retrieves a CSRF token for the current session.
+     */
+    public function getCSRFToken() {
+        $token = $this->getPrimary('csrf_token');
+        if (is_null($token)) {
+            $token = bin2hex(random_bytes(32)); // 64 chars
+            $this->setPrimary('csrf_token', $token);
+        }
+        return $token;
+    }
+
+    /**
+     * Verifies the provided CSRF token against the session-stored token.
+     */
+    public function verifyCSRFToken($token) {
+        $storedToken = $this->getPrimary('csrf_token');
+        if (is_null($storedToken) || is_null($token)) {
+            return false;
+        }
+        return hash_equals($storedToken, $token);
+    }
+}

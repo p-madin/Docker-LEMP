@@ -16,27 +16,8 @@ if (isset($db) && isset($sessionController)) {
     $headers = print_r($requestData, true);
 
     try {
-        $stmt = $db->prepare("
-            INSERT INTO httpAction (
-                haSessionFK, 
-                haUserFK,
-                haIP, 
-                haURL, 
-                haReferrer, 
-                haMethod, 
-                haUserAgent, 
-                haHeaders
-            ) VALUES (
-                :sessionFK, 
-                :userFK,
-                :ip, 
-                :url, 
-                :referrer, 
-                :method, 
-                :userAgent, 
-                :headers
-            )
-        ");
+        $stmt = $db->prepare("INSERT INTO httpAction (haSessionFK, haUserFK, haIP, haURL, haReferrer, haMethod, haUserAgent, haHeaders) 
+                              VALUES (:sessionFK, :userFK, :ip, :url, :referrer, :method, :userAgent, :headers)");
 
         $stmt->execute([
             ':sessionFK' => $sessionController->sessPK ?? 0,
