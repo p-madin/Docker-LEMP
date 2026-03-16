@@ -9,10 +9,14 @@ if (!$sessionController->verifyCSRFToken($_POST['csrf_token'] ?? '')) {
 }
 
 
+$cleanData = FormValidation::processAndValidate('login', $_POST, $formSchemas, $sessionController, '/index.php');
+$sanitizedUsername = $cleanData['username'] ?? '';
+
+
 $sql = "SELECT auPK, password, verified FROM appUsers WHERE username = :i_username;";
 
 $query = $db->prepare($sql);
-$query->execute([':i_username' => $_POST['username']]);
+$query->execute([':i_username' => $sanitizedUsername]);
 
 $user = $query->fetch();
 
@@ -21,11 +25,19 @@ if($user && password_verify($_POST['password'], $user['password'])){
         header("location:/?error=unverified");
         exit;
     }
-    header("location:/");
-    $sessionController->setPrimary('username', $_POST['username']);
+    $sessionController->setPrimary('username', $sanitizedUsername);
     $sessionController->setPrimary('userID', (int)$user['auPK']);
+    if (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) {
+        echo json_encode(['redirect' => '/']);
+        exit;
+    }
+    header("location:/");
     exit;
 }else{
+    if (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) {
+        echo json_encode(['redirect' => '/']);
+        exit;
+    }
     header("location:/");
     exit;
 }

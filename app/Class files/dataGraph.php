@@ -66,7 +66,7 @@ class DataGraph {
         $pathData = "";
         
         // Root SVG
-        $rootSvg = $dom->appendChild($parent, "svg", [
+        $rootSvg = $dom->fabricateChild($parent, "svg", [
             "xmlns" => "http://www.w3.org/2000/svg",
             "id" => "plot",
             "width" => "100%",
@@ -74,13 +74,13 @@ class DataGraph {
         ]);
 
         // Internal container
-        $internalHub = $dom->appendChild($rootSvg, "svg", [
+        $internalHub = $dom->fabricateChild($rootSvg, "svg", [
             "viewBox" => "-43 0 425 200",
             "preserveAspectRatio" => "none"
         ]);
 
         // Plot Area
-        $plotArea = $dom->appendChild($internalHub, "svg", [
+        $plotArea = $dom->fabricateChild($internalHub, "svg", [
             "id" => "plot-area",
             "viewBox" => "0 0 530 205",
             "preserveAspectRatio" => "none"
@@ -102,8 +102,8 @@ class DataGraph {
             }
 
             // Dots
-            $dotWrapper = $dom->appendChild($rootSvg, "svg", ["class" => "dot"]);
-            $dom->appendChild($dotWrapper, "circle", [
+            $dotWrapper = $dom->fabricateChild($rootSvg, "svg", ["class" => "dot"]);
+            $dom->fabricateChild($dotWrapper, "circle", [
                 "cx" => round($plot->xRelPercSep + 0.3, 2) . '%',
                 "cy" => round($plot->yRelPercSep, 2) . '%',
                 "r" => "10px"
@@ -118,24 +118,24 @@ class DataGraph {
             if ($yBuf < 0.2) $yBuf += 0.10;
             $yBuf = ($yBuf * $this->plotYCanvasRatio * -1 + $this->graphYDistance) + $this->plotYCanvasOffset;
 
-            $collisionWrapper = $dom->appendChild($rootSvg, "svg", ["class" => "collision"]);
-            $fo = $dom->appendChild($collisionWrapper, "foreignObject", [
+            $collisionWrapper = $dom->fabricateChild($rootSvg, "svg", ["class" => "collision"]);
+            $fo = $dom->fabricateChild($collisionWrapper, "foreignObject", [
                 "width" => "25%",
                 "x" => round($xBuf, 2) . '%',
                 "y" => round($yBuf, 2) . '%',
                 "style" => "overflow:visible;"
             ]);
-            $window = $dom->appendChild($fo, "div", ["class" => "window"]);
+            $window = $dom->fabricateChild($fo, "div", ["class" => "window"]);
             
-            $divDate = $dom->appendChild($window, "div");
-            $dom->appendChild($divDate, "b", [], "Date: ");
+            $divDate = $dom->fabricateChild($window, "div");
+            $dom->fabricateChild($divDate, "b", [], "Date: ");
             $divDate->appendChild($dom->dom->createTextNode($plot->xStructured->format('d/m/Y')));
 
-            $divValue = $dom->appendChild($window, "div");
-            $dom->appendChild($divValue, "b", [], "Value: ");
+            $divValue = $dom->fabricateChild($window, "div");
+            $dom->fabricateChild($divValue, "b", [], "Value: ");
             $divValue->appendChild($dom->dom->createTextNode($plot->y));
 
-            $dom->appendChild($collisionWrapper, "rect", [
+            $dom->fabricateChild($collisionWrapper, "rect", [
                 "width" => "4%",
                 "height" => "5%",
                 "x" => round($plot->xRelPercSep - 2, 2) . '%',
@@ -144,7 +144,7 @@ class DataGraph {
         }
 
         // Path
-        $dom->appendChild($plotArea, "path", [
+        $dom->fabricateChild($plotArea, "path", [
             "id" => "doc_path",
             "d" => $pathData,
             "stroke" => "black",
@@ -159,13 +159,13 @@ class DataGraph {
         $yStep = $this->meta->yDistance / 4;
         $yStepP = $this->graphYDistance / 4;
         
-        $yAxisLabelWrapper = $dom->appendChild($rootSvg, "svg");
+        $yAxisLabelWrapper = $dom->fabricateChild($rootSvg, "svg");
         for ($i = 0; $i < 5; $i++) {
             $val = $this->meta->yMin + ($i * $yStep);
             $y = ($i * $yStepP * -1) + $this->graphYDistance;
             
             // Grid
-            $dom->appendChild($plotArea, "line", [
+            $dom->fabricateChild($plotArea, "line", [
                 "class" => "axis_grid",
                 "x1" => "0",
                 "x2" => $this->graphXDistance,
@@ -175,27 +175,27 @@ class DataGraph {
 
             // Label
             $yPerc = (81 - ($i * 20));
-            $axisWrapper = $dom->appendChild($yAxisLabelWrapper, "svg", ["class" => "axis"]);
-            $fo = $dom->appendChild($axisWrapper, "foreignObject", [
+            $axisWrapper = $dom->fabricateChild($yAxisLabelWrapper, "svg", ["class" => "axis"]);
+            $fo = $dom->fabricateChild($axisWrapper, "foreignObject", [
                 "width" => "8%",
                 "height" => "40px",
                 "x" => "10",
                 "y" => $yPerc . "%"
             ]);
-            $dom->appendChild($fo, "div", [], (string)$val);
+            $dom->fabricateChild($fo, "div", [], (string)$val);
         }
 
         $xStep = $this->meta->xDistance / 4;
         $xStepP = $this->graphXDistance / 4;
         
-        $xAxisLabelWrapper = $dom->appendChild($rootSvg, "svg");
+        $xAxisLabelWrapper = $dom->fabricateChild($rootSvg, "svg");
         for ($i = 0; $i < 5; $i++) {
             $val = $this->meta->xMin + ($i * $xStep);
             $date = new DateTime("@" . (int)($val / 1000));
             $x = ($i * $xStepP);
             
             // Grid
-            $dom->appendChild($plotArea, "line", [
+            $dom->fabricateChild($plotArea, "line", [
                 "class" => "axis_grid",
                 "x1" => round($x, 2),
                 "x2" => round($x, 2),
@@ -209,15 +209,15 @@ class DataGraph {
             if($i%2 == 1){
                 $axisWrapperAttributes = ["class"=>"axis minor"];
             }
-            $axisWrapper = $dom->appendChild($xAxisLabelWrapper, "svg", $axisWrapperAttributes);
-            $fo = $dom->appendChild($axisWrapper, "foreignObject", [
+            $axisWrapper = $dom->fabricateChild($xAxisLabelWrapper, "svg", $axisWrapperAttributes);
+            $fo = $dom->fabricateChild($axisWrapper, "foreignObject", [
                 "width" => "15%",
                 "height" => "40px",
                 "x" => $xPerc . "%",
                 "y" => "87%",
                 "style" => "overflow:visible;"
             ]);
-            $dom->appendChild($fo, "div", [], $date->format('d/m/Y H:i'));
+            $dom->fabricateChild($fo, "div", [], $date->format('d/m/Y H:i'));
         }
     }
 

@@ -2,10 +2,10 @@
 
 class Navbar {
     private $items = [
-        ['label' => 'Home', 'url' => 'index.php', 'protected' => false],
-        ['label' => 'Dashboard', 'url' => 'dashboard.php', 'protected' => true],
-        ['label' => 'Account Management', 'url' => 'account_management.php', 'protected' => true],
-        ['label' => 'Logout', 'url' => 'logout-action.php', 'protected' => true]
+        ['label' => 'Home', 'url' => '/index.php', 'protected' => false],
+        ['label' => 'Dashboard', 'url' => '/dashboard.php', 'protected' => true],
+        ['label' => 'Account Management', 'url' => '/account_management.php', 'protected' => true],
+        ['label' => 'Logout', 'url' => '/logout-action.php', 'protected' => true]
     ];
 
     /**
@@ -15,9 +15,9 @@ class Navbar {
     public function render($dom, $sessionController) {
         $userId = $sessionController->getPrimary('userID');
         
-        $navContainer = $dom->appendChild(parent: $dom->body, tagName: "div", attributes: ["class"=>"flex-table", "id"=>"main-navbar"]);
+        $navContainer = $dom->fabricateChild(parent: $dom->body, tagName: "div", attributes: ["class"=>"flex-table", "id"=>"main-navbar"]);
 
-        $navRow = $dom->appendChild(parent: $navContainer, tagName: "div", attributes: ["class"=>"flex-row"]);
+        $navRow = $dom->fabricateChild(parent: $navContainer, tagName: "div", attributes: ["class"=>"flex-row"]);
 
         foreach ($this->items as $item) {
             if (!$item['protected'] || !is_null($userId)) {
@@ -26,11 +26,29 @@ class Navbar {
                 $cell->setAttribute('style', 'text-align: center; padding: 10px;');
                 
                 $hyperlink = new Hyperlink();
-                $hyperlink->render($dom, $cell, $item['label'], $item['url']);
+                $hyperlink->appendHyperlinkForm($dom, $cell, $item['label'], $item['url']);
                 
                 $navRow->appendChild($cell);
             }
         }
+
+        $toggleCell = $dom->dom->createElement('div');
+        $toggleCell->setAttribute('class', 'flex-cell');
+        $toggleCell->setAttribute('style', 'text-align: center; padding: 10px; display: flex; align-items: center; justify-content: center; gap: 5px;');
+        
+        $checkbox = $dom->dom->createElement('input');
+        $checkbox->setAttribute('type', 'checkbox');
+        $checkbox->setAttribute('id', 'disable_client_validation');
+        
+        $label = $dom->dom->createElement('label');
+        $label->setAttribute('for', 'disable_client_validation');
+        $label->setAttribute('style', 'font-size: 0.85em; cursor: pointer;');
+        $label->nodeValue = 'Disable Client Validation';
+        
+        $toggleCell->appendChild($checkbox);
+        $toggleCell->appendChild($label);
+        
+        $navRow->appendChild($toggleCell);
 
         return $navContainer;
     }

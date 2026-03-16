@@ -34,15 +34,15 @@ while ($iter <= $end) {
     $iter->modify("+1 hour");
 }
 
-$wrapper = $dom->appendChild(parent : $dom->body, tagName : "div");
+$wrapper = $dom->fabricateChild(parent : $dom->body, tagName : "div");
 
 $graph = new DataGraph($graphData);
-$graph_details = $dom->appendChild(parent: $wrapper, tagName: "details");
-$heading = $dom->appendChild(parent : $graph_details, tagName : "summary", innerContent : "Visits per hour");
+$graph_details = $dom->fabricateChild(parent: $wrapper, tagName: "details");
+$heading = $dom->fabricateChild(parent : $graph_details, tagName : "summary", innerContent : "Visits per hour");
 $graph->render($dom, $graph_details);
 
 // Filter Form using new xmlForm mechanism
-$filter_heading = $dom->appendChild(parent : $wrapper, tagName : "h1", innerContent : "Filter Data");
+$filter_heading = $dom->fabricateChild(parent : $wrapper, tagName : "h1", innerContent : "Filter Data");
 $filter_form = new xmlForm("dashboardFilter", $dom, $wrapper);
 $filter_form->prep("dashboard.php", "POST");
 
@@ -58,7 +58,7 @@ $filter_form->addMultiSelectGroup("ua", "User Agents", $uaData, "haUserAgent");
 $filter_form->submitRow();
 
 // Link JS
-$dom->appendChild(parent : $dom->body, tagName : "script", attributes : ["src" => "Static/dashboard.js"]);
+$dom->fabricateChild(parent : $dom->body, tagName : "script", attributes : ["src" => "Static/dashboard.js"]);
 
 echo $dom->dom->saveHTML();
 ?>

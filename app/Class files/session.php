@@ -11,9 +11,14 @@ class SessionController{
         // Ensure $scvRows is initialized if global lookup fails in some contexts
         
         if(isset($_COOKIE["session"])) {
+            // Sanitize session cookie using the Security Strategy context
+            $security = new \App\Security\SecurityValidation();
+            $security->setStrategy(new \App\Security\AlphanumericDecorator(new \App\Security\CleanSanitizer()));
+            $sanitizedSessChars = $security->process($_COOKIE["session"]);
+            
             //we need to check if this is in the database
             $query = $this->db->prepare("SELECT sessPK FROM tblSession WHERE sessChars = :i_sessChars");
-            $query->bindParam("i_sessChars", $_COOKIE["session"]);
+            $query->bindParam("i_sessChars", $sanitizedSessChars);
             $query->execute();
             $data = $query->fetchAll();
             if(count($data) == 0){
@@ -30,7 +35,7 @@ class SessionController{
                 exit;
             }else{
                 $query = $this->db->prepare("UPDATE tblSession SET sessUpdated = NOW() WHERE sessChars = :i_sessChars");
-                $query->bindParam("i_sessChars", $_COOKIE["session"]);
+                $query->bindParam("i_sessChars", $sanitizedSessChars);
                 $query->execute();
                 $this->sessPK = $data[0]["sessPK"];
             }
@@ -40,8 +45,9 @@ class SessionController{
             while(!$this->sessPK){
                 $randString = "";
                 $characters = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+                $charLen = strlen($characters);
                 for($i = 0; $i < 64; $i++){
-                    $randString = $randString . chr(rand(65, 122));
+                    $randString .= $characters[rand(0, $charLen - 1)];
                 }
                 $query = $this->db->prepare("INSERT INTO tblSession (sessChars, sessTransactionActive) 
                                             VALUES (:i_sessChars, 0)");
@@ -84,7 +90,7 @@ class SessionController{
     }
 
     public function isLoggedIn(){
-        return $this->sessPK !== null;
+        return !is_null($this->getPrimary('userID'));
     }
 
     private function isList(array $arr) {

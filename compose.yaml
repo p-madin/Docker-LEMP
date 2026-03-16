@@ -7,9 +7,12 @@ services:
       - ./app:/var/www/html
     environment:
       TZ: Australia/Sydney
+      DB_HOST: db
+      DB_NAME: stackDB
+      DB_USER: docker_user_lemp
+      DB_PASS: docker_user_lemp
     networks:
-      stack-network:
-        ipv4_address: 172.20.1.201
+      - stack-network
   db:
     image: mysql:latest
     environment:
@@ -24,14 +27,9 @@ services:
     ports:
       - "3306:3306"
     networks:
-      stack-network:
-        ipv4_address: 172.20.1.200
+      - stack-network
 volumes:
   db_data:
 networks:
   stack-network:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.1.0/24
-          gateway: 172.20.1.1

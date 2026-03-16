@@ -8,6 +8,11 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
         header("location:/?error=csrf");
         exit;
     }
+
+    $cleanData = FormValidation::processAndValidate('editUser', $_POST, $formSchemas, $sessionController, function($clean) {
+        return "/account_management.php?edit=" . ($clean['auPK'] ?? '');
+    });
+
     $myID = (int)$sessionController->getPrimary('userID');
     $stmt = $db->prepare("SELECT verified FROM appUsers WHERE auPK = :id");
     $stmt->execute(['id'=>$myID]);
@@ -19,17 +24,17 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
         if($iAmVerified){
             $isVerified = isset($_POST['is_verified']) ? 1 : 0;
             $stmt = $db->prepare("UPDATE appUsers SET verified = :v WHERE auPK = :id");
-            $stmt->execute(['v'=>$isVerified, 'id'=>$_POST['auPK']]);
+            $stmt->execute(['v'=>$isVerified, 'id'=>$cleanData['auPK']]);
         }
     } else {
         // Build the update query
         $params = [
-            'username' => $_POST['username'],
-            'name'     => $_POST['name'],
-            'age'      => $_POST['age'],
-            'city'     => $_POST['city'],
-            'email'    => $_POST['email'],
-            'id'       => $_POST['auPK']
+            'username' => $cleanData['username'],
+            'name'     => $cleanData['name'],
+            'age'      => $cleanData['age'],
+            'city'     => $cleanData['city'],
+            'email'    => $cleanData['email'],
+            'id'       => $cleanData['auPK']
         ];
         
         $sql = "UPDATE appUsers SET 
@@ -50,8 +55,17 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
         $stmt = $db->prepare($sql);
         $stmt->execute($params);
     }
+
+    $redirectUrl = "/account_management.php?edit=" . $cleanData['auPK'];
+    if (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) {
+        echo json_encode(['redirect' => $redirectUrl]);
+        exit;
+    }
+
+    header("Location: " . $redirectUrl);
+    exit;
 }
 
-header("Location: account_management.php");
+header("Location: /account_management.php");
 exit;
 ?>

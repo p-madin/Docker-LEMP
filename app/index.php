@@ -7,13 +7,13 @@ $query = $db->prepare("SELECT name FROM appUsers");
 $query->execute();
 $data = $query->fetchAll();
 
-$wrapper = $dom->appendChild(parent : $dom->body, tagName : "div");
+$wrapper = $dom->fabricateChild(parent : $dom->body, tagName : "div");
 
-$heading = $dom->appendChild(parent : $wrapper, tagName : "h1", innerContent : "User list");
-$unordered_list = $dom->appendChild(parent : $wrapper, tagName : "ul");
+$heading = $dom->fabricateChild(parent : $wrapper, tagName : "h1", innerContent : "User list");
+$unordered_list = $dom->fabricateChild(parent : $wrapper, tagName : "ul");
 
 foreach($data as $key=>$value){
-    $list_item = $dom->appendChild(parent : $unordered_list, tagName : "li", innerContent : $value['name']);
+    $list_item = $dom->fabricateChild(parent : $unordered_list, tagName : "li", innerContent : $value['name']);
 
 }
 
@@ -28,38 +28,34 @@ foreach($graphQuery as $row){
     ];
 }
 $graph = new DataGraph($graphData);
-#$graph_details = $dom->appendChild(parent: $wrapper, tagName: "details", attributes: ["open"=>"open"]);
-$graph_details = $dom->appendChild(parent: $wrapper, tagName: "details");
-$heading = $dom->appendChild(parent : $graph_details, tagName : "summary", innerContent : "Visits per hour");
+#$graph_details = $dom->fabricateChild(parent: $wrapper, tagName: "details", attributes: ["open"=>"open"]);
+$graph_details = $dom->fabricateChild(parent: $wrapper, tagName: "details");
+$heading = $dom->fabricateChild(parent : $graph_details, tagName : "summary", innerContent : "Visits per hour");
 $graph->render($dom, $graph_details);
 
-$heading = $dom->appendChild(parent : $wrapper, tagName : "h1", innerContent : "Login form");
-
-$login_form = new xmlForm("login", $dom, $wrapper);
-$login_form->prep("login-action.php", "POST");
+$heading = $dom->fabricateChild(parent : $wrapper, tagName : "h1", innerContent : "Login form");
 
 if(!is_null($sessionController->getPrimary('userID'))){
-    $heading = $dom->appendChild(parent : $login_form->formWrapper, tagName : "p", innerContent : "You are already signed in");
-    $heading = $dom->appendChild(parent : $login_form->formWrapper, tagName : "a", innerContent : "Click here to logout", attributes: ["href"=>"logout-action.php"]);
+    $heading = $dom->fabricateChild(parent : $wrapper, tagName : "p", innerContent : "You are already signed in");
+    
+    $logout_container = $dom->fabricateChild($wrapper, "div", ["style" => "margin-top: 10px;"]);
+    $hyperlink = new Hyperlink();
+    $hyperlink->appendHyperlinkForm($dom, $logout_container, "Click here to logout", "logout-action.php");
 }else{
-    $login_form->addRow('username', 'Username:', 'text');
-    $login_form->addRow('password', 'Password:', 'password');
+    $login_form = new xmlForm("login", $dom, $wrapper);
+    $login_form->prep("login-action.php", "POST");
+    $login_form->buildFromSchema('login', $formSchemas);
     $login_form->submitRow();
 }
 
-$heading = $dom->appendChild(parent : $wrapper, tagName : "h1", innerContent : "Register form");
+$heading = $dom->fabricateChild(parent : $wrapper, tagName : "h1", innerContent : "Register form");
 
 $register_form = new xmlForm("register", $dom, $wrapper);
 $register_form->prep("register-action.php", "POST");
-$register_form->addRow('username', 'Username:', 'text');
-$register_form->addRow('password', 'Password:', 'password');
-$register_form->addRow('confirm_password', 'Confirm Password:', 'password');
-$register_form->addRow('name', 'Name:', 'name');
-$register_form->addRow('age', 'Age:', 'age');
-$register_form->addRow('city', 'City:', 'city');
-$register_form->addRow('email', 'Email:', 'email');
+$register_form->buildFromSchema('register', $formSchemas);
 $register_form->submitRow();
 
 echo $dom->dom->c14n();
 
 ?>
+

@@ -13,7 +13,21 @@ if (isset($db) && isset($sessionController)) {
     
     // Capture GET or POST data
     $requestData = !empty($_POST) ? $_POST : $_GET;
-    $headers = print_r($requestData, true);
+    
+    // Mask sensitive data and sanitize for logging
+    $logData = [];
+    $sensitiveKeys = ['password', 'csrf_token', 'confirm_password', 'old_password', 'new_password'];
+    
+    foreach ($requestData as $key => $value) {
+        if (in_array(strtolower($key), $sensitiveKeys)) {
+            $logData[$key] = '********';
+        } else {
+            // Basic sanitization for log display integrity (Stored XSS prevention)
+            $logData[$key] = htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+        }
+    }
+
+    $headers = print_r($logData, true);
 
     try {
         $stmt = $db->prepare("INSERT INTO httpAction (haSessionFK, haUserFK, haIP, haURL, haReferrer, haMethod, haUserAgent, haHeaders) 

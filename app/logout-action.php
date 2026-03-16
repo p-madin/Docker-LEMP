@@ -17,6 +17,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $sessionController->destroySession();
 
+if (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) {
+    echo json_encode(['redirect' => '/']);
+    exit;
+}
+
 header("location:/");
 exit;
 
