@@ -14,6 +14,9 @@ foreach (glob(__DIR__ . "/Test Suite/*.php") as $filename) {
     #if($filename !== __DIR__ . "/Test Suite/QueryBuilderTest.php"){
     #    continue;
     #}
+    #if($filename !== __DIR__ . "/Test Suite/SecurityTest.php"){
+    #    continue;
+    #}
     include_once($filename);
 }
 

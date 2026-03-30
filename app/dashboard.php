@@ -26,16 +26,16 @@ if (!$range || is_null($range['min'])) {
 $graph_query_builder = new QueryBuilder($dialect);
 
 $graph_query_builder->table('httpAction')->select([
-    $graph_query_builder->raw('year(haDate) y'),
-    $graph_query_builder->raw('month(haDate) m'),
-    $graph_query_builder->raw('day(haDate) d'),
-    $graph_query_builder->raw('hour(haDate) h'),
-    $graph_query_builder->raw('count(*) c')
+    $graph_query_builder->raw('EXTRACT(YEAR FROM haDate) y'),
+    $graph_query_builder->raw('EXTRACT(MONTH FROM haDate) m'),
+    $graph_query_builder->raw('EXTRACT(DAY FROM haDate) d'),
+    $graph_query_builder->raw('EXTRACT(HOUR FROM haDate) h'),
+    $graph_query_builder->raw('COUNT(*) c')
 ])->groupBy([
-    $graph_query_builder->raw('y'),
-    $graph_query_builder->raw('m'),
-    $graph_query_builder->raw('d'),
-    $graph_query_builder->raw('h')
+    $graph_query_builder->raw('EXTRACT(YEAR FROM haDate)'),
+    $graph_query_builder->raw('EXTRACT(MONTH FROM haDate)'),
+    $graph_query_builder->raw('EXTRACT(DAY FROM haDate)'),
+    $graph_query_builder->raw('EXTRACT(HOUR FROM haDate)')
 ]);
 $stmt_graph = $db->prepare($graph_query_builder->toSQL());
 $graph_query_builder->bindTo($stmt_graph);

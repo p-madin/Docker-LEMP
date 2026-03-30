@@ -21,11 +21,8 @@ class AttributeWhitelistDecorator extends SanitizerDecorator {
         $data = $this->sanitizer->sanitize($input);
         if (empty($data)) return '';
 
-        $dom = new DOMDocument();
-        // Use LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD to avoid adding <html>/<body> tags
-        @$dom->loadHTML(mb_convert_encoding($data, 'HTML-ENTITIES', 'UTF-8'), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
-        
-        $xpath = new DOMXPath($dom);
+        $dom = \Dom\HTMLDocument::createFromString($data, LIBXML_NOERROR);
+        $xpath = new \DOM\XPath($dom);
         $nodes = $xpath->query('//@*');
         foreach ($nodes as $node) {
             if (!in_array($node->nodeName, $this->allowedAttributes)) {
