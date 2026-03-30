@@ -7,7 +7,7 @@ services:
       - ./app:/var/www/html
     environment:
       TZ: Australia/Sydney
-      DB_VENDOR: mysql
+      DB_VENDOR: pgsql
       DB_HOST: db
       DB_NAME: stackDB
       DB_USER: docker_user_lemp
@@ -15,22 +15,22 @@ services:
     networks:
       - stack-network
   db:
-    image: mysql:latest
+    image: postgres:latest
     environment:
-      MYSQL_ROOT_PASSWORD: docker_lemp
-      MYSQL_DATABASE: stackDB
-      MYSQL_USER: docker_user_lemp
-      MYSQL_PASSWORD: docker_user_lemp
+      #MARIADB_ROOT_PASSWORD: docker_lemp
+      POSTGRES_DB: stackDB
+      POSTGRES_USER: docker_user_lemp
+      POSTGRES_PASSWORD: docker_user_lemp
       TZ: Australia/Sydney
     volumes:
-      - db_data:/var/lib/mysql
-      - ./conf/:/docker-entrypoint-initdb.d/
+      - postgres_db_data:/var/lib/postgresql
+      - ./postgres conf/:/docker-entrypoint-initdb.d/
     ports:
-      - "3306:3306"
+      - "5432:5432"
     networks:
       - stack-network
 volumes:
-  db_data:
+  postgres_db_data:
 networks:
   stack-network:
     driver: bridge

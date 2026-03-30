@@ -14,10 +14,31 @@ class Validator {
 
     /**
      * Add a rule for a field.
-     * Format: 'required|min:5|email'
+     * Format: 'required|min:5|email' or ['required' => true, 'min' => 5, 'email' => true]
      */
     public function rule($field, $rules) {
-        $this->rules[$field] = is_array($rules) ? $rules : explode('|', $rules);
+        $parsedRules = [];
+        if (is_string($rules)) {
+            $rulesArray = explode('|', $rules);
+        } else {
+            $rulesArray = $rules ?? [];
+        }
+
+        foreach ($rulesArray as $key => $value) {
+            if (is_int($key)) {
+                // String rule like 'required' or 'min:5' in indexed array
+                if (strpos($value, ':') !== false) {
+                    list($r, $p) = explode(':', $value, 2);
+                    $parsedRules[$r] = $p;
+                } else {
+                    $parsedRules[$value] = true;
+                }
+            } else {
+                // Key-value pair like 'min' => 5
+                $parsedRules[$key] = $value;
+            }
+        }
+        $this->rules[$field] = $parsedRules;
         return $this;
     }
 
@@ -30,8 +51,8 @@ class Validator {
         foreach ($this->rules as $field => $ruleset) {
             $value = $this->data[$field] ?? null;
 
-            foreach ($ruleset as $rule) {
-                if (!$this->check($field, $value, $rule)) {
+            foreach ($ruleset as $ruleName => $ruleValue) {
+                if (!$this->check($field, $value, $ruleName, $ruleValue)) {
                     // Stop at first failure for this field
                     break;
                 }
@@ -44,14 +65,13 @@ class Validator {
     /**
      * Check a specific rule.
      */
-    protected function check($field, $value, $rule) {
-        $params = [];
-        if (strpos($rule, ':') !== false) {
-            list($rule, $paramStr) = explode(':', $rule);
-            $params = explode(',', $paramStr);
-        }
+    protected function check($field, $value, $ruleName, $ruleValue) {
+        if ($ruleValue === false) return true; // skip disabled rules
 
-        switch ($rule) {
+        // Convert scalar parameter to array (e.g. '5' to ['5']) for rules expecting array keys
+        $params = is_string($ruleValue) ? explode(',', (string)$ruleValue) : (array)$ruleValue;
+
+        switch ($ruleName) {
             case 'required':
                 if (empty($value) && $value !== '0') {
                     $this->addError($field, "The $field field is required.");

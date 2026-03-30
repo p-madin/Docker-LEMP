@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    
     // Extracted validation logic for a single input
     function validateInput(input, form) {
         // Skip buttons, fieldsets, hidden inputs
@@ -15,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 message = `The ${input.name} field is required.`;
             }
         }
-        
+
         // Custom Match validation (e.g. confirm_password)
         if (input.name === 'confirm_password') {
             const passwordInput = form.querySelector('[name="password"]');
@@ -27,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const flexCell = input.closest('.flex-cell');
         const flexRow = input.closest('.flex-row');
-        
+
         if (flexCell && flexRow) {
             // 1. Clear previous errors for this specific input
             const existingErrors = flexCell.querySelectorAll('.validation-error');
@@ -59,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const form = e.target.closest('form[novalidate]');
         if (form && ['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName)) {
             validateInput(e.target, form);
-            
+
             // Special case: if password changes, proactively revalidate confirm_password
             if (e.target.name === 'password') {
                 const confirmPass = form.querySelector('[name="confirm_password"]');
@@ -70,10 +69,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Trigger initial validation on page load for specific forms
+    document.querySelectorAll('form[novalidate][data-initial-validate]').forEach(form => {
+        Array.from(form.elements).forEach(input => {
+            if (['INPUT', 'SELECT', 'TEXTAREA'].includes(input.tagName)) {
+                validateInput(input, form);
+            }
+        });
+    });
+
+    // Handle hyperlink-form <a> tag clicks (supports Ctrl/Cmd+click → new tab)
+    document.addEventListener('click', (e) => {
+        const link = e.target.closest('form.form_hyperlink a');
+        if (!link) return;
+
+        e.preventDefault();
+        const form = link.closest('form');
+        if (!form) return;
+
+        if (e.ctrlKey || e.metaKey) {
+            form.target = '_blank';
+            form.submit();
+            form.target = '_self';
+        } else {
+            form.target = '_self';
+            form.submit();
+        }
+    });
+
     // Handle form submission
     document.addEventListener('submit', async (e) => {
         const form = e.target;
-        
+
         // Only run this on forms we control (those with novalidate)
         if (!form.hasAttribute('novalidate')) return;
 
@@ -99,7 +126,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isFormValid) {
             try {
                 const formData = new FormData(form);
-                
+
+                // Ensure unchecked checkboxes send "not checked"
+                form.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                    if (!checkbox.checked) {
+                        formData.append(checkbox.name, 'not checked');
+                    }
+                });
+
                 const response = await fetch(form.action, {
                     method: form.method || 'POST',
                     body: formData,

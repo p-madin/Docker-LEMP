@@ -8,7 +8,7 @@ CREATE TABLE stackDB.appUsers(
     username VARCHAR(16) NOT NULL,
     password VARCHAR(256) NOT NULL,
     email VARCHAR(32) NOT NULL,
-    dateAdded DATETIME NOT NULL DEFAULT NOW(),
+    dateAdded DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     dateVerified DATETIME,
     verified TINYINT(1) NOT NULL DEFAULT 0,
     PRIMARY KEY(auPK)
@@ -16,7 +16,7 @@ CREATE TABLE stackDB.appUsers(
 
 CREATE TABLE stackDB.tblSession(
     sessPK INT NOT NULL AUTO_INCREMENT,
-    sessCreated DATETIME NOT NULL DEFAULT NOW(),
+    sessCreated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     sessUpdated DATETIME NULL,
     sessChars VARCHAR(64) NOT NULL,
     sessUser INT NULL,
@@ -54,7 +54,7 @@ CREATE INDEX idx_session_val_lookup ON stackDB.tblSessionAttValue(sattvAttFK);
 
 CREATE TABLE stackDB.httpAction(
     haPK INT NOT NULL AUTO_INCREMENT,
-    haDate DATETIME NOT NULL DEFAULT NOW(),
+    haDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     haSessionFK INT NOT NULL,
     haUserFK INT NULL,
     haIP VARCHAR(45) NOT NULL,
@@ -64,4 +64,14 @@ CREATE TABLE stackDB.httpAction(
     haUserAgent VARCHAR(512) NOT NULL,
     haHeaders TEXT NULL,
     PRIMARY KEY(haPK)
+);
+
+CREATE TABLE stackDB.phpErrorLog (
+  pelPK INT NOT NULL AUTO_INCREMENT,
+  pelTimestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  pelSeverity VARCHAR(32) NOT NULL,
+  pelMessage TEXT NOT NULL,
+  pelFile VARCHAR(512) NOT NULL,
+  pelLine INT NOT NULL,
+  PRIMARY KEY(pelPK)
 );

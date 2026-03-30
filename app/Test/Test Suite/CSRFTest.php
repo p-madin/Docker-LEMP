@@ -14,8 +14,12 @@ class CSRFTest extends TestSuiteBase {
         $cookieA = "/tmp/cookie_user_a.txt";
         $cookieB = "/tmp/cookie_user_b.txt";
         
-        @unlink($cookieA);
-        @unlink($cookieB);
+        if (file_exists($cookieA)) {
+            unlink($cookieA);
+        }
+        if (file_exists($cookieB)) {
+            unlink($cookieB);
+        }
         
         // 1. User A: Get Session A and Token A
         $GLOBALS['returnable'] .= " - User A: Retrieving session and token...\n";
@@ -66,11 +70,11 @@ class CSRFTest extends TestSuiteBase {
         $infoAttack = curl_getinfo($chAttack);
         curl_close($chAttack);
         
-        // Expected: 302 redirect to index.php?error=csrf
-        if ($infoAttack['http_code'] == 302 && strpos($infoAttack['redirect_url'], 'error=csrf') !== false) {
+        // Expected: 400 Bad Request (Machine/Test Rejection)
+        if ($infoAttack['http_code'] == 400) {
             $GLOBALS['returnable'] .= "[PASS] Cross-session CSRF attack was correctly rejected and session destroyed.\n";
-            @unlink($cookieA);
-            @unlink($cookieB);
+            if (file_exists($cookieA)) unlink($cookieA);
+            if (file_exists($cookieB)) unlink($cookieB);
             return true;
         } else {
             $GLOBALS['returnable'] .= "[FAIL] Cross-session CSRF attack was NOT rejected.\n";

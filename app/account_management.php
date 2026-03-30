@@ -7,13 +7,21 @@ $dom->fabricateChild($wrapper, "h1", [], "Account Management");
 
 // Get current user verification status
 $myID = (int)$sessionController->getPrimary('userID');
-$stmt = $db->prepare("SELECT verified FROM appUsers WHERE auPK = :id");
-$stmt->execute(['id'=>$myID]);
-$me = $stmt->fetch();
+$qb_me = new QueryBuilder($dialect);
+$qb_me->table('appUsers')->select(['verified'])->where('auPK', '=', $myID);
+$stmt_me = $db->prepare($qb_me->toSQL());
+$qb_me->bindTo($stmt_me);
+$stmt_me->execute();
+$me = $stmt_me->fetch();
 $iAmVerified = $me['verified'] ?? 0;
 
 // User List Section
-$users = $db->query("SELECT auPK, username, name, verified FROM appUsers")->fetchAll();
+$qb_list = new QueryBuilder($dialect);
+$qb_list->table('appUsers')->select(['auPK', 'username', 'name', 'verified']);
+$stmt_list = $db->prepare($qb_list->toSQL());
+$qb_list->bindTo($stmt_list);
+$stmt_list->execute();
+$users = $stmt_list->fetchAll();
 $table = $dom->fabricateChild($wrapper, "div", ["class"=>"flex-table"]);
 
 // Header row
@@ -32,31 +40,10 @@ foreach($users as $user){
     $dom->fabricateChild($row, "div", ["class"=>"flex-cell"], $statusText);
     
     $aCell = $dom->fabricateChild($row, "div", ["class"=>"flex-cell"]);
-    $dom->fabricateChild($aCell, "a", ["href"=>"account_management.php?edit={$user['auPK']}"], "Edit");
+    $hyperlink = new Hyperlink();
+    $hyperlink->appendHyperlinkForm($dom, $aCell, "Edit", "/edit_account.php?id={$user['auPK']}");
 }
 
-// Edit Form Section
-if(isset($_GET['edit'])){
-    $id = (int)$_GET['edit'];
-    $stmt = $db->prepare("SELECT * FROM appUsers WHERE auPK = :id");
-    $stmt->execute(['id'=>$id]);
-    $u = $stmt->fetch();
-
-    if($u){
-        $dom->fabricateChild($wrapper, "hr");
-        $dom->fabricateChild($wrapper, "h2", [], "Editing User: " . $u['username']);
-        $form = new xmlForm("editUser", $dom, $wrapper);
-        $form->prep("update_account_action.php", "POST");
-        $form->buildFromSchema('editUser', $formSchemas, $u);
-        
-        // Add verification toggle for verified admins
-        if($iAmVerified){
-            $form->addRow('verified_status', 'Verified:', 'checkbox', $u['verified']);
-        }
-        
-        $form->submitRow();
-    }
-}
 
 echo $dom->dom->saveHTML();
 ?>

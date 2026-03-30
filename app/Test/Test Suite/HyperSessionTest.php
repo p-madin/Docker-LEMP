@@ -18,7 +18,9 @@ class HyperSessionTest extends TestSuiteBase {
 
         for ($i = 0; $i < $concurrency; $i++) {
             $cookieFile = "/tmp/hyper_cookie_$i.txt";
-            @unlink($cookieFile);
+            if (file_exists($cookieFile)) {
+                unlink($cookieFile);
+            }
             $cookieFiles[] = $cookieFile;
             
             $ch = $this->prepare_curl($url, $cookieFile);
@@ -64,7 +66,7 @@ class HyperSessionTest extends TestSuiteBase {
         curl_multi_close($mh);
 
         // Cleanup cookies
-        foreach ($cookieFiles as $cf) @unlink($cf);
+        foreach ($cookieFiles as $cf) if (file_exists($cf)) unlink($cf);
 
         if ($successCount === $concurrency) {
             $GLOBALS['returnable'] .= "[PASS] Hyper Session Stress Test: all $concurrency concurrent clients succeeded.\n";

@@ -15,22 +15,22 @@ services:
     networks:
       - stack-network
   db:
-    image: mysql:latest
+    image: mariadb:latest
     environment:
-      MYSQL_ROOT_PASSWORD: docker_lemp
-      MYSQL_DATABASE: stackDB
-      MYSQL_USER: docker_user_lemp
-      MYSQL_PASSWORD: docker_user_lemp
+      MARIADB_ROOT_PASSWORD: docker_lemp
+      MARIADB_DATABASE: stackDB
+      MARIADB_USER: docker_user_lemp
+      MARIADB_PASSWORD: docker_user_lemp
       TZ: Australia/Sydney
     volumes:
-      - db_data:/var/lib/mysql
+      - maria_db_data:/var/lib/mysql
       - ./conf/:/docker-entrypoint-initdb.d/
     ports:
       - "3306:3306"
     networks:
       - stack-network
 volumes:
-  db_data:
+  maria_db_data:
 networks:
   stack-network:
     driver: bridge

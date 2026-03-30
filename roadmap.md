@@ -10,6 +10,14 @@ Implement a `SecurityValidation` class that decouples sanitization logic from th
 > [!NOTE]
 > **Ground Running**: Ensure the `xmlForm` class automatically applies a "Basic" strategy during its `prep()` method. Focus on white-listing characters for common inputs like usernames.
 
+### Metrics (Qualities & Quantities)
+- **Complexity**: Low-Medium
+- **Risk Level**: Low (Isolated, easy to test)
+- **Estimated Time**: 1-2 Days
+- **Number of Files**: ~4 (Base class, interface, default strategies)
+- **Lines of Code**: ~300 LOC
+
+
 ### Prerequisites
 - Knowledge of the Strategy Pattern.
 - Understanding of PHP `FILTER_SANITIZE_*`.
@@ -50,6 +58,14 @@ Extend `xmlForm` to support server-side validation that mirrors client-side cons
 > [!IMPORTANT]
 > **Ground Running**: The `addRow()` method must be extended to capture a `$rules` array. The `Validator` should return a structured `ErrorBag` that can be re-bound to the form for error display.
 
+### Metrics (Qualities & Quantities)
+- **Complexity**: Medium
+- **Risk Level**: Low (UI logic mostly, isolated validation engine)
+- **Estimated Time**: 2-3 Days
+- **Number of Files**: ~3 (Validator class, xmlForm modifications)
+- **Lines of Code**: ~400-500 LOC
+
+
 ### Related Components
 - `./app/Class files/xmlForm.php`
 - `./app/Class files/Validator.php`
@@ -72,9 +88,17 @@ if ($validator->fails()) {
 
 ## Phase 3: ISO SQL QueryBuilder (Dialect Pattern)
 ### Description
-Develop a `QueryBuilder` that generates SQL strings based on a `DatabaseDialect`. This enables PnP DBMS support (MySQL, MariaDB, PostgreSQL, Oracle, MS SQL).
+Develop a `QueryBuilder` that generates SQL strings based on a `DatabaseDialect`. This enables PnP DBMS support (MySQL, MariaDB, PostgreSQL, Oracle, MS SQL), **strictly restricted to a functional union of common OLTP grammar** (i.e., basic `SELECT`, `INSERT`, `UPDATE`, and `DELETE`). Complex edge-cases, schema definitions, and vendor-specific features are excluded.
 > [!CAUTION]
-> **Iceberg Alert**: MySQL does not support standard `FETCH FIRST`. The `Dialect` must handle the translation between `LIMIT/OFFSET` and `OFFSET/FETCH`.
+> **Iceberg Alert**: MySQL does not support standard `FETCH FIRST`. The `Dialect` must handle the translation between `LIMIT/OFFSET` and `OFFSET/FETCH` for basic pagination.
+
+### Metrics (Qualities & Quantities)
+- **Complexity**: Medium (Focusing only on a functional union of standard CRUD operations significantly reduces the challenge of vendor variations)
+- **Risk Level**: Low-Medium (Database interactions are critical, but simple OLTP abstraction is standardized and safe)
+- **Estimated Time**: 1-3 Days
+- **Number of Files**: ~6 (Builder Engine, Dialect Interfaces, specific Dialect implementations)
+- **Lines of Code**: ~400-600 LOC
+
 
 ### Related Components
 - `./app/Class files/db.php`
@@ -101,6 +125,14 @@ Implement a centralized `Router` with Middleware support. The pipeline must incl
 > [!NOTE]
 > **Ground Running**: The WAF should utilize the `SecurityValidation` strategies from Phase 1 to inspect `$_GET` and `$_POST` globally.
 
+### Metrics (Qualities & Quantities)
+- **Complexity**: High (Chain of responsibility, request lifecycle manipulation)
+- **Risk Level**: High (Can break routing or block valid traffic with false-positive WAF rules)
+- **Estimated Time**: 3-5 Days
+- **Number of Files**: ~4-5 (Router, Middleware interface, WAF, Auth middleware)
+- **Lines of Code**: ~600 LOC
+
+
 ### Code Example
 ```php
 $router = new Router();
@@ -120,6 +152,14 @@ $router->dispatch();
 Refactor procedural DOM logic into a reusable `Component` system supporting **Nesting** and **Slots**.
 > [!IMPORTANT]
 > **Ground Running**: Use `data-slot` attributes in HTML templates. The `Component::render()` method must use `DOMXPath` to find these slots and inject children.
+
+### Metrics (Qualities & Quantities)
+- **Complexity**: High (Transitioning procedural node appending to declarative trees)
+- **Risk Level**: Medium (High refactoring footprint in UI layer)
+- **Estimated Time**: 4-6 Days
+- **Number of Files**: ~5+ (Component base class, various concrete Layout Components)
+- **Lines of Code**: ~700-900 LOC
+
 
 ### Code Example
 ```php
@@ -142,6 +182,14 @@ class Card extends Component {
 Centralize rendering through a `ViewManager` supporting Layout Inheritance.
 > [!NOTE]
 > **Ground Running**: Use output buffering to capture the view content, then inject it into a `Layout` component's "main" slot.
+
+### Metrics (Qualities & Quantities)
+- **Complexity**: Medium
+- **Risk Level**: Low
+- **Estimated Time**: 2-3 Days
+- **Number of Files**: ~2-3 (ViewManager, Base Layout components)
+- **Lines of Code**: ~300 LOC
+
 
 ### Code Example
 ```php
@@ -167,6 +215,14 @@ Bind PHP data to DOM nodes using standard PHP `DOMDocument` and `XPath` logic.
 > [!IMPORTANT]
 > **Ground Running**: Avoid non-native methods like `querySelector`. Use `DOMXPath::query()` to find elements by ID or Class for data injection.
 
+### Metrics (Qualities & Quantities)
+- **Complexity**: Very High (Parsing and manipulating large DOM trees dynamically)
+- **Risk Level**: High (Performance impact on scale, potential memory leaks in PHP's un-freed DOM nodes)
+- **Estimated Time**: 5-7 Days
+- **Number of Files**: ~2-4 (DataBinder engine, parsing utilities)
+- **Lines of Code**: ~800+ LOC
+
+
 ### Code Example
 ```php
 $xpath = new DOMXPath($dom);
@@ -183,6 +239,14 @@ if ($node) {
 Manage CSS/JS inclusion with bundling and cache-busting.
 > [!NOTE]
 > **Ground Running**: The `AssetManager` should track all registered scripts/styles during the request and render the final `<link>` and `<script>` tags in the Layout's `<head>` or `<footer>`.
+
+### Metrics (Qualities & Quantities)
+- **Complexity**: Medium
+- **Risk Level**: Low
+- **Estimated Time**: 2-3 Days
+- **Number of Files**: ~2 (AssetManager, Cache helper)
+- **Lines of Code**: ~200-300 LOC
+
 
 ### Code Example
 ```php

@@ -17,6 +17,7 @@ RUN apt install libonig-dev -y
 RUN apt install libreadline-dev -y
 RUN apt install zlib1g-dev -y
 RUN apt install libpcre3-dev -y
+RUN apt install libpq-dev -y
 
 
 RUN mkdir -p /usr/src/php && \
@@ -34,6 +35,8 @@ RUN mkdir -p /usr/src/php && \
         --enable-mbstring \
         --enable-mysqlnd \
         --with-pdo-mysql=mysqlnd \
+        --with-pdo-pgsql \
+        --with-pgsql \
         --with-openssl \
         --with-curl \
         --with-libzip \

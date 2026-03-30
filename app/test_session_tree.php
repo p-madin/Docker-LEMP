@@ -4,21 +4,26 @@ require_once __DIR__ . '/Class files/db.php';
 require_once __DIR__ . '/Class files/config.php';
 require_once __DIR__ . '/Class files/session.php';
 
+global $db, $dialect;
+
 // Setup
 $sessKey = 'TEST_SESSION_' . uniqid();
 $_COOKIE['session'] = $sessKey;
 
 // Insert Session manually to avoid header redirection in seed()
 // Note: config.php creates $db connection
-try {
-    $q = $db->prepare("INSERT INTO tblSession (sessChars, sessTransactionActive) VALUES (:key, 0)");
-    $q->bindParam("key", $sessKey);
-    $q->execute();
+try {   
+    $qb_setup = new QueryBuilder($dialect);
+    $qb_setup->table('tblSession');
+    $sql_setup = $qb_setup->insert(['sessChars' => $sessKey, 'sessTransactionActive' => 0]);
+    $stmt_setup = $db->prepare($sql_setup);
+    $qb_setup->bindTo($stmt_setup);
+    $stmt_setup->execute();
 } catch (Exception $e) {
     die("Setup Failed: " . $e->getMessage());
 }
 
-$sc = new SessionController($db);
+$sc = new SessionController($db, $dialect);
 $sc->sessPK = $db->lastInsertId();
 
 $failures = 0;
@@ -200,7 +205,11 @@ if($duration < 100){
 
 
 // Cleanup
-$db->prepare("DELETE FROM tblSession WHERE sessChars = ?")->execute([$sessKey]);
+$qb_cleanup = new QueryBuilder($dialect);
+$qb_cleanup->table('tblSession')->where('sessChars', '=', $sessKey);
+$stmt_cleanup = $db->prepare($qb_cleanup->delete());
+$qb_cleanup->bindTo($stmt_cleanup);
+$stmt_cleanup->execute();
 
 if ($failures == 0) echo "\nALL TESTS PASSED\n";
 else echo "\n$failures TESTS FAILED\n";

@@ -85,6 +85,11 @@ class xmlForm{
         return $this->dom->fabricateChild($parent, "input", $finalAttributes);
     }
 
+    public function addHyperlinkSubmit($parent, $name, $attributes = []){
+        $finalAttributes = array_merge(['id'=>'submit_'.$name.'_UI', 'href'=>'#'], $attributes);
+        return $this->dom->fabricateChild($parent, "a", $finalAttributes, $attributes['value']);
+    }
+
     public function addRow($nameDependency, $label, $inputType, $value = null, $rules = null){
         if($rules){
             $this->rules[$nameDependency] = $rules;
@@ -101,10 +106,36 @@ class xmlForm{
         }
 
         $rowClass = 'flex-row';
+        $attributes = ['id'=>$my_id];
+
         if ($rules) {
-            $ruleArray = is_array($rules) ? $rules : explode('|', $rules);
-            if (in_array('required', $ruleArray)) {
+            $ruleArray = [];
+            $rulesInput = is_array($rules) ? $rules : explode('|', $rules);
+            foreach ($rulesInput as $key => $ruleValue) {
+                if (is_int($key)) {
+                    if (strpos($ruleValue, ':') !== false) {
+                        list($r, $p) = explode(':', $ruleValue, 2);
+                        $ruleArray[$r] = $p;
+                    } else {
+                        $ruleArray[$ruleValue] = true;
+                    }
+                } else {
+                    $ruleArray[$key] = $ruleValue;
+                }
+            }
+
+            if (!empty($ruleArray['required'])) {
                 $rowClass .= ' required';
+                $attributes['required'] = 'required';
+            }
+            if (isset($ruleArray['min'])) {
+                $attributes['minlength'] = (string)$ruleArray['min'];
+            }
+            if (isset($ruleArray['max'])) {
+                $attributes['maxlength'] = (string)$ruleArray['max'];
+            }
+            if (!empty($ruleArray['numeric'])) {
+                $attributes['type'] = 'number';
             }
         }
 
@@ -113,22 +144,6 @@ class xmlForm{
         $row_label_element = $this->dom->fabricateChild($row_label_cell, "label", ['for'=>$my_id], $label);
 
         $row_input_cell = $this->dom->fabricateChild($row, "div", ['class'=>'flex-cell']);
-        $attributes = ['id'=>$my_id];
-
-        // 1. Graceful Degradation: Map rules to HTML5 attributes
-        if ($rules) {
-            foreach ($ruleArray as $rule) {
-                if ($rule === 'required') {
-                    $attributes['required'] = 'required';
-                } elseif (strpos($rule, 'min:') === 0) {
-                    $attributes['minlength'] = substr($rule, 4);
-                } elseif (strpos($rule, 'max:') === 0) {
-                    $attributes['maxlength'] = substr($rule, 4);
-                } elseif ($rule === 'numeric') {
-                    $attributes['type'] = 'number';
-                }
-            }
-        }
         
         // 2. Data Retention & Isolation (Flash Cache)
         if (isset($this->flashErrors[$nameDependency])) {

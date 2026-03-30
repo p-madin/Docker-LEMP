@@ -2,61 +2,57 @@
 include_once("Class files/config.php");
 include_once("Class files/extranet.php");
 
+Hyperlink::handleAction($sessionController);
+
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
-    if (!$sessionController->verifyCSRFToken($_POST['csrf_token'] ?? '')) {
-        $sessionController->destroySession();
-        header("location:/?error=csrf");
-        exit;
-    }
 
     $cleanData = FormValidation::processAndValidate('editUser', $_POST, $formSchemas, $sessionController, function($clean) {
-        return "/account_management.php?edit=" . ($clean['auPK'] ?? '');
+        return "/edit_account.php?id=" . $clean['auPK'];
     });
 
     $myID = (int)$sessionController->getPrimary('userID');
-    $stmt = $db->prepare("SELECT verified FROM appUsers WHERE auPK = :id");
-    $stmt->execute(['id'=>$myID]);
+    $qb = new QueryBuilder($dialect);
+    $sql = $qb->table('appUsers')->select(['verified'])->where('auPK', '=', $myID)->toSQL();
+    $stmt = $db->prepare($sql);
+    $qb->bindTo($stmt);
+    $stmt->execute();
     $me = $stmt->fetch();
     $iAmVerified = $me['verified'] ?? 0;
 
     if(isset($_POST['toggle_verify'])){
         // Legacy toggle support (if needed)
         if($iAmVerified){
-            $isVerified = isset($_POST['is_verified']) ? 1 : 0;
-            $stmt = $db->prepare("UPDATE appUsers SET verified = :v WHERE auPK = :id");
-            $stmt->execute(['v'=>$isVerified, 'id'=>$cleanData['auPK']]);
+            $isVerified = (isset($_POST['is_verified']) && $_POST['is_verified'] === '1') ? 1 : 0;
+            $qb = new QueryBuilder($dialect);
+            $sql = $qb->table('appUsers')->where('auPK', '=', $cleanData['auPK'])->update(['verified' => $isVerified]);
+            $stmt = $db->prepare($sql);
+            $qb->bindTo($stmt);
+            $stmt->execute();
         }
     } else {
         // Build the update query
-        $params = [
+        $updateData = [
             'username' => $cleanData['username'],
             'name'     => $cleanData['name'],
-            'age'      => $cleanData['age'],
+            'age'      => (int)$cleanData['age'],
             'city'     => $cleanData['city'],
-            'email'    => $cleanData['email'],
-            'id'       => $cleanData['auPK']
+            'email'    => $cleanData['email']
         ];
-        
-        $sql = "UPDATE appUsers SET 
-                    username = :username, 
-                    name = :name, 
-                    age = :age, 
-                    city = :city, 
-                    email = :email";
 
         // Admin verification update
         if($iAmVerified){
-            $sql .= ", verified = :verified";
-            $params['verified'] = isset($_POST['verified_status']) ? 1 : 0;
+            $updateData['verified'] = (isset($_POST['verified_status']) && $_POST['verified_status'] === '1') ? 1 : 0;
         }
 
-        $sql .= " WHERE auPK = :id";
+        $qb = new QueryBuilder($dialect);
+        $sql = $qb->table('appUsers')->where('auPK', '=', (int)$cleanData['auPK'])->update($updateData);
         
         $stmt = $db->prepare($sql);
-        $stmt->execute($params);
+        $qb->bindTo($stmt);
+        $stmt->execute();
     }
 
-    $redirectUrl = "/account_management.php?edit=" . $cleanData['auPK'];
+    $redirectUrl = "/account_management.php";
     if (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) {
         echo json_encode(['redirect' => $redirectUrl]);
         exit;

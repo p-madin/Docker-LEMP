@@ -33,13 +33,13 @@ The validation system is built on a decoupled architecture:
     - **Example (RegistrationForm)**:
       ```json
       {"RegistrationForm":[
-        {"username", "Username:", "text", null, "required|min:3"},
-        {"password", "Password:", "password", null, "required|min:6"},
-        {"confirm_password", "Confirm Password:", "password", null, "match:password"},
-        {"name", "Name:", "text", null, "required"},
-        {"age", "Age:", "number", null, "required|numeric"},
-        {"city", "City:", "text"},
-        {"email", "Email:", "email", null, "required|email"}
+        {"name": "username", "label": "Username:", "type": "text", "value": null, "rules": {"required": true, "min": 3}},
+        {"name": "password", "label": "Password:", "type": "password", "value": null, "rules": {"required": true, "min": 6}},
+        {"name": "confirm_password", "label": "Confirm Password:", "type": "password", "value": null, "rules": {"match": "password"}},
+        {"name": "name", "label": "Name:", "type": "text", "value": null, "rules": {"required": true}},
+        {"name": "age", "label": "Age:", "type": "number", "value": null, "rules": {"required": true, "numeric": true}},
+        {"name": "city", "label": "City:", "type": "text", "rules": {}},
+        {"name": "email", "label": "Email:", "type": "email", "value": null, "rules": {"required": true, "email": true}}
       ]}
       ```
 - **Asynchronous Submissions**: Implement a headless form submission flow using `fetch()` that handles JSON responses and dynamically updates validation messages without a page reload.

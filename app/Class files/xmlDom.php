@@ -25,10 +25,14 @@ class xmlDom{
         $this->security->setStrategy(
             new \App\Security\StripTagsDecorator(
                 new \App\Security\WhitespaceNormalization(
-                    new \App\Security\CleanSanitizer()
+                    new \App\Security\MultiLineNormalizeDecorator(
+                        new \App\Security\CleanSanitizer()
+                    )
                 )
             )
         );
+
+        $this->setTitle("LEMP Stack App");
     }
 
     public function decorate_javascript(){
@@ -64,6 +68,15 @@ class xmlDom{
 
     public function decorate_navbar($navbar, $sessionController){
         $navbar->render($this, $sessionController);
+    }
+
+    public function setTitle($title) {
+        $titleElement = $this->dom->getElementsByTagName('title')->item(0);
+        if (!$titleElement) {
+            $titleElement = $this->dom->createElement('title');
+            $this->head->appendChild($titleElement);
+        }
+        $titleElement->nodeValue = $this->security->process($title);
     }
 
     public function fabricateChild($parent, $tagName, $attributes=array(), $innerContent=""){

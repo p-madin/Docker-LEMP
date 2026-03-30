@@ -5,6 +5,7 @@ class Navbar {
         ['label' => 'Home', 'url' => '/index.php', 'protected' => false],
         ['label' => 'Dashboard', 'url' => '/dashboard.php', 'protected' => true],
         ['label' => 'Account Management', 'url' => '/account_management.php', 'protected' => true],
+        ['label' => 'Error Log', 'url' => '/error_log.php', 'protected' => true],
         ['label' => 'Logout', 'url' => '/logout-action.php', 'protected' => true]
     ];
 

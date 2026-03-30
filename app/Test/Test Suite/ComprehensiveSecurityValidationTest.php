@@ -14,7 +14,9 @@ class ComprehensiveSecurityValidationTest extends TestSuiteBase {
         $GLOBALS['returnable'] .= "Running Comprehensive Security & Validation Integration Tests...\n";
         $pass = true;
 
-        @unlink($this->cookieFile);
+        if (file_exists($this->cookieFile)) {
+            unlink($this->cookieFile);
+        }
 
         // Test Helper for HTTP Tests
         $runHttpTest = function($name, $callback) use (&$pass) {
@@ -203,7 +205,7 @@ class ComprehensiveSecurityValidationTest extends TestSuiteBase {
             if (strpos($res2, 'validation-error') !== false) throw new Exception("Error persisted after second impression (Flash failed)");
         });
 
-        @unlink($this->cookieFile);
+        if (file_exists($this->cookieFile)) unlink($this->cookieFile);
         return $pass;
     }
 

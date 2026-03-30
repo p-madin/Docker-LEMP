@@ -3,13 +3,9 @@
 include_once("Class files/config.php");
 include_once("Class files/extranet.php");
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!$sessionController->verifyCSRFToken($_POST['csrf_token'] ?? '')) {
-        $sessionController->destroySession();
-        header("location:/?error=csrf");
-        exit;
-    }
-} else {
+Hyperlink::handleAction($sessionController);
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     // Prevent direct GET access to logout if strictly following PRG
     header("Location: /");
     exit;

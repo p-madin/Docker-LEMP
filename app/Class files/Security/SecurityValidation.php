@@ -19,6 +19,7 @@ include_once(__DIR__ . "/UrlSanitizerDecorator.php");
 include_once(__DIR__ . "/RootRelativePathDecorator.php");
 include_once(__DIR__ . "/IntegerSanitizerDecorator.php");
 include_once(__DIR__ . "/WhitespaceNormalization.php");
+include_once(__DIR__ . "/TextareaWhitespaceDecorator.php");
 include_once(__DIR__ . "/Validator.php");
 
 

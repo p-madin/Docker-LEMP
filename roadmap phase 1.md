@@ -276,6 +276,7 @@ class xmlForm {
         $this->security->setStrategy($strategy);
     }
 }
+```
 
 ---
 

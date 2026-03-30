@@ -30,19 +30,22 @@ if (isset($db) && isset($sessionController)) {
     $headers = print_r($logData, true);
 
     try {
-        $stmt = $db->prepare("INSERT INTO httpAction (haSessionFK, haUserFK, haIP, haURL, haReferrer, haMethod, haUserAgent, haHeaders) 
-                              VALUES (:sessionFK, :userFK, :ip, :url, :referrer, :method, :userAgent, :headers)");
-
-        $stmt->execute([
-            ':sessionFK' => $sessionController->sessPK ?? 0,
-            ':userFK'    => $sessionController->getPrimary('userID'),
-            ':ip'        => $ip,
-            ':url'       => substr($url, 0, 512),
-            ':referrer'  => $referrer ? substr($referrer, 0, 512) : null,
-            ':method'    => substr($method, 0, 8),
-            ':userAgent' => substr($userAgent, 0, 512),
-            ':headers'   => $headers
+        $qb = new QueryBuilder($dialect);
+        $qb->table('httpAction');
+        $sql = $qb->insert([
+            'haSessionFK' => $sessionController->sessPK ?? 0,
+            'haUserFK'    => $sessionController->getPrimary('userID') ?: 0,
+            'haIP'        => $ip,
+            'haURL'       => substr($url, 0, 512),
+            'haReferrer'  => $referrer ? substr($referrer, 0, 512) : null,
+            'haMethod'    => substr($method, 0, 8),
+            'haUserAgent' => substr($userAgent, 0, 512),
+            'haHeaders'   => $headers
         ]);
+
+        $stmt = $db->prepare($sql);
+        $qb->bindTo($stmt);
+        $stmt->execute();
     } catch (PDOException $e) {
         // Silently fail or log to error log to prevent breaking the application flow
         error_log("Failed to log httpAction: " . $e->getMessage());

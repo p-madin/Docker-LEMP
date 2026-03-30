@@ -1,0 +1,77 @@
+CREATE DATABASE stackDB;
+
+CREATE TABLE appUsers(
+    auPK INT NOT NULL GENERATED ALWAYS AS IDENTITY,
+    name VARCHAR(32) NOT NULL,
+    age INT NOT NULL,
+    city VARCHAR(32) NOT NULL,
+    username VARCHAR(16) NOT NULL,
+    password VARCHAR(256) NOT NULL,
+    email VARCHAR(32) NOT NULL,
+    dateAdded TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    dateVerified TIMESTAMP,
+    verified BOOLEAN NOT NULL DEFAULT true,
+    PRIMARY KEY(auPK)
+);
+
+CREATE TABLE tblSession(
+    sessPK INT NOT NULL GENERATED ALWAYS AS IDENTITY,
+    sessCreated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    sessUpdated TIMESTAMP NULL,
+    sessChars VARCHAR(64) NOT NULL,
+    sessUser INT NULL,
+    sessTransactionActive INT NOT NULL,
+    PRIMARY KEY(sessPK)
+);
+
+CREATE TABLE tblSessionAtt(
+    sattPK INT NOT NULL GENERATED ALWAYS AS IDENTITY,
+    sattSessionFK INT NOT NULL,
+    sattDisc CHAR(1) NOT NULL,
+    sattKey VARCHAR(32) NOT NULL,
+    sattPrimaryValueFK INT NOT NULL,
+    PRIMARY KEY(sattPK)
+);
+
+CREATE TABLE tblSessionAttValue(
+    sattvPK INT NOT NULL GENERATED ALWAYS AS IDENTITY,
+    sattvAttFK INT NOT NULL,
+    sattvValueFK INT NULL,
+    sattvValue VARCHAR(128) NULL,
+    PRIMARY KEY(sattvPK)
+);
+
+CREATE TABLE sysConfig(
+    scPK INT NOT NULL GENERATED ALWAYS AS IDENTITY,
+    scName VARCHAR(32) NOT NULL,
+    scValue VARCHAR(128) NOT NULL,
+    PRIMARY KEY(scPK)
+);
+
+CREATE UNIQUE INDEX idx_session_chars ON tblSession(sessChars);
+CREATE INDEX idx_session_att_lookup ON tblSessionAtt(sattSessionFK, sattKey, sattDisc);
+CREATE INDEX idx_session_val_lookup ON tblSessionAttValue(sattvAttFK);
+
+CREATE TABLE httpAction(
+    haPK INT NOT NULL GENERATED ALWAYS AS IDENTITY,
+    haDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    haSessionFK INT NOT NULL,
+    haUserFK INT NULL,
+    haIP VARCHAR(45) NOT NULL,
+    haURL VARCHAR(512) NOT NULL,
+    haReferrer VARCHAR(512) NULL,
+    haMethod VARCHAR(8) NOT NULL,
+    haUserAgent VARCHAR(512) NOT NULL,
+    haHeaders TEXT NULL,
+    PRIMARY KEY(haPK)
+);
+
+CREATE TABLE phpErrorLog (
+  pelPK INT NOT NULL GENERATED ALWAYS AS IDENTITY,
+  pelTimestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  pelSeverity VARCHAR(32) NOT NULL,
+  pelMessage TEXT NOT NULL,
+  pelFile VARCHAR(512) NOT NULL,
+  pelLine INT NOT NULL,
+  PRIMARY KEY(pelPK)
+);

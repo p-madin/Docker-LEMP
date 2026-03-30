@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testSuite>
+  <name>LEMP Stack Integrated Tests</name>
+  <testGroup>
+    <!-- Original Login Test (Updated to use /) -->
+    <test>
+      <index>1</index>
+      <name>Basic Login/Logout</name>
+      <description>Verify admin login and logout</description>
+      <step>
+        <action>NavigateTo</action>
+        <url>/</url>
+      </step>
+      <step>
+        <action>FillForm</action>
+        <selector>#loginFormComponent</selector>
+        <parameters>
+          <parameter><name>username</name><value>Stack</value></parameter>
+          <parameter><name>password</name><value>Stack</value></parameter>
+        </parameters>
+        <submit>true</submit>
+      </step>
+      <step>
+        <action>AssertText</action>
+        <selector>#loginWidgetSummary</selector>
+        <expected>
+          <contains>You are already signed in</contains>
+        </expected>
+      </step>
+      <step>
+        <action>Click</action>
+        <selector>logout</selector>
+      </step>
+    </test>
+
+    <!-- Merged Lifecycle Test -->
+    <test>
+      <index>8</index>
+      <name>User Lifecycle Management</name>
+      <description>Register, verify as admin, and login as new user</description>
+      
+      <step>
+        <action>NavigateTo</action>
+        <url>/</url>
+      </step>
+      <step>
+        <action>FillForm</action>
+        <selector>#registerFormComponent</selector>
+        <parameters>
+          <parameter><name>username</name><value>LifecycleUser</value></parameter>
+          <parameter><name>password</name><value>Pass123!</value></parameter>
+          <parameter><name>confirm_password</name><value>Pass123!</value></parameter>
+          <parameter><name>name</name><value>LC User</value></parameter>
+          <parameter><name>age</name><value>25</value></parameter>
+          <parameter><name>city</name><value>Test City</value></parameter>
+          <parameter><name>email</name><value>lc@example.com</value></parameter>
+        </parameters>
+        <submit>true</submit>
+        <expected>
+          <statusCode>200</statusCode>
+        </expected>
+      </step>
+
+      <step>
+        <action>NavigateTo</action>
+        <url>/</url>
+      </step>
+      <step>
+        <action>FillForm</action>
+        <selector>#loginFormComponent</selector>
+        <parameters>
+          <parameter><name>username</name><value>Stack</value></parameter>
+          <parameter><name>password</name><value>Stack</value></parameter>
+        </parameters>
+        <submit>true</submit>
+      </step>
+
+      <step>
+        <action>NavigateTo</action>
+        <url>account_management.php</url>
+      </step>
+      <step>
+        <action>Click</action>
+        <selector>Edit</selector>
+        <near>LifecycleUser</near>
+      </step>
+      <step>
+        <action>FillForm</action>
+        <selector>#editUserFormComponent</selector>
+        <parameters>
+          <parameter><name>verified_status</name><value>checked</value></parameter>
+        </parameters>
+        <submit>true</submit>
+      </step>
+
+      <step>
+        <action>Click</action>
+        <selector>logout</selector>
+      </step>
+
+      <step>
+        <action>FillForm</action>
+        <selector>#loginFormComponent</selector>
+        <parameters>
+          <parameter><name>username</name><value>LifecycleUser</value></parameter>
+          <parameter><name>password</name><value>Pass123!</value></parameter>
+        </parameters>
+        <submit>true</submit>
+      </step>
+      <step>
+        <action>AssertText</action>
+        <selector>#loginWidgetSummary</selector>
+        <expected>
+          <contains>You are already signed in</contains>
+        </expected>
+      </step>
+    </test>
+    
+    <!-- Phase 3 Regression Audit -->
+    <test>
+      <index>9</index>
+      <name>Phase 3 Regression Audit</name>
+      <description>Audit Hyperlink targeting, Field Value collisions, and Checkbox persistence</description>
+      
+      <!-- 1. Login as Admin -->
+      <step>
+        <action>NavigateTo</action>
+        <url>/</url>
+      </step>
+      <step>
+        <action>FillForm</action>
+        <selector>#loginFormComponent</selector>
+        <parameters>
+          <parameter><name>username</name><value>Stack</value></parameter>
+          <parameter><name>password</name><value>Stack</value></parameter>
+        </parameters>
+        <submit>true</submit>
+      </step>
+
+      <!-- 2. Verify Hyperlink Target & Field Collision -->
+      <step>
+        <action>NavigateTo</action>
+        <url>account_management.php</url>
+      </step>
+      <step>
+        <action>Click</action>
+        <selector>Edit</selector>
+        <near>Stack_Two</near>
+      </step>
+      <step>
+        <action>AssertText</action>
+        <expected>
+          <contains>Editing User: Stack_Two</contains>
+          <contains>value="Stack_Two"</contains>
+        </expected>
+      </step>
+
+      <!-- 3. Verify Checkbox Uncheck Logic -->
+      <step>
+        <action>FillForm</action>
+        <selector>#editUserFormComponent</selector>
+        <parameters>
+          <parameter><name>verified_status</name><value>unchecked</value></parameter>
+        </parameters>
+        <submit>true</submit>
+      </step>
+      <step>
+        <action>NavigateTo</action>
+        <url>account_management.php</url>
+      </step>
+      <step>
+        <action>AssertText</action>
+        <near>Stack_Two</near>
+        <expected>
+          <contains>Not yet verified</contains>
+        </expected>
+      </step>
+
+      <!-- 4. Restore Status (Clean up) -->
+      <step>
+        <action>Click</action>
+        <selector>Edit</selector>
+        <near>Stack_Two</near>
+      </step>
+      <step>
+        <action>FillForm</action>
+        <selector>#editUserFormComponent</selector>
+        <parameters>
+          <parameter><name>verified_status</name><value>checked</value></parameter>
+        </parameters>
+        <submit>true</submit>
+      </step>
+      
+      <step>
+        <action>Click</action>
+        <selector>logout</selector>
+      </step>
+    </test>
+  </testGroup>
+</testSuite>

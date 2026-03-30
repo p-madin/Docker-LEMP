@@ -29,11 +29,24 @@ This repository provides a high-security, robust LEMP stack (Linux, Nginx, MySQL
 - Docker & Docker Compose
 
 ### Startup
+
 1. Clone the repository and navigate to the directory.
-2. Run the environment:
-   ```bash
-   docker compose up --build
-   ```
+2. Choose your database backend and run the environment:
+
+**For MySQL (Default):**
+```bash
+docker compose up --build
+```
+
+**For MariaDB:**
+```bash
+docker compose -f compose.mariadb.yaml up --build
+```
+
+**For PostgreSQL:**
+```bash
+docker compose -f compose.postgreSQL.yaml up --build
+```
 
 ### Accessing the Application
 - **Home/Login**: [https://localhost/index.php](https://localhost/index.php)

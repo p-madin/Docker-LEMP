@@ -11,7 +11,8 @@
 .flex-cell {
     border: solid 1px black;
     flex: 1 1 0;
-    padding: 5px
+    padding: 5px;
+    overflow-wrap: anywhere;
 }
 
 .flex-cell>* {
@@ -34,7 +35,7 @@
     top: 0;
     background-color: #f8f9fa;
     z-index: 1000;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 #main-navbar .flex-cell {
@@ -42,21 +43,13 @@
     padding: 10px;
 }
 
-#main-navbar .flex-cell a {
-    text-decoration: none;
-    font-weight: bold;
-    color: #333;
-}
-
 .navbar-link-button {
-    background: none !important;
-    border: none !important;
-    padding: 0 !important;
-    font: inherit !important;
-    color: #333 !important;
-    text-decoration: none !important;
-    cursor: pointer !important;
-    font-weight: bold !important;
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+    font-weight: bold;
 }
 
 .validation-error {
@@ -66,7 +59,8 @@
     font-weight: bold;
 }
 
-.flex-row.required, .flex-row.client-error {
+.flex-row.required,
+.flex-row.client-error {
     background-color: rgba(204, 0, 0, 0.05);
     /* subtle highlight */
     border-left: 3px solid #cc0000;
@@ -84,4 +78,18 @@
     content: " *";
     color: #cc0000;
     font-weight: bold;
+}
+
+form.form_hyperlink a {
+    color: blue;
+    text-decoration: underline;
+    text-decoration-color: blue;
+    text-decoration-thickness: 1px;
+    transition: all 250ms ease-out;
+
+}
+
+form.form_hyperlink a:hover {
+    color: black;
+    text-decoration-color: rgb(255, 0, 0);
 }

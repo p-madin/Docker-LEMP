@@ -2,10 +2,13 @@
 
 include_once("Class files/config.php");
 
-$query = $db->prepare("SELECT name FROM appUsers");
+$users_query_builder = new QueryBuilder($dialect);
 
-$query->execute();
-$data = $query->fetchAll();
+$users_query_builder->table('appUsers')->select(['name']);
+$stmt = $db->prepare($users_query_builder->toSQL());
+$users_query_builder->bindTo($stmt);
+$stmt->execute();
+$data = $stmt->fetchAll();
 
 $wrapper = $dom->fabricateChild(parent : $dom->body, tagName : "div");
 
@@ -17,10 +20,25 @@ foreach($data as $key=>$value){
 
 }
 
-$graphQuery = $db->query("SELECT year(haDate) y, month(haDate) m, day(haDate) d, hour(haDate) h, count(*) c 
-                          FROM httpAction GROUP BY y, m, d, h");
+$graph_query_builder = new QueryBuilder($dialect);
+
+$graph_query_builder->table('httpAction')->select([
+    $graph_query_builder->raw('EXTRACT(YEAR FROM haDate) y'),
+    $graph_query_builder->raw('EXTRACT(MONTH FROM haDate) m'),
+    $graph_query_builder->raw('EXTRACT(DAY FROM haDate) d'),
+    $graph_query_builder->raw('EXTRACT(HOUR FROM haDate) h'),
+    $graph_query_builder->raw('COUNT(*) c')
+])->groupBy([
+    $graph_query_builder->raw('EXTRACT(YEAR FROM haDate)'),
+    $graph_query_builder->raw('EXTRACT(MONTH FROM haDate)'),
+    $graph_query_builder->raw('EXTRACT(DAY FROM haDate)'),
+    $graph_query_builder->raw('EXTRACT(HOUR FROM haDate)')
+]);
+$stmt_graph = $db->prepare($graph_query_builder->toSQL());
+$graph_query_builder->bindTo($stmt_graph);
+$stmt_graph->execute();
 $graphData = [];
-foreach($graphQuery as $row){
+foreach($stmt_graph as $row){
     $dt = (new DateTime())->setDate($row['y'], $row['m'], $row['d'])->setTime($row['h'], 0);
     $graphData[] = [
         'x' => $dt->format('Y-m-d H:i:s'),
@@ -36,14 +54,16 @@ $graph->render($dom, $graph_details);
 $heading = $dom->fabricateChild(parent : $wrapper, tagName : "h1", innerContent : "Login form");
 
 if(!is_null($sessionController->getPrimary('userID'))){
-    $heading = $dom->fabricateChild(parent : $wrapper, tagName : "p", innerContent : "You are already signed in");
+    $heading = $dom->fabricateChild(parent : $wrapper, tagName : "p", attributes: ["id" => "loginWidgetSummary"] , innerContent : "You are already signed in");
     
     $logout_container = $dom->fabricateChild($wrapper, "div", ["style" => "margin-top: 10px;"]);
     $hyperlink = new Hyperlink();
     $hyperlink->appendHyperlinkForm($dom, $logout_container, "Click here to logout", "logout-action.php");
 }else{
+    $heading = $dom->fabricateChild(parent : $wrapper, tagName : "p", attributes: ["id" => "loginWidgetSummary"] , innerContent : "Sign in here");
     $login_form = new xmlForm("login", $dom, $wrapper);
     $login_form->prep("login-action.php", "POST");
+    $login_form->formWrapper->setAttribute("id", "loginFormComponent");
     $login_form->buildFromSchema('login', $formSchemas);
     $login_form->submitRow();
 }
@@ -52,10 +72,11 @@ $heading = $dom->fabricateChild(parent : $wrapper, tagName : "h1", innerContent 
 
 $register_form = new xmlForm("register", $dom, $wrapper);
 $register_form->prep("register-action.php", "POST");
+$register_form->formWrapper->setAttribute("id", "registerFormComponent");
 $register_form->buildFromSchema('register', $formSchemas);
 $register_form->submitRow();
 
-echo $dom->dom->c14n();
+echo $dom->dom->saveHTML();
 
 ?>
-
+
