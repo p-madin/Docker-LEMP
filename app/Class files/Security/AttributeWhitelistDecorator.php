@@ -2,9 +2,6 @@
 
 namespace App\Security;
 
-use DOMDocument;
-use DOMXPath;
-
 /**
  * Class AttributeWhitelistDecorator
  * Filters HTML attributes.

@@ -10,25 +10,15 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
         return "/edit_account.php?id=" . $clean['auPK'];
     });
 
-    $myID = (int)$sessionController->getPrimary('userID');
-    $qb = new QueryBuilder($dialect);
-    $sql = $qb->table('appUsers')->select(['verified'])->where('auPK', '=', $myID)->toSQL();
-    $stmt = $db->prepare($sql);
-    $qb->bindTo($stmt);
-    $stmt->execute();
-    $me = $stmt->fetch();
-    $iAmVerified = $me['verified'] ?? 0;
 
     if(isset($_POST['toggle_verify'])){
         // Legacy toggle support (if needed)
-        if($iAmVerified){
-            $isVerified = (isset($_POST['is_verified']) && $_POST['is_verified'] === '1') ? 1 : 0;
-            $qb = new QueryBuilder($dialect);
-            $sql = $qb->table('appUsers')->where('auPK', '=', $cleanData['auPK'])->update(['verified' => $isVerified]);
-            $stmt = $db->prepare($sql);
-            $qb->bindTo($stmt);
-            $stmt->execute();
-        }
+        $isVerified = (isset($_POST['is_verified']) && $_POST['is_verified'] === '1') ? 1 : 0;
+        $qb = new QueryBuilder($dialect);
+        $sql = $qb->table('appUsers')->where('auPK', '=', $cleanData['auPK'])->update(['verified' => $isVerified]);
+        $stmt = $db->prepare($sql);
+        $qb->bindTo($stmt);
+        $stmt->execute();
     } else {
         // Build the update query
         $updateData = [
@@ -40,9 +30,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
         ];
 
         // Admin verification update
-        if($iAmVerified){
-            $updateData['verified'] = (isset($_POST['verified_status']) && $_POST['verified_status'] === '1') ? 1 : 0;
-        }
+        $updateData['verified'] = (isset($_POST['verified_status']) && $_POST['verified_status'] === '1') ? 1 : 0;
+
 
         $qb = new QueryBuilder($dialect);
         $sql = $qb->table('appUsers')->where('auPK', '=', (int)$cleanData['auPK'])->update($updateData);

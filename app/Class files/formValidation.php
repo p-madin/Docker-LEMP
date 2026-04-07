@@ -8,46 +8,13 @@ class FormValidation {
     public static function processAndValidate($schemaName, $inputData, $formSchemas, $sessionController, $failRedirectClosure) {
         // 1. Setup Security Sanitization
 
-        // Default strategy for single-line inputs (text, email, etc.)
-        $strategy = new \App\Security\HtmlEscapeDecorator(
-            new \App\Security\SingleLineDecorator(
-                new \App\Security\WhitespaceNormalization(
-                    new \App\Security\StripTagsDecorator(
-                        new \App\Security\CleanSanitizer()
-                    )
-                )
-            )
-        );
-
         $security = new \App\Security\SecurityValidation();
-        $security->setStrategy($strategy);
-
-        // Apply per-field strategies driven by each field's declared input type
+        
         if (isset($formSchemas[$schemaName])) {
-            foreach ($formSchemas[$schemaName] as $field) {
-                $fieldStrategy = match($field['type']) {
-                    // Preserves newlines; collapses horizontal whitespace per line
-                    'textarea' => new \App\Security\HtmlEscapeDecorator(
-                                      new \App\Security\TextareaWhitespaceDecorator(
-                                          new \App\Security\MultiLineNormalizeDecorator(
-                                              new \App\Security\StripTagsDecorator(
-                                                  new \App\Security\CleanSanitizer()
-                                              )
-                                          )
-                                      )
-                                  ),
-                    // Strips everything but digits; no HTML sanitization needed
-                    'number'   => new \App\Security\IntegerSanitizerDecorator(
-                                      new \App\Security\CleanSanitizer()
-                                  ),
-                    // Skipped fields — sanitized separately or not at all
-                    'password', 'hidden' => null,
-                    default    => null, // falls back to global $strategy
-                };
-                if ($fieldStrategy !== null) {
-                    $security->setFieldStrategy($field['name'], $fieldStrategy);
-                }
-            }
+            $security->configureFromSchema($formSchemas[$schemaName]);
+        } else {
+            // Fallback for when no schema is provided
+            $security->setStrategy(\App\Security\SanitizerFactory::createDefault());
         }
 
         // Clean the data (except potentially sensitive fields)

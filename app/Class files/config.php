@@ -5,6 +5,7 @@ include_once(__DIR__ . "/QueryBuilder.php");
 include_once(__DIR__ . "/Security/SecurityValidation.php");
 include_once(__DIR__ . "/session.php");
 include_once(__DIR__ . "/dataGraph.php");
+include_once(__DIR__ . "/Router/ControllerInterface.php");
 
 $vendor = getenv('DB_VENDOR') ?: 'mysql';
 $host = getenv('DB_HOST') ?: 'db';
@@ -29,18 +30,10 @@ $dialect = $db_controller->getDialect();
 include_once(__DIR__ . "/errorHandler.php");
 registerErrorHandler($db, $dialect);
 
-$qb = new QueryBuilder($dialect);
-$qb->table('sysConfig')->select(['scName', 'scValue']);
-$stmt = $db->prepare($qb->toSQL());
-$qb->bindTo($stmt);
-$stmt->execute();
-$data = $stmt->fetchAll();
+include_once(__DIR__ . "/SystemConfigController.php");
 
-$scvRows = array();
-
-foreach($data as $key=>$value){
-    $scvRows[$value['scName']] = $value['scValue'];
-}
+$systemConfigController = new SystemConfigController($db, $dialect);
+$scvRows = $systemConfigController->getSysConfig();
 $sessionController = new SessionController($db, $dialect);
 $sessionController->seed();
 
@@ -52,12 +45,13 @@ Hyperlink::handleRedirect($sessionController);
 
 include_once(__DIR__ . "/xmlDom.php");
 include_once(__DIR__ . "/xmlForm.php");
-include_once(__DIR__ . "/forms.php");
+include_once(__DIR__ . "/DatabaseForm.php");
+$formSchemas = DatabaseForm::generateGlobalSchemas($db, $dialect);
 include_once(__DIR__ . "/formValidation.php");
 include_once(__DIR__ . "/navbar.php");
 
 $dom = new xmlDom();
-$navbar = new Navbar();
+$navbar = new Navbar($systemConfigController);
 
 $dom->decorate_javascript();
 $dom->decorate_cascade();

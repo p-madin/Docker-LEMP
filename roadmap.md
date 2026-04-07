@@ -121,16 +121,20 @@ $sql = $qb->table('users')
 
 ## Phase 4: Router, Middleware and WAF
 ### Description
-Implement a centralized `Router` with Middleware support. The pipeline must include a "Base WAF" to intercept malicious URI patterns or payloads.
+Implement a centralized `Router` with Middleware support. The pipeline must include a "Base WAF" to intercept malicious URI patterns or payloads. The WAF will be enriched with active defense mechanisms, such as rate-limiting and auto-banning, to block abusive HTTP clients (similar to `mod_evasive`).
+
 > [!NOTE]
-> **Ground Running**: The WAF should utilize the `SecurityValidation` strategies from Phase 1 to inspect `$_GET` and `$_POST` globally.
+> **Ground Running**: 
+> - **Inspection**: The WAF should utilize the `SecurityValidation` strategies from Phase 1 to inspect `$_GET` and `$_POST` globally.
+> - **Active Defense (Auto-ban)**: Implement thresholds for rapid requests (e.g., brute-force attempts) or known bad payloads. Clients exceeding thresholds should be automatically temporarily banned (e.g., returning 429 Too Many Requests or 403 Forbidden).
+> - **Logging**: Use the `QueryBuilder` from Phase 3 to persist WAF events, banned IP logs, and anomalous behavior to the database.
 
 ### Metrics (Qualities & Quantities)
-- **Complexity**: High (Chain of responsibility, request lifecycle manipulation)
+- **Complexity**: High (Chain of responsibility, request lifecycle manipulation, stateful tracking for rate limiting)
 - **Risk Level**: High (Can break routing or block valid traffic with false-positive WAF rules)
 - **Estimated Time**: 3-5 Days
-- **Number of Files**: ~4-5 (Router, Middleware interface, WAF, Auth middleware)
-- **Lines of Code**: ~600 LOC
+- **Number of Files**: ~5-7 (Router, Middleware interface, WAF, Auth middleware, RateLimiter)
+- **Lines of Code**: ~800 LOC
 
 
 ### Code Example
@@ -149,9 +153,12 @@ $router->dispatch();
 
 ## Phase 5: Enhance DOM to Component System
 ### Description
-Refactor procedural DOM logic into a reusable `Component` system supporting **Nesting** and **Slots**.
+Refactor procedural DOM logic into a reusable `Component` system supporting **Nesting** and **Slots**. This includes transforming the extended `xmlForm` (from Phase 2) into a cohesive `FormComponent`.
+
 > [!IMPORTANT]
-> **Ground Running**: Use `data-slot` attributes in HTML templates. The `Component::render()` method must use `DOMXPath` to find these slots and inject children.
+> **Ground Running**: 
+> - Use `data-slot` attributes in HTML templates. The `Component::render()` method must use `DOMXPath` to find these slots and inject children.
+> - **Defense in Depth Tracking**: When injecting slot content or compiling components, the engine must implicitly apply Phase 1 output sanitization rules (e.g. `StripTagsDecorator` or `HtmlEscapeDecorator`) to raw data to ensure XSS defense remains intact at the DOM serialization boundary.
 
 ### Metrics (Qualities & Quantities)
 - **Complexity**: High (Transitioning procedural node appending to declarative trees)
@@ -179,9 +186,12 @@ class Card extends Component {
 
 ## Phase 6: View Manager and Layouts
 ### Description
-Centralize rendering through a `ViewManager` supporting Layout Inheritance.
+Centralize rendering through a `ViewManager` supporting Layout Inheritance and Global State Injection.
+
 > [!NOTE]
-> **Ground Running**: Use output buffering to capture the view content, then inject it into a `Layout` component's "main" slot.
+> **Ground Running**: 
+> - Use output buffering to capture the view content, then inject it into a `Layout` component's "main" slot.
+> - **State Integration**: The `ViewManager` must automatically fetch Flash Cache data (Validation Errors and Old Input Data established in Phase 2) and expose it globally to Layouts. This reduces boilerplate and ensures UI components always have access to `$errors` state.
 
 ### Metrics (Qualities & Quantities)
 - **Complexity**: Medium
@@ -211,9 +221,13 @@ class ViewManager {
 
 ## Phase 7: View Data Binding
 ### Description
-Bind PHP data to DOM nodes using standard PHP `DOMDocument` and `XPath` logic.
+Bind PHP data to DOM nodes using standard PHP `DOMDocument` and `XPath` logic, seamlessly repopulating form state using prior validation run data.
+
 > [!IMPORTANT]
-> **Ground Running**: Avoid non-native methods like `querySelector`. Use `DOMXPath::query()` to find elements by ID or Class for data injection.
+> **Ground Running**: 
+> - Avoid non-native methods like `querySelector`. Use `DOMXPath::query()` to find elements by ID or Class for data injection.
+> - **Form Repopulation**: Connect the Phase 2 data retention logic (flash cache) to the new DOM binding system. The DataBinder should use XPath to locate `input`, `select`, and `textarea` elements matching names in the flash cache to automatically inject their `value` properties.
+> - **Secure Data Binding Pipeline**: Explicitly require that dynamic data bound to DOM nodes uses Phase 1 `SecurityValidation` strategies based on context (e.g. `HtmlEscapeDecorator` for Text node binding).
 
 ### Metrics (Qualities & Quantities)
 - **Complexity**: Very High (Parsing and manipulating large DOM trees dynamically)
@@ -236,9 +250,13 @@ if ($node) {
 
 ## Phase 8: Asset Pipeline
 ### Description
-Manage CSS/JS inclusion with bundling and cache-busting.
+Manage CSS/JS inclusion with bundling, cache-busting, and Content Security Policy (CSP) management.
+
 > [!NOTE]
-> **Ground Running**: The `AssetManager` should track all registered scripts/styles during the request and render the final `<link>` and `<script>` tags in the Layout's `<head>` or `<footer>`.
+> **Ground Running**: 
+> - The `AssetManager` should track all registered scripts/styles during the request and render the final `<link>` and `<script>` tags in the Layout's `<head>` or `<footer>`.
+> - **CSP Integration**: Securely generate and register CSP nonces for inline scripts/styles (if any are necessary) and inject the appropriate `Content-Security-Policy` headers. This acts as a browser-enforced shield, complementing the Phase 4 WAF.
+> - **Validation Delivery**: Manage the dynamic delivery of the `validator.js` client-side validation logic developed as an extension of Phase 2.
 
 ### Metrics (Qualities & Quantities)
 - **Complexity**: Medium

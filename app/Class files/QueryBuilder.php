@@ -271,4 +271,12 @@ class QueryBuilder {
             $stmt->bindValue(":" . $key, $value);
         }
     }
+
+    public function getFetch($db){
+        $sql = $this->toSQL();
+        $stmt = $db->prepare($sql);
+        $this->bindTo($stmt);
+        $stmt->execute();
+        return $stmt->fetch();
+    }
 }

@@ -34,10 +34,13 @@ class xmlDomTest extends TestSuiteBase {
 
         foreach ($xml->testGroup as $group) {
             foreach ($group->test as $test) {
+                #if($test->index != 1){
+                #    continue;
+                #}
                 unlink($this->cookieFile);
                 $this->cookieFile = sys_get_temp_dir() . '/test_cookie_' . uniqid() . '.txt';
                 $GLOBALS['returnable'] .= " - Test: " . $test->name . "\n";
-                foreach ($test->step as $step) {
+                foreach ($test->stepList->step as $step) {
                     $action = (string)$step->action;
                     $GLOBALS['returnable'] .= "   - Action: $action\n";
 
@@ -300,7 +303,7 @@ class xmlDomTest extends TestSuiteBase {
         $targetNode = null;
 
         if ($selector === 'logout') {
-            $targetNode = $xpath->query("//form[contains(@action, 'logout-action.php')]")->item(0);
+            $targetNode = $xpath->query("//form[contains(@action, 'logout')]")->item(0);
         } elseif (strpos($selector, '#') === 0) {
             $id = ltrim($selector, '#');
             $targetNode = $xpath->query("//*[@id='$id']")->item(0);

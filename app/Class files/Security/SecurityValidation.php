@@ -20,6 +20,7 @@ include_once(__DIR__ . "/RootRelativePathDecorator.php");
 include_once(__DIR__ . "/IntegerSanitizerDecorator.php");
 include_once(__DIR__ . "/WhitespaceNormalization.php");
 include_once(__DIR__ . "/TextareaWhitespaceDecorator.php");
+include_once(__DIR__ . "/SanitizerFactory.php");
 include_once(__DIR__ . "/Validator.php");
 
 
@@ -39,9 +40,26 @@ class SecurityValidation {
         $this->fieldStrategies[$field] = $strategy;
     }
 
+    /**
+     * Configures the global and field-specific strategies directly from a form schema array.
+     */
+    public function configureFromSchema(array $schemaFields) {
+        // Set a secure default for fields lacking a specific override
+        $this->setStrategy(SanitizerFactory::createDefault());
+
+        foreach ($schemaFields as $field) {
+            $type = $field['type'] ?? 'text'; // Fallback to text if type is unexpectedly missing
+            $fieldStrategy = SanitizerFactory::createForType($type);
+            
+            if ($fieldStrategy !== null) {
+                $this->setFieldStrategy($field['name'], $fieldStrategy);
+            }
+        }
+    }
+
     public function process($data, $fieldName = null) {
         if (!$this->strategy) {
-            throw new Exception("Sanitization strategy not set.");
+            throw new \Exception("Sanitization strategy not set.");
         }
 
         if (is_array($data)) {

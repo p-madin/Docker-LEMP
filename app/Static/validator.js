@@ -84,6 +84,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!link) return;
 
         e.preventDefault();
+
+        if (link.classList.contains('delete')) {
+            if (!confirm('Are you sure you want to delete this resource?')) {
+                return;
+            }
+        }
         const form = link.closest('form');
         if (!form) return;
 

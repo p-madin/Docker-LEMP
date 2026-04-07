@@ -4,6 +4,7 @@ class SessionController{
     public $db;
     public $dialect;
     public $sessPK;
+    public $isVerified = false;
     public function __construct($db, $dialect){
         $this->db = $db;
         $this->dialect = $dialect;
@@ -95,6 +96,12 @@ class SessionController{
             'httponly' => true,
             'samesite' => 'Strict'
         ]);
+        $qb = new QueryBuilder($this->dialect);
+        $qb->table('tblSession')->where('sessPK', '=', $this->sessPK);
+        $sql = $qb->update(['sessDeleted' => $qb->raw('NOW()')]);
+        $stmt = $this->db->prepare($sql);
+        $qb->bindTo($stmt);
+        $stmt->execute();
         $this->sessPK = null;
     }
 
@@ -111,10 +118,12 @@ class SessionController{
         $user = $stmt->fetch();
 
         if (!$user || ($user['verified'] ?? 0) == 0) {
+            $this->isVerified = false;
             $this->destroySession();
             return false;
         }
 
+        $this->isVerified = true;
         return true;
     }
 

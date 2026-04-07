@@ -9,10 +9,13 @@ class Hyperlink {
      * @param DOMNode $parent The parent node to append the form to.
      * @param string $label The text to display on the "link".
      * @param string $url The target URL to redirect to.
+     * @param array $post_params Additional hidden inputs to include in the POST payload.
+     * @param array $css_decorators Array of CSS classes (e.g., 'edit', 'delete', 'disabled', 'ajax').
      * @return DOMElement The created form element.
      */
-    public function appendHyperlinkForm($dom, $parent, $label, $url) {
+    public function appendHyperlinkForm($dom, $parent, $label, $url, array $post_params = [], array $css_decorators = []) {
         // Safety Check: Avoid nested forms
+        global $controllerList;
         $currentNode = $parent;
         while ($currentNode && $currentNode->nodeName !== '#document') {
             if ($currentNode->nodeName === 'form') {
@@ -21,7 +24,7 @@ class Hyperlink {
             $currentNode = $currentNode->parentNode;
         }
 
-        $isAction = (strpos($url, '-action.php') !== false);
+        $isAction = isset($controllerList[$url]) && $controllerList[$url]->isAction;
         $method = "POST";
         
         $formId = "nav_" . str_replace([' ', '.'], '_', $label);
@@ -37,9 +40,25 @@ class Hyperlink {
             $form->addInput($form->formWrapper, 'nav_target', 'hidden', $url);
         }
 
+        foreach ($post_params as $key => $value) {
+            $form->addInput($form->formWrapper, $key, 'hidden', $value);
+        }
+
         $form->formWrapper->setAttribute('id', $formId);
-        $hyperlink_attributes = ['value' => $label, 
-                                'class' => 'navbar-link-button'];
+        $classString = 'navbar-link-button';
+        if (!empty($css_decorators)) {
+            $classString .= ' ' . implode(' ', $css_decorators);
+        }
+
+        $hyperlink_attributes = [
+            'value' => $label, 
+            'class' => $classString
+        ];
+        
+        // Onclick confirms are handled dynamically in validator.js using the class selector
+        if (in_array('disabled', $css_decorators)) {
+            $hyperlink_attributes['disabled'] = 'disabled';
+        }
         
         $form->addHyperlinkSubmit($form->formWrapper, $formId, $hyperlink_attributes);
 

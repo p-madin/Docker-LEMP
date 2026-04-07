@@ -18,6 +18,7 @@ CREATE TABLE stackDB.tblSession(
     sessPK INT NOT NULL AUTO_INCREMENT,
     sessCreated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     sessUpdated DATETIME NULL,
+    sessDeleted DATETIME NULL,
     sessChars VARCHAR(64) NOT NULL,
     sessUser INT NULL,
     sessTransactionActive INT NOT NULL,
@@ -48,6 +49,16 @@ CREATE TABLE stackDB.sysConfig(
     PRIMARY KEY(scPK)
 );
 
+CREATE TABLE stackDB.tblNavBar(
+    nbPK INT NOT NULL AUTO_INCREMENT,
+    nbText VARCHAR(32) NOT NULL,
+    nbDiscriminator CHAR(1) NOT NULL,
+    nbPath VARCHAR(64) NULL,
+    nbProtected TINYINT(1) NOT NULL,
+    nbOrder INT NOT NULL,
+    PRIMARY KEY(nbPK)
+);
+
 CREATE UNIQUE INDEX idx_session_chars ON stackDB.tblSession(sessChars);
 CREATE INDEX idx_session_att_lookup ON stackDB.tblSessionAtt(sattSessionFK, sattKey, sattDisc);
 CREATE INDEX idx_session_val_lookup ON stackDB.tblSessionAttValue(sattvAttFK);
@@ -63,6 +74,8 @@ CREATE TABLE stackDB.httpAction(
     haMethod VARCHAR(8) NOT NULL,
     haUserAgent VARCHAR(512) NOT NULL,
     haHeaders TEXT NULL,
+    haWafRuleTriggered VARCHAR(255) NULL,
+    haWafPayload TEXT NULL,
     PRIMARY KEY(haPK)
 );
 
@@ -74,4 +87,32 @@ CREATE TABLE stackDB.phpErrorLog (
   pelFile VARCHAR(512) NOT NULL,
   pelLine INT NOT NULL,
   PRIMARY KEY(pelPK)
+);
+
+CREATE TABLE stackDB.tblForm(
+    tfPK INT NOT NULL AUTO_INCREMENT,
+    tfName VARCHAR(32) NOT NULL,
+    tfReadOnly TINYINT(1) NOT NULL DEFAULT 0,
+    PRIMARY KEY(tfPK)
+);
+
+CREATE TABLE stackDB.tblColumns(
+    tcPK INT NOT NULL AUTO_INCREMENT,
+    tcFormFK INT NOT NULL,
+    tcName VARCHAR(32) NOT NULL,
+    tcLabel VARCHAR(64) NOT NULL,
+    tcType VARCHAR(32) NOT NULL,
+    tcRules TEXT NOT NULL,
+    tcOrder INT NOT NULL,
+    PRIMARY KEY(tcPK),
+    FOREIGN KEY(tcFormFK) REFERENCES stackDB.tblForm(tfPK) ON DELETE CASCADE
+);
+
+CREATE TABLE stackDB.banned_ips(
+    biPK INT NOT NULL AUTO_INCREMENT,
+    biIP VARCHAR(45) NOT NULL,
+    biReason VARCHAR(255) NOT NULL,
+    biExpires DATETIME NOT NULL,
+    biDateAdded DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY(biPK)
 );

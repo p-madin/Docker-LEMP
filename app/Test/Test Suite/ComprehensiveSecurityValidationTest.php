@@ -3,8 +3,8 @@
 class ComprehensiveSecurityValidationTest extends TestSuiteBase {
     private $cookieFile = "/tmp/integration_test_cookie.txt";
     private $homeUrl = "https://localhost/index.php";
-    private $loginAction = "https://localhost/login-action.php";
-    private $registerAction = "https://localhost/register-action.php";
+    private $loginAction = "https://localhost/login";
+    private $registerAction = "https://localhost/register";
 
     public function __construct() {
         parent::__construct("Comprehensive Security & Validation Integration Suite");

@@ -8,6 +8,11 @@
     flex-direction: row
 }
 
+.flex-row.flex-header {
+    font-weight: bold;
+    background: #eee;
+}
+
 .flex-cell {
     border: solid 1px black;
     flex: 1 1 0;
@@ -19,6 +24,11 @@
     width: 100%;
     word-break: break-word;
 }
+
+.flex-cell.actions-cell {
+    display: flex
+}
+
 
 .flex-form .flex-row .flex-cell {
     flex: 3 1 0
@@ -92,4 +102,27 @@ form.form_hyperlink a {
 form.form_hyperlink a:hover {
     color: black;
     text-decoration-color: rgb(255, 0, 0);
+}
+
+form.form_hyperlink a.edit {
+    color: #0066cc;
+    text-decoration: underline;
+}
+
+form.form_hyperlink a.delete {
+    color: #cc0000;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+form.form_hyperlink a.disabled {
+    pointer-events: none;
+    background-color: #ccc !important;
+    color: #666 !important;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+form.form_hyperlink a.ajax {
+    transition: all 0.3s ease;
 }

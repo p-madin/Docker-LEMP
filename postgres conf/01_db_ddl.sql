@@ -48,6 +48,16 @@ CREATE TABLE sysConfig(
     PRIMARY KEY(scPK)
 );
 
+CREATE TABLE tblNavBar(
+    nbPK INT NOT NULL GENERATED ALWAYS AS IDENTITY,
+    nbText VARCHAR(32) NOT NULL,
+    nbDiscriminator CHAR(1) NOT NULL,
+    nbPath VARCHAR(64) NULL,
+    nbProtected BOOLEAN NOT NULL,
+    nbOrder INT NOT NULL,
+    PRIMARY KEY(nbPK)
+);
+
 CREATE UNIQUE INDEX idx_session_chars ON tblSession(sessChars);
 CREATE INDEX idx_session_att_lookup ON tblSessionAtt(sattSessionFK, sattKey, sattDisc);
 CREATE INDEX idx_session_val_lookup ON tblSessionAttValue(sattvAttFK);
@@ -63,6 +73,8 @@ CREATE TABLE httpAction(
     haMethod VARCHAR(8) NOT NULL,
     haUserAgent VARCHAR(512) NOT NULL,
     haHeaders TEXT NULL,
+    haWafRuleTriggered VARCHAR(255) NULL,
+    haWafPayload TEXT NULL,
     PRIMARY KEY(haPK)
 );
 
@@ -74,4 +86,32 @@ CREATE TABLE phpErrorLog (
   pelFile VARCHAR(512) NOT NULL,
   pelLine INT NOT NULL,
   PRIMARY KEY(pelPK)
+);
+
+CREATE TABLE tblForm(
+    tfPK INT NOT NULL GENERATED ALWAYS AS IDENTITY,
+    tfName VARCHAR(32) NOT NULL,
+    tfReadOnly BOOLEAN NOT NULL DEFAULT false,
+    PRIMARY KEY(tfPK)
+);
+
+CREATE TABLE tblColumns(
+    tcPK INT NOT NULL GENERATED ALWAYS AS IDENTITY,
+    tcFormFK INT NOT NULL,
+    tcName VARCHAR(32) NOT NULL,
+    tcLabel VARCHAR(64) NOT NULL,
+    tcType VARCHAR(32) NOT NULL,
+    tcRules TEXT NOT NULL,
+    tcOrder INT NOT NULL,
+    PRIMARY KEY(tcPK),
+    FOREIGN KEY(tcFormFK) REFERENCES tblForm(tfPK) ON DELETE CASCADE
+);
+
+CREATE TABLE banned_ips(
+    biPK INT NOT NULL GENERATED ALWAYS AS IDENTITY,
+    biIP VARCHAR(45) NOT NULL,
+    biReason VARCHAR(255) NOT NULL,
+    biExpires TIMESTAMP NOT NULL,
+    biDateAdded TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY(biPK)
 );

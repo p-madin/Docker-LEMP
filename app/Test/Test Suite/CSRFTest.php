@@ -9,7 +9,7 @@ class CSRFTest extends TestSuiteBase {
         $GLOBALS['returnable'] .= "Running Advanced CSRF Cross-Session Test...\n";
         
         $homeUrl = "https://localhost/index.php";
-        $actionUrl = "https://localhost/login-action.php";
+        $actionUrl = "https://localhost/login";
         
         $cookieA = "/tmp/cookie_user_a.txt";
         $cookieB = "/tmp/cookie_user_b.txt";
@@ -69,9 +69,8 @@ class CSRFTest extends TestSuiteBase {
         $resAttack = curl_exec($chAttack);
         $infoAttack = curl_getinfo($chAttack);
         curl_close($chAttack);
-        
-        // Expected: 400 Bad Request (Machine/Test Rejection)
-        if ($infoAttack['http_code'] == 400) {
+        // Expected: 403 Forbidden
+        if ($infoAttack['http_code'] == 403) {
             $GLOBALS['returnable'] .= "[PASS] Cross-session CSRF attack was correctly rejected and session destroyed.\n";
             if (file_exists($cookieA)) unlink($cookieA);
             if (file_exists($cookieB)) unlink($cookieB);

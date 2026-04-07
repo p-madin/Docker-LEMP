@@ -9,7 +9,7 @@ class xmlDom{
     protected $security;
 
     public function __construct(){
-        $this->dom = new DOMDocument();
+        $this->dom = \DOM\HTMLDocument::createEmpty();
 
         $this->html = $this->dom->createElement('html');
         $this->head = $this->dom->createElement('head');
@@ -76,7 +76,7 @@ class xmlDom{
             $titleElement = $this->dom->createElement('title');
             $this->head->appendChild($titleElement);
         }
-        $titleElement->nodeValue = $this->security->process($title);
+        $titleElement->textContent = $this->security->process($title);
     }
 
     public function fabricateChild($parent, $tagName, $attributes=array(), $innerContent=""){
@@ -87,7 +87,7 @@ class xmlDom{
         }
 
         if(!empty($innerContent)){
-            $returnable->nodeValue = $this->security->process($innerContent);
+            $returnable->textContent = $this->security->process($innerContent);
         }
         
         $parent->appendChild($returnable);
