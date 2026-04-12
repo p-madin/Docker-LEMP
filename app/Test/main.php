@@ -2,7 +2,9 @@
 
 require_once __DIR__ . '/../Class files/config.php';
 require_once __DIR__ . '/TestBase.php';
-
+ob_start();
+$router->dispatch($request);
+ob_end_clean();
 $test_suite = [];
 
 // Include all tests in the "Test Suite" directory
@@ -18,6 +20,12 @@ foreach (glob(__DIR__ . "/Test Suite/*.php") as $filename) {
     #    continue;
     #}
     #if($filename !== __DIR__ . "/Test Suite/ComprehensiveSecurityValidationTest.php"){
+    #    continue;
+    #}
+    #if($filename !== __DIR__ . "/Test Suite/HyperSessionTest.php"){
+    #    continue;
+    #}
+    #if($filename !== __DIR__ . "/Test Suite/SessionTest.php"){
     #    continue;
     #}
     include_once($filename);
@@ -36,7 +44,7 @@ foreach ($test_suite as $test) {
     }
 }
 
-echo $returnable;
+echo $GLOBALS['returnable'] ?? "";
 
 echo "\n===============================\n";
 echo "Test Results:\n";

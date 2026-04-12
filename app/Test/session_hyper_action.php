@@ -1,12 +1,17 @@
 <?php
 // app/Test/session_hyper_action.php
+$sessionController = null;
+ob_start();
 include_once(__DIR__ . "/../Class files/config.php");
+$router->dispatch($request);
+ob_end_clean();
+http_response_code(200);
 
 header('Content-Type: application/json');
 
-if (!$sessionController->isLoggedIn()) {
-    $sessionController->seed();
-}
+#if (!$sessionController->isLoggedIn()) {
+#    $sessionController->seed();
+#}
 
 $testKey = "hyper_stress_test";
 $data = [

@@ -18,6 +18,7 @@ CREATE TABLE tblSession(
     sessPK INT NOT NULL GENERATED ALWAYS AS IDENTITY,
     sessCreated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     sessUpdated TIMESTAMP NULL,
+    sessDeleted TIMESTAMP NULL,
     sessChars VARCHAR(64) NOT NULL,
     sessUser INT NULL,
     sessTransactionActive INT NOT NULL,
@@ -53,6 +54,7 @@ CREATE TABLE tblNavBar(
     nbText VARCHAR(32) NOT NULL,
     nbDiscriminator CHAR(1) NOT NULL,
     nbPath VARCHAR(64) NULL,
+    nbControllerClass VARCHAR(64) NULL,
     nbProtected BOOLEAN NOT NULL,
     nbOrder INT NOT NULL,
     PRIMARY KEY(nbPK)

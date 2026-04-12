@@ -1,8 +1,5 @@
 <?php
 // app/test_session_tree.php
-require_once __DIR__ . '/Class files/db.php';
-require_once __DIR__ . '/Class files/config.php';
-require_once __DIR__ . '/Class files/session.php';
 
 global $db, $dialect;
 

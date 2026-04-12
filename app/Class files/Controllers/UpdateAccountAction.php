@@ -42,7 +42,7 @@ class UpdateAccountAction implements ControllerInterface {
                 $stmt->execute();
             }
 
-            $redirectUrl = "/account_management.php";
+            $redirectUrl = "/account_management";
             if (isset($request->server['HTTP_ACCEPT']) && strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false) {
                 echo json_encode(['redirect' => $redirectUrl]);
                 exit;
@@ -52,9 +52,8 @@ class UpdateAccountAction implements ControllerInterface {
             exit;
         }
 
-        header("Location: /account_management.php");
+        header("Location: /account_management");
         exit;
     }
 }
-$controllerList[UpdateAccountAction::$path] = new UpdateAccountAction();
 ?>

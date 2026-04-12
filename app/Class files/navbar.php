@@ -19,6 +19,7 @@ class Navbar {
         $navRow = $dom->fabricateChild(parent: $navContainer, tagName: "div", attributes: ["class"=>"flex-row"]);
 
         foreach ($this->items as $item) {
+            if ($item['discriminator'] === 'a') continue;
             if (!$item['protected'] || !is_null($userId)) {
                 $cell = $dom->dom->createElement('div');
                 $cell->setAttribute('class', 'flex-cell');

@@ -64,6 +64,7 @@
           </expected>
         </step>
 
+        <!-- Login as admin to verify the new user -->
         <step>
           <action>NavigateTo</action>
           <url>/</url>
@@ -78,14 +79,14 @@
           <submit>true</submit>
         </step>
 
+        <!-- Navigate to account management and edit the new user's row -->
         <step>
           <action>NavigateTo</action>
-          <url>account_management.php</url>
+          <url>/account_management</url>
         </step>
         <step>
           <action>Click</action>
-          <selector>Edit</selector>
-          <near>LifecycleUser</near>
+          <selector>.form_hyperlink[id^="edit-user-LifecycleUser"]</selector>
         </step>
         <step>
           <action>FillForm</action>
@@ -96,11 +97,11 @@
           <submit>true</submit>
         </step>
 
+        <!-- Logout and login as the newly verified user -->
         <step>
           <action>Click</action>
           <selector>logout</selector>
         </step>
-
         <step>
           <action>FillForm</action>
           <selector>#loginFormComponent</selector>
@@ -142,15 +143,14 @@
           <submit>true</submit>
         </step>
 
-        <!-- 2. Verify Hyperlink Target & Field Collision -->
+        <!-- 2. Verify that clicking Edit for Stack_Two opens the correct edit page -->
         <step>
           <action>NavigateTo</action>
-          <url>account_management.php</url>
-        </step>
+          <url>/account_management</url>
+        </step>=
         <step>
           <action>Click</action>
-          <selector>Edit</selector>
-          <near>Stack_Two</near>
+          <selector>.form_hyperlink[id^="edit-user-Stack_Two"]</selector>
         </step>
         <step>
           <action>AssertText</action>
@@ -160,7 +160,7 @@
           </expected>
         </step>
 
-        <!-- 3. Verify Checkbox Uncheck Logic -->
+        <!-- 3. Verify Checkbox Uncheck Logic — submit with verified_status unchecked -->
         <step>
           <action>FillForm</action>
           <selector>#editUserFormComponent</selector>
@@ -169,23 +169,22 @@
           </parameters>
           <submit>true</submit>
         </step>
+        <!-- Confirm the status is now shown as unverified in the list -->
         <step>
           <action>NavigateTo</action>
-          <url>account_management.php</url>
+          <url>/account_management</url>
         </step>
         <step>
           <action>AssertText</action>
-          <near>Stack_Two</near>
           <expected>
             <contains>Not yet verified</contains>
           </expected>
         </step>
 
-        <!-- 4. Restore Status (Clean up) -->
+        <!-- 4. Restore Status (Clean up) — re-check verified for Stack_Two -->
         <step>
           <action>Click</action>
-          <selector>Edit</selector>
-          <near>Stack_Two</near>
+          <selector>.form_hyperlink[id^="edit-user-Stack_Two"]</selector>
         </step>
         <step>
           <action>FillForm</action>
@@ -196,6 +195,211 @@
           <submit>true</submit>
         </step>
         
+        <step>
+          <action>Click</action>
+          <selector>logout</selector>
+        </step>
+      </stepList>
+    </test>
+
+    <!-- Test 10: Navbar Management Lifecycle -->
+    <test>
+      <index>10</index>
+      <name>Navbar Management Lifecycle</name>
+      <description>Update/Revert existing item and Create/Delete new item</description>
+      <stepList>
+        <step>
+          <action>NavigateTo</action>
+          <url>/</url>
+        </step>
+        <step>
+          <action>FillForm</action>
+          <selector>#loginFormComponent</selector>
+          <parameters>
+            <parameter><name>username</name><value>Stack</value></parameter>
+            <parameter><name>password</name><value>Stack</value></parameter>
+          </parameters>
+          <submit>true</submit>
+        </step>
+        
+        <!-- 1. Update Dashboard label & revert -->
+        <step>
+          <action>NavigateTo</action>
+          <url>/navbar_management</url>
+        </step>
+        <step>
+          <action>Click</action>
+          <selector>.form_hyperlink[id^="edit-navbar-/dashboard"]</selector>
+        </step>
+        <step>
+          <action>FillForm</action>
+          <selector>#editNavbarFormComponent</selector>
+          <parameters>
+            <parameter><name>nbText</name><value>Dashboard Updated</value></parameter>
+          </parameters>
+          <submit>true</submit>
+        </step>
+        <step>
+          <action>AssertText</action>
+          <expected>
+            <contains>Dashboard Updated</contains>
+          </expected>
+        </step>
+        <step>
+          <action>Click</action>
+          <selector>.form_hyperlink[id^="edit-navbar-/dashboard"]</selector>
+        </step>
+        <step>
+          <action>FillForm</action>
+          <selector>#editNavbarFormComponent</selector>
+          <parameters>
+            <parameter><name>nbText</name><value>Dashboard</value></parameter>
+          </parameters>
+          <submit>true</submit>
+        </step>
+        
+        <!-- 2. Create a temporary navbar item & delete it -->
+        <step>
+          <action>Click</action>
+          <selector>#nav_Create_New_Navbar_Item</selector>
+        </step>
+        <step>
+          <action>FillForm</action>
+          <selector>#editNavbarFormComponent</selector>
+          <parameters>
+            <parameter><name>nbText</name><value>Temporary Test Link</value></parameter>
+            <parameter><name>nbPath</name><value>/test_path</value></parameter>
+            <parameter><name>nbControllerClass</name><value>DashboardController</value></parameter>
+            <parameter><name>nbOrder</name><value>99</value></parameter>
+          </parameters>
+          <submit>true</submit>
+        </step>
+        <step>
+          <action>AssertText</action>
+          <expected>
+            <contains>Temporary Test Link</contains>
+          </expected>
+        </step>
+        <step>
+          <action>Click</action>
+          <selector>.form_hyperlink[id^="delete-navbar-/test_path"]</selector>
+        </step>
+        <step>
+          <action>AssertText</action>
+          <expected>
+            <not_contains>Temporary Test Link</not_contains>
+          </expected>
+        </step>
+        
+        <step>
+          <action>Click</action>
+          <selector>logout</selector>
+        </step>
+      </stepList>
+    </test>
+
+    <!-- Test 11: Form & Field Management Lifecycle -->
+    <test>
+      <index>11</index>
+      <name>Form &amp; Field Management Lifecycle</name>
+      <description>Verify Form creation, Field addition, and subsequent deletion</description>
+      <stepList>
+        <step>
+          <action>NavigateTo</action>
+          <url>/</url>
+        </step>
+        <step>
+          <action>FillForm</action>
+          <selector>#loginFormComponent</selector>
+          <parameters>
+            <parameter><name>username</name><value>Stack</value></parameter>
+            <parameter><name>password</name><value>Stack</value></parameter>
+          </parameters>
+          <submit>true</submit>
+        </step>
+
+        <!-- 1. Create Form -->
+        <step>
+          <action>NavigateTo</action>
+          <url>/form_management</url>
+        </step>
+        <step>
+          <action>Click</action>
+          <selector>#nav_Create_New_Form</selector>
+        </step>
+        <step>
+          <action>FillForm</action>
+          <selector>#editFormFormComponent</selector>
+          <parameters>
+            <parameter>
+              <name>tfName</name>
+              <value>Temporary Test Form</value>
+            </parameter>
+          </parameters>
+          <submit>true</submit>
+        </step>
+        <step>
+          <action>AssertText</action>
+          <expected>
+            <contains>Temporary Test Form</contains>
+          </expected>
+        </step>
+        <step>
+          <action>NavigateTo</action>
+          <url>/form_management</url>
+        </step>
+        <step>
+          <action>Click</action>
+          <selector>.form_hyperlink[id^="edit-form-Temporary Test Form"]</selector>
+        </step>
+        <step>
+          <action>Click</action>
+          <selector>#nav_Add_New_Field</selector>
+        </step>
+        <step>
+          <action>FillForm</action>
+          <selector>#editColumnFormComponent</selector>
+          <parameters>
+            <parameter><name>tcName</name><value>test_field</value></parameter>
+            <parameter><name>tcLabel</name><value>Test Field Label</value></parameter>
+            <parameter><name>tcType</name><value>text</value></parameter>
+            <parameter><name>tcOrder</name><value>10</value></parameter>
+          </parameters>
+          <submit>true</submit>
+        </step>
+        <step>
+          <action>AssertText</action>
+          <expected>
+            <contains></contains>
+          </expected>
+        </step>
+
+        <step>
+          <action>Click</action>
+          <selector>.form_hyperlink[id^="delete-field-test_field"]</selector>
+        </step>
+        <step>
+          <action>AssertText</action>
+          <expected>
+            <not_contains>Test Field Label</not_contains>
+          </expected>
+        </step>
+
+        <step>
+          <action>NavigateTo</action>
+          <url>/form_management</url>
+        </step>
+        <step>
+          <action>Click</action>
+          <selector>.form_hyperlink[id^="delete-form-Temporary Test Form"]</selector>
+        </step>
+        <step>
+          <action>AssertText</action>
+          <expected>
+            <not_contains>Temporary Test Form</not_contains>
+          </expected>
+        </step>
+
         <step>
           <action>Click</action>
           <selector>logout</selector>

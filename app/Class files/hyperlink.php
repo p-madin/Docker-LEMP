@@ -15,7 +15,7 @@ class Hyperlink {
      */
     public function appendHyperlinkForm($dom, $parent, $label, $url, array $post_params = [], array $css_decorators = []) {
         // Safety Check: Avoid nested forms
-        global $controllerList;
+        global $router;
         $currentNode = $parent;
         while ($currentNode && $currentNode->nodeName !== '#document') {
             if ($currentNode->nodeName === 'form') {
@@ -24,7 +24,7 @@ class Hyperlink {
             $currentNode = $currentNode->parentNode;
         }
 
-        $isAction = isset($controllerList[$url]) && $controllerList[$url]->isAction;
+        $isAction = $router->isAction($url);
         $method = "POST";
         
         $formId = "nav_" . str_replace([' ', '.'], '_', $label);

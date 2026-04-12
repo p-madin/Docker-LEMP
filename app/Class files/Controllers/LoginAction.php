@@ -36,6 +36,4 @@ class LoginAction implements ControllerInterface {
         exit;
     }
 }
-
-$controllerList[LoginAction::$path] = new LoginAction();
 ?>

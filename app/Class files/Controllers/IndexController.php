@@ -8,10 +8,7 @@ class IndexController implements ControllerInterface {
 
         $users_query_builder = new QueryBuilder($dialect);
         $users_query_builder->table('appUsers')->select(['name']);
-        $stmt = $db->prepare($users_query_builder->toSQL());
-        $users_query_builder->bindTo($stmt);
-        $stmt->execute();
-        $data = $stmt->fetchAll();
+        $data = $users_query_builder->getFetchAll($db);
 
         $wrapper = $dom->fabricateChild(parent : $dom->body, tagName : "div");
 
@@ -36,11 +33,9 @@ class IndexController implements ControllerInterface {
             $graph_query_builder->raw('EXTRACT(HOUR FROM haDate)')
         ]);
         
-        $stmt_graph = $db->prepare($graph_query_builder->toSQL());
-        $graph_query_builder->bindTo($stmt_graph);
-        $stmt_graph->execute();
+        $rawGraphData = $graph_query_builder->getFetchAll($db);
         $graphData = [];
-        foreach($stmt_graph as $row){
+        foreach($rawGraphData as $row){
             $dt = (new DateTime())->setDate($row['y'], $row['m'], $row['d'])->setTime($row['h'], 0);
             $graphData[] = [
                 'x' => $dt->format('Y-m-d H:i:s'),
@@ -81,6 +76,4 @@ class IndexController implements ControllerInterface {
         echo $dom->dom->saveHTML();
     }
 }
-
-$controllerList[IndexController::$path] = new IndexController();
 ?>

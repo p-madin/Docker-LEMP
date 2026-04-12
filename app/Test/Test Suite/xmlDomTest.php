@@ -34,7 +34,7 @@ class xmlDomTest extends TestSuiteBase {
 
         foreach ($xml->testGroup as $group) {
             foreach ($group->test as $test) {
-                #if($test->index != 1){
+                #if($test->index != 10){
                 #    continue;
                 #}
                 unlink($this->cookieFile);
@@ -67,7 +67,6 @@ class xmlDomTest extends TestSuiteBase {
                     if ($res) {
                         $rawSnippet = strip_tags($this->lastResponse);
                         $snippet = trim(substr($rawSnippet, 0, 100));
-                        // Remove non-printable characters and handle whitespace
                         $snippet = preg_replace('/[\x00-\x1F\x7F-\xFF]/', ' ', $snippet);
                         $snippet = preg_replace('/\s+/', ' ', $snippet);
                         $GLOBALS['returnable'] .= "     [OK] Context: {$this->lastUrl} | Snippet: ...$snippet...\n";
@@ -90,6 +89,14 @@ class xmlDomTest extends TestSuiteBase {
         return $testPassed;
     }
 
+    /**
+     * Build a DOM document from the current HTML response.
+     * Uses Dom\HTMLDocument::createFromString for querySelector() support.
+     */
+    protected function buildDom(): DOM\HTMLDocument {
+        return DOM\HTMLDocument::createFromString('<!DOCTYPE html>' . $this->lastResponse, Dom\HTML_NO_DEFAULT_NS);
+    }
+
     protected function handleNavigate($url, $expected = null) {
         if (strpos($url, 'http') !== 0) {
             $url = $this->baseUrl . ltrim($url, '/');
@@ -103,12 +110,12 @@ class xmlDomTest extends TestSuiteBase {
         }
         
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, $follow);
-        curl_setopt($ch, CURLOPT_HEADER, true); // Need header if we want to check 302/Location
+        curl_setopt($ch, CURLOPT_HEADER, true);
         $fullResponse = curl_exec($ch);
         $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
         $this->lastResponse = substr($fullResponse, $headerSize);
         $info = curl_getinfo($ch);
-        $this->lastUrl = $info['url']; // Update lastUrl with the final URL after redirects if followed
+        $this->lastUrl = $info['url'];
         curl_close($ch);
 
         if ($expected && isset($expected->statusCode)) {
@@ -118,7 +125,6 @@ class xmlDomTest extends TestSuiteBase {
                 return false;
             }
         } else {
-            // Default check if no specific status code is expected
             if ($info['http_code'] !== 200) {
                 $GLOBALS['returnable'] .= "     [FAIL] Navigate to $url expected status 200 but got " . $info['http_code'] . "\n";
                 return false;
@@ -140,7 +146,6 @@ class xmlDomTest extends TestSuiteBase {
         $id = ltrim($selector, '#');
         $csrfMode = (isset($step->csrfMode)) ? (string)$step->csrfMode : 'auto';
         
-        // Use lastResponse if available, otherwise fetch baseUrl
         $response = $this->lastResponse ?: '';
         if (empty($response)) {
             $ch = $this->prepare_curl($this->baseUrl, $this->cookieFile);
@@ -148,31 +153,21 @@ class xmlDomTest extends TestSuiteBase {
             curl_setopt($ch, CURLOPT_HEADER, true);
             $fullResponse = curl_exec($ch);
             $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-            $header = substr($fullResponse, 0, $headerSize);
             $response = substr($fullResponse, $headerSize);
             $this->lastResponse = $response;
             $this->lastUrl = $this->baseUrl;
             curl_close($ch);
         }
 
-        $dom = DOM\HTMLDocument::createFromString('<!DOCTYPE html>'.$response, Dom\HTML_NO_DEFAULT_NS);
-        $xpath = new DOM\XPath($dom);
+        $dom = $this->buildDom();
 
-        $form = $xpath->query("//form[@id='$id']")->item(0);
+        // Use querySelector('#id') — direct, no XPath
+        $form = $dom->querySelector("form#{$id}");
         if (!$form) {
-            $GLOBALS['returnable'] .= "     [FAIL] Form with id '$id' not found in current context (URL: {$this->lastUrl}).\n";
+            $GLOBALS['returnable'] .= "     [FAIL] Form '#$id' not found (URL: {$this->lastUrl}).\n";
             $GLOBALS['returnable'] .= "     [DEBUG] Response Length: " . strlen($response) . "\n";
-            $GLOBALS['returnable'] .= "     [DEBUG] Body Snippet: " . substr($response, 0, 9000) . "\n";
-            
-            // Output any libxml errors
-            foreach (libxml_get_errors() as $error) {
-                $GLOBALS['returnable'] .= "     [LIBXML ERROR] " . trim($error->message) . "\n";
-            }
-            libxml_clear_errors();
-            
+            $GLOBALS['returnable'] .= "     [DEBUG] Body Snippet: " . substr($response, 0, 500) . "\n";
             file_put_contents('/tmp/last_failure.html', $response);
-            $GLOBALS['returnable'] .= "     [DEBUG] Full response dumped to /tmp/last_failure.html\n";
-            
             return false;
         }
 
@@ -182,10 +177,9 @@ class xmlDomTest extends TestSuiteBase {
         }
 
         $postData = [];
-        // Extract ALL existing fields from the form
         if ($csrfMode !== 'invalid') {
-            // Find all inputs, selects, textareas
-            $inputs = $xpath->query(".//input|.//select|.//textarea", $form);
+            // Use querySelectorAll for inputs within the form
+            $inputs = $form->querySelectorAll('input, select, textarea');
             foreach ($inputs as $input) {
                 $name = $input->getAttribute('name');
                 if (empty($name)) continue;
@@ -198,7 +192,6 @@ class xmlDomTest extends TestSuiteBase {
                     }
                 } else {
                     $postData[$name] = $input->getAttribute('value');
-                    // For textarea, we'd ideally get nodeValue, but for this app value is often set or and it's mostly inputs
                     if ($input->nodeName === 'textarea') {
                         $postData[$name] = $input->nodeValue;
                     }
@@ -210,7 +203,7 @@ class xmlDomTest extends TestSuiteBase {
             $postData['csrf_token'] = 'invalid_token_value';
         }
 
-        // Fill overrides from XML
+        // Apply overrides from XML parameters
         foreach ($step->parameters->parameter as $param) {
             $name = (string)$param->name;
             $value = (string)$param->value;
@@ -224,7 +217,6 @@ class xmlDomTest extends TestSuiteBase {
             }
         }
 
-        // 2. Submit Form
         $ch = $this->prepare_curl($actionUrl, $this->cookieFile);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
@@ -234,7 +226,7 @@ class xmlDomTest extends TestSuiteBase {
         $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
         $this->lastResponse = substr($fullResponse, $headerSize);
         $info = curl_getinfo($ch);
-        $this->lastUrl = $info['url']; // Use effective URL
+        $this->lastUrl = $info['url'];
         curl_close($ch);
 
         $expectedStatus = (isset($step->expected->statusCode)) ? (int)$step->expected->statusCode : null;
@@ -260,19 +252,19 @@ class xmlDomTest extends TestSuiteBase {
             foreach ($step->expected->contains as $expectedContains) {
                 $expectedContains = (string)$expectedContains;
                 if (strpos($response, $expectedContains) === false) {
-                    $GLOBALS['returnable'] .= "     [FAIL] Expected text '$expectedContains' not found in response from {$this->lastUrl}.\n";
+                    $GLOBALS['returnable'] .= "     [FAIL] Expected '$expectedContains' not found in response from {$this->lastUrl}.\n";
                     $snippet = trim(substr(strip_tags($response), 0, 200));
-                    $GLOBALS['returnable'] .= "     [DEBUG] Response Snippet: ...$snippet...\n";
+                    $GLOBALS['returnable'] .= "     [DEBUG] Snippet: ...$snippet...\n";
                     $success = false;
                 }
             }
         }
 
-        if (isset($step->expected->notContains)) {
-            foreach ($step->expected->notContains as $expectedNotContains) {
+        if (isset($step->expected->not_contains)) {
+            foreach ($step->expected->not_contains as $expectedNotContains) {
                 $expectedNotContains = (string)$expectedNotContains;
                 if (strpos($response, $expectedNotContains) !== false) {
-                    $GLOBALS['returnable'] .= "     [FAIL] Found forbidden text '$expectedNotContains' in response.\n";
+                    $GLOBALS['returnable'] .= "     [FAIL] Forbidden text '$expectedNotContains' found in response.\n";
                     $success = false;
                 }
             }
@@ -281,9 +273,18 @@ class xmlDomTest extends TestSuiteBase {
         return $success;
     }
 
+    /**
+     * Handle a Click action.
+     *
+     * Selector resolution (in priority order):
+     *   1. 'logout'          → form[action*="logout"]
+     *   2. '#some-id'        → querySelector('#some-id')
+     *   3. Plain text        → querySelector('a, button') with matching text content (fallback)
+     *
+     * Once resolved, the target is submitted (form) or navigated (a).
+     */
     protected function handleClick($step) {
         $selector = (string)$step->selector; 
-        $near = (isset($step->near)) ? (string)$step->near : null;
         
         $response = $this->lastResponse;
         if (empty($response)) {
@@ -297,52 +298,53 @@ class xmlDomTest extends TestSuiteBase {
             $this->lastUrl = $this->baseUrl;
         }
 
-        $dom = DOM\HTMLDocument::createFromString('<!DOCTYPE html>'.$response, Dom\HTML_NO_DEFAULT_NS);
-        $xpath = new DOM\XPath($dom);
-
+        $dom = $this->buildDom();
         $targetNode = null;
 
         if ($selector === 'logout') {
-            $targetNode = $xpath->query("//form[contains(@action, 'logout')]")->item(0);
-        } elseif (strpos($selector, '#') === 0) {
-            $id = ltrim($selector, '#');
-            $targetNode = $xpath->query("//*[@id='$id']")->item(0);
+            // Special case: find any form whose action contains 'logout'
+            $targetNode = $dom->querySelector("form[action*='logout']");
+
+        } elseif (strpos($selector, '#') === 0 || strpos($selector, '[') === 0 || strpos($selector, '.') === 0) {
+            // Direct CSS selector
+            $targetNode = $dom->querySelector($selector);
+
         } else {
-            // General link text or button text
-            if ($near) {
-                // Find node containing $near, then find $selector link in same container (e.g. row)
-                $nearNode = $xpath->query("//*[contains(text(), '$near')]")->item(0);
-                if ($nearNode) {
-                    // Look for link in same parent or ancestor (like div.flex-row or tr)
-                    $ancestor = $nearNode->parentNode;
-                    for ($i = 0; $i < 3; $i++) {
-                        if ($ancestor) {
-                            $link = $xpath->query(".//form[.//a[contains(text(), '$selector')]]", $ancestor)->item(0);
-                            if ($link) {
-                                $targetNode = $link;
-                                break;
-                            }
-                            $ancestor = $ancestor->parentNode;
-                        }
-                    }
+            // Fallback: match button/input[type=submit] by value text, or <a> by text content
+            // We scan all forms that contain a submit with matching value
+            $allForms = $dom->querySelectorAll('form');
+            foreach ($allForms as $form) {
+                $btn = $form->querySelector("input[value='{$selector}'], button");
+                if ($btn && trim($btn->getAttribute('value')) === $selector) {
+                    $targetNode = $form;
+                    break;
                 }
-            } else {
-                $targetNode = $xpath->query("//a[contains(text(), '$selector')] | //button[contains(text(), '$selector')]")->item(0);
             }
         }
 
         if (!$targetNode) {
-            $GLOBALS['returnable'] .= "     [FAIL] Target for Click action '$selector' " . ($near ? "near '$near'" : "") . " not found.\n";
+            $GLOBALS['returnable'] .= "     [FAIL] Click target '$selector' not found.\n";
+            file_put_contents('/tmp/last_failure.html', $response);
             return false;
         }
 
-        if ($targetNode->nodeName === 'form') {
+        return $this->activateNode($targetNode, $dom);
+    }
+
+    /**
+     * Submit a form node or navigate an anchor node.
+     */
+    protected function activateNode(DOM\Element $targetNode, DOM\HTMLDocument $dom): bool {
+        $nodeName = strtolower($targetNode->nodeName);
+
+        if ($nodeName === 'form') {
             $actionUrl = $targetNode->getAttribute('action');
             if (strpos($actionUrl, 'http') !== 0) {
                 $actionUrl = $this->baseUrl . ltrim($actionUrl, '/');
             }
+            // Collect all hidden inputs from this form
             $postData = [];
-            $hiddenInputs = $xpath->query(".//input[@type='hidden']", $targetNode);
+            $hiddenInputs = $targetNode->querySelectorAll("input[type='hidden']");
             foreach ($hiddenInputs as $input) {
                 $postData[$input->getAttribute('name')] = $input->getAttribute('value');
             }
@@ -355,15 +357,25 @@ class xmlDomTest extends TestSuiteBase {
             $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
             $this->lastResponse = substr($fullResponse, $headerSize);
             $info = curl_getinfo($ch);
-            $this->lastUrl = $info['url']; // Use effective URL
+            $this->lastUrl = $info['url'];
             curl_close($ch);
-        } elseif ($targetNode->nodeName === 'a') {
-            return $this->handleNavigate($targetNode->getAttribute('href'));
-        } else {
-            $GLOBALS['returnable'] .= "     [WARN] Click on {$targetNode->nodeName} not fully implemented, skipping.\n";
-        }
+            return true;
 
-        return true;
+        } elseif ($nodeName === 'a') {
+            return $this->handleNavigate($targetNode->getAttribute('href'));
+
+        } else {
+            // If we landed on a child element (e.g. input[type=submit]), walk up to the form
+            $parent = $targetNode->parentNode;
+            while ($parent && strtolower($parent->nodeName) !== 'form') {
+                $parent = $parent->parentNode;
+            }
+            if ($parent) {
+                return $this->activateNode($parent, $dom);
+            }
+            $GLOBALS['returnable'] .= "     [WARN] Click on {$targetNode->nodeName} — no form ancestor found.\n";
+            return false;
+        }
     }
 }
 

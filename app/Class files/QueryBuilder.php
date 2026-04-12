@@ -272,11 +272,26 @@ class QueryBuilder {
         }
     }
 
+    public function doExecute($db, $sql){
+        $stmt = $db->prepare($sql);
+        $this->bindTo($stmt);
+        $stmt->execute();
+        return $stmt;
+    }
+
     public function getFetch($db){
         $sql = $this->toSQL();
         $stmt = $db->prepare($sql);
         $this->bindTo($stmt);
         $stmt->execute();
         return $stmt->fetch();
+    }
+
+    public function getFetchAll($db){
+        $sql = $this->toSQL();
+        $stmt = $db->prepare($sql);
+        $this->bindTo($stmt);
+        $stmt->execute();
+        return $stmt->fetchAll();
     }
 }

@@ -1,6 +1,7 @@
 CREATE DATABASE IF NOT EXISTS stackDB;
+use stackDB;
 
-CREATE TABLE stackDB.appUsers(
+CREATE TABLE appUsers(
     auPK INT NOT NULL AUTO_INCREMENT,
     name VARCHAR(32) NOT NULL,
     age INT NOT NULL,
@@ -14,7 +15,7 @@ CREATE TABLE stackDB.appUsers(
     PRIMARY KEY(auPK)
 );
 
-CREATE TABLE stackDB.tblSession(
+CREATE TABLE tblSession(
     sessPK INT NOT NULL AUTO_INCREMENT,
     sessCreated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     sessUpdated DATETIME NULL,
@@ -25,7 +26,7 @@ CREATE TABLE stackDB.tblSession(
     PRIMARY KEY(sessPK)
 );
 
-CREATE TABLE stackDB.tblSessionAtt(
+CREATE TABLE tblSessionAtt(
     sattPK INT NOT NULL AUTO_INCREMENT,
     sattSessionFK INT NOT NULL,
     sattDisc CHAR(1) NOT NULL,
@@ -34,7 +35,7 @@ CREATE TABLE stackDB.tblSessionAtt(
     PRIMARY KEY(sattPK)
 );
 
-CREATE TABLE stackDB.tblSessionAttValue(
+CREATE TABLE tblSessionAttValue(
     sattvPK INT NOT NULL AUTO_INCREMENT,
     sattvAttFK INT NOT NULL,
     sattvValueFK INT NULL,
@@ -42,28 +43,29 @@ CREATE TABLE stackDB.tblSessionAttValue(
     PRIMARY KEY(sattvPK)
 );
 
-CREATE TABLE stackDB.sysConfig(
+CREATE TABLE sysConfig(
     scPK INT NOT NULL AUTO_INCREMENT,
     scName VARCHAR(32) NOT NULL,
     scValue VARCHAR(128) NOT NULL,
     PRIMARY KEY(scPK)
 );
 
-CREATE TABLE stackDB.tblNavBar(
+CREATE TABLE tblNavBar(
     nbPK INT NOT NULL AUTO_INCREMENT,
     nbText VARCHAR(32) NOT NULL,
     nbDiscriminator CHAR(1) NOT NULL,
     nbPath VARCHAR(64) NULL,
+    nbControllerClass VARCHAR(64) NULL,
     nbProtected TINYINT(1) NOT NULL,
     nbOrder INT NOT NULL,
     PRIMARY KEY(nbPK)
 );
 
-CREATE UNIQUE INDEX idx_session_chars ON stackDB.tblSession(sessChars);
-CREATE INDEX idx_session_att_lookup ON stackDB.tblSessionAtt(sattSessionFK, sattKey, sattDisc);
-CREATE INDEX idx_session_val_lookup ON stackDB.tblSessionAttValue(sattvAttFK);
+CREATE UNIQUE INDEX idx_session_chars ON tblSession(sessChars);
+CREATE INDEX idx_session_att_lookup ON tblSessionAtt(sattSessionFK, sattKey, sattDisc);
+CREATE INDEX idx_session_val_lookup ON tblSessionAttValue(sattvAttFK);
 
-CREATE TABLE stackDB.httpAction(
+CREATE TABLE httpAction(
     haPK INT NOT NULL AUTO_INCREMENT,
     haDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     haSessionFK INT NOT NULL,
@@ -79,7 +81,7 @@ CREATE TABLE stackDB.httpAction(
     PRIMARY KEY(haPK)
 );
 
-CREATE TABLE stackDB.phpErrorLog (
+CREATE TABLE phpErrorLog (
   pelPK INT NOT NULL AUTO_INCREMENT,
   pelTimestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   pelSeverity VARCHAR(32) NOT NULL,
@@ -89,14 +91,14 @@ CREATE TABLE stackDB.phpErrorLog (
   PRIMARY KEY(pelPK)
 );
 
-CREATE TABLE stackDB.tblForm(
+CREATE TABLE tblForm(
     tfPK INT NOT NULL AUTO_INCREMENT,
     tfName VARCHAR(32) NOT NULL,
     tfReadOnly TINYINT(1) NOT NULL DEFAULT 0,
     PRIMARY KEY(tfPK)
 );
 
-CREATE TABLE stackDB.tblColumns(
+CREATE TABLE tblColumns(
     tcPK INT NOT NULL AUTO_INCREMENT,
     tcFormFK INT NOT NULL,
     tcName VARCHAR(32) NOT NULL,
@@ -105,10 +107,10 @@ CREATE TABLE stackDB.tblColumns(
     tcRules TEXT NOT NULL,
     tcOrder INT NOT NULL,
     PRIMARY KEY(tcPK),
-    FOREIGN KEY(tcFormFK) REFERENCES stackDB.tblForm(tfPK) ON DELETE CASCADE
+    FOREIGN KEY(tcFormFK) REFERENCES tblForm(tfPK) ON DELETE CASCADE
 );
 
-CREATE TABLE stackDB.banned_ips(
+CREATE TABLE banned_ips(
     biPK INT NOT NULL AUTO_INCREMENT,
     biIP VARCHAR(45) NOT NULL,
     biReason VARCHAR(255) NOT NULL,

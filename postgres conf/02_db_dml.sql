@@ -8,13 +8,25 @@ VALUES ('Stack_Two', 2, 'Stack_Two', 'Stack_Two', '$2y$10$fkjGHwVncM0YQ9Jg0gHvku
 INSERT INTO sysConfig (scName, scValue) VALUES ('myDomain', 'localhost');
 INSERT INTO sysConfig (scName, scValue) VALUES ('myDomainProtocol', 'http');
 
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbProtected, nbOrder) VALUES ('Home', 'c', '/index.php', false, 1);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbProtected, nbOrder) VALUES ('Dashboard', 'c', '/dashboard.php', true, 2);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbProtected, nbOrder) VALUES ('Account Management', 'c', '/account_management.php', true, 3);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbProtected, nbOrder) VALUES ('Error Log', 'c', '/error_log.php', true, 4);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbProtected, nbOrder) VALUES ('Navbar Management', 'c', '/navbar_management.php', true, 5);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbProtected, nbOrder) VALUES ('Form Management', 'c', '/form_management.php', true, 6);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbProtected, nbOrder) VALUES ('Logout', 'c', '/logout', true, 7);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Home', 'c', '/', 'IndexController', false, 1);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Dashboard', 'p', '/dashboard', 'DashboardController', true, 2);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Account Management', 'p', '/account_management', 'AccountManagementController', true, 3);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Error Log', 'p', '/error_log', 'ErrorLogController', true, 4);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Navbar Management', 'p', '/navbar_management', 'NavbarManagementController', true, 5);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Form Management', 'p', '/form_management', 'FormManagementController', true, 6);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Logout', 'c', '/logout', 'LogoutAction', true, 7);
+
+-- Actions (Internal Routes)
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Login Action', 'a', '/login', 'LoginAction', false, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Register Action', 'a', '/register', 'RegisterAction', false, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Update Account', 'a', '/editAccount', 'UpdateAccountAction', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Column', 'a', '/edit_column', 'EditColumnController', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Form', 'a', '/edit_form', 'EditFormController', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Navbar', 'a', '/edit_navbar', 'EditNavbarController', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Account', 'a', '/edit_account', 'EditAccountController', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Column Action', 'a', '/editColumn', 'EditColumnAction', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Form Action', 'a', '/editForm', 'EditFormAction', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Navbar Action', 'a', '/editNavbar', 'EditNavbarAction', true, 0);
 
 INSERT INTO tblForm (tfName, tfReadOnly) VALUES ('login', false), ('register', false), ('editUser', false), ('navbar', false), ('editForm', true), ('editColumn', true);
 

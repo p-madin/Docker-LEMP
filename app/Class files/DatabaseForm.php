@@ -20,11 +20,7 @@ class DatabaseForm {
            ->orderBy('tblForm.tfName', 'ASC')
            ->orderBy('tblColumns.tcOrder', 'ASC');
 
-        $sql = $qb->toSQL();
-        $stmt = $db->prepare($sql);
-        $qb->bindTo($stmt);
-        $stmt->execute();
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $rows = $qb->getFetchAll($db);
 
         $schemas = [];
         

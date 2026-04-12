@@ -18,13 +18,13 @@ class EditNavbarAction implements ControllerInterface {
                     $qb->bindTo($stmt);
                     $stmt->execute();
                 }
-                header("Location: /navbar_management.php");
+                header("Location: /navbar_management");
                 exit;
             }
 
             $cleanData = FormValidation::processAndValidate('navbar', $request->post, $formSchemas, $sessionController, function($clean) {
                 $id = $clean['nbPK'] ?? 0;
-                return "/edit_navbar.php" . ($id ? "?id=".$id : "");
+                return "/edit_navbar" . ($id ? "?id=".$id : "");
             });
 
             $isProtected = (isset($request->post['nbProtected']) && $request->post['nbProtected'] === '1') ? 1 : 0;
@@ -55,7 +55,7 @@ class EditNavbarAction implements ControllerInterface {
                 $stmt->execute();
             }
 
-            $redirectUrl = "/navbar_management.php";
+            $redirectUrl = "/navbar_management";
             if (isset($request->server['HTTP_ACCEPT']) && strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false) {
                 echo json_encode(['redirect' => $redirectUrl]);
                 exit;
@@ -65,10 +65,8 @@ class EditNavbarAction implements ControllerInterface {
             exit;
         }
 
-        header("Location: /navbar_management.php");
+        header("Location: /navbar_management");
         exit;
     }
 }
-
-$controllerList[EditNavbarAction::$path] = new EditNavbarAction();
 ?>

@@ -20,25 +20,15 @@ class EditColumnAction implements ControllerInterface {
             
             if ($targetFormPk > 0) {
                 $checkQb = new QueryBuilder($dialect);
-                $checkQb->table('tblForm')->select(['tfReadOnly'])->where('tfPK', '=', $targetFormPk);
-                $checkStmt = $db->prepare($checkQb->toSQL());
-                $checkQb->bindTo($checkStmt);
-                $checkStmt->execute();
-                $formStatus = $checkStmt->fetch(PDO::FETCH_ASSOC);
+                $formStatus = $checkQb->table('tblForm')->select(['tfReadOnly'])->where('tfPK', '=', $targetFormPk)->getFetch($db);
                 
                 $isReadOnly = false;
-                if ($formStatus) {
-                    $keys = ['tfReadOnly', 'tfreadonly', 'TFREADONLY'];
-                    foreach ($keys as $k) {
-                        if (array_key_exists($k, $formStatus)) {
-                            if ((int)$formStatus[$k] === 1) $isReadOnly = true;
-                            break;
-                        }
-                    }
+                if($formStatus['tfReadOnly']){
+                    $isReadOnly = true;
                 }
                 
                 if ($isReadOnly) {
-                    header("Location: /form_management.php");
+                    header("Location: /form_management");
                     exit;
                 }
             }
@@ -50,11 +40,9 @@ class EditColumnAction implements ControllerInterface {
                 if ($pk > 0) {
                     $qb = new QueryBuilder($dialect);
                     $sql = $qb->table('tblColumns')->where('tcPK', '=', $pk)->delete();
-                    $stmt = $db->prepare($sql);
-                    $qb->bindTo($stmt);
-                    $stmt->execute();
+                    $qb->doExecute($db, $sql);
                 }
-                header("Location: /edit_form.php?id=" . $form_id);
+                header("Location: /edit_form?id=" . $form_id);
                 exit;
             }
 
@@ -80,24 +68,17 @@ class EditColumnAction implements ControllerInterface {
 
             $pk = (int)$cleanData['tcPK'];
             $form_fk = (int)$cleanData['tcFormFK'];
+            $qb = new QueryBuilder($dialect);
+            $redirectUrl = "/edit_form?id=" . $form_fk;
 
             if ($pk > 0) {
                 // UPDATE
-                $qb = new QueryBuilder($dialect);
                 $sql = $qb->table('tblColumns')->where('tcPK', '=', $pk)->update($data);
-                $stmt = $db->prepare($sql);
-                $qb->bindTo($stmt);
-                $stmt->execute();
-                $redirectUrl = "/edit_form.php?id=" . $form_fk;
             } else {
                 // INSERT
-                $qb = new QueryBuilder($dialect);
                 $sql = $qb->table('tblColumns')->insert($data);
-                $stmt = $db->prepare($sql);
-                $qb->bindTo($stmt);
-                $stmt->execute();
-                $redirectUrl = "/edit_form.php?id=" . $form_fk;
             }
+            $qb->doExecute($db, $sql);
 
             if (isset($request->server['HTTP_ACCEPT']) && strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false) {
                 echo json_encode(['redirect' => $redirectUrl]);
@@ -108,9 +89,8 @@ class EditColumnAction implements ControllerInterface {
             exit;
         }
 
-        header("Location: /form_management.php");
+        header("Location: /form_management");
         exit;
     }
 }
-$controllerList[EditColumnAction::$path] = new EditColumnAction();
 ?>

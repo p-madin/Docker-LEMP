@@ -5,54 +5,49 @@ include_once(__DIR__ . "/QueryBuilder.php");
 include_once(__DIR__ . "/Security/SecurityValidation.php");
 include_once(__DIR__ . "/session.php");
 include_once(__DIR__ . "/dataGraph.php");
+include_once(__DIR__ . "/Router/Request.php");
+include_once(__DIR__ . "/Router/MiddlewareInterface.php");
+include_once(__DIR__ . "/Router/Router.php");
 include_once(__DIR__ . "/Router/ControllerInterface.php");
 
-$vendor = getenv('DB_VENDOR') ?: 'mysql';
-$host = getenv('DB_HOST') ?: 'db';
-$dbname = getenv('DB_NAME') ?: 'stackDB';
-$username = getenv('DB_USER') ?: 'docker_user_lemp';
-$password = getenv('DB_PASS') ?: 'docker_user_lemp';
-
-$charset = 'utf8mb4';
-
-$dsn = "$vendor:host=$host;dbname=$dbname" . ($vendor === 'mysql' ? ";charset=$charset" : "");
-
-$options = [
-    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    PDO::ATTR_EMULATE_PREPARES   => false,
-];
-
-$db_controller = new db_connect_controller($dsn, $username, $password, $options);
-$db = $db_controller->connect();
-$dialect = $db_controller->getDialect();
-
 include_once(__DIR__ . "/errorHandler.php");
-registerErrorHandler($db, $dialect);
-
 include_once(__DIR__ . "/SystemConfigController.php");
-
-$systemConfigController = new SystemConfigController($db, $dialect);
-$scvRows = $systemConfigController->getSysConfig();
-$sessionController = new SessionController($db, $dialect);
-$sessionController->seed();
-
-include_once(__DIR__ . "/preinclude.php");
+#include_once(__DIR__ . "/preinclude.php");
 include_once(__DIR__ . "/hyperlink.php");
-
-// PRG Redirect Handler
-Hyperlink::handleRedirect($sessionController);
-
 include_once(__DIR__ . "/xmlDom.php");
 include_once(__DIR__ . "/xmlForm.php");
 include_once(__DIR__ . "/DatabaseForm.php");
-$formSchemas = DatabaseForm::generateGlobalSchemas($db, $dialect);
 include_once(__DIR__ . "/formValidation.php");
 include_once(__DIR__ . "/navbar.php");
 
-$dom = new xmlDom();
-$navbar = new Navbar($systemConfigController);
+include_once(__DIR__ . "/Security/RateLimiter.php");
+include_once(__DIR__ . "/Security/DatabaseConfigMiddleware.php");
+include_once(__DIR__ . "/Security/SessionMiddleware.php");
+include_once(__DIR__ . "/Security/HttpActionMiddleware.php");
+include_once(__DIR__ . "/Security/WafMiddleware.php");
+include_once(__DIR__ . "/Security/CsrfMiddleware.php");
+include_once(__DIR__ . "/Security/ExtranetMiddleware.php");
+include_once(__DIR__ . "/Security/ViewDecorationMiddleware.php");
 
-$dom->decorate_javascript();
-$dom->decorate_cascade();
-$dom->decorate_navbar($navbar, $sessionController);
+
+// Setup Router, Request, and global DOM
+$router = new Router();
+$request = new Request();
+$dom = new xmlDom();
+$formSchemas;
+
+// Global Middlewares Pipeline (Execution Order)
+// 1. Establish Database Connection & Fetch Config
+$router->use(new DatabaseConfigMiddleware());
+
+// 2. Establish Session Controller & Run PRG Handler
+$router->use(new SessionMiddleware());
+
+// 3. Security Checks (WAF, CSRF, etc.)
+$router->use(new HttpActionMiddleware());
+$router->use(new WafMiddleware());
+$router->use(new ExtranetMiddleware());
+$router->use(new CsrfMiddleware());
+
+// 4. Final View Decoration (DOM/Navbar)
+$router->use(new ViewDecorationMiddleware());

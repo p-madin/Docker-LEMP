@@ -1,24 +1,38 @@
+use stackDB;
+
 -- Passwords - Stack: Stack, Stack_Two: Stack_Two
-INSERT INTO stackDB.appUsers (name, age, city, username, password, email, verified) 
+INSERT INTO appUsers (name, age, city, username, password, email, verified) 
 VALUES ('Stack', 1, 'Stack', 'Stack', '$2y$10$m3vCndDU2/CavRvxwB2Gne5lnusLha8NJpgrARhwbzJN.uqqIePUq', 'Stack@stack.com', true);
 
-INSERT INTO stackDB.appUsers (name, age, city, username, password, email, verified) 
+INSERT INTO appUsers (name, age, city, username, password, email, verified) 
 VALUES ('Stack_Two', 2, 'Stack_Two', 'Stack_Two', '$2y$10$fkjGHwVncM0YQ9Jg0gHvku.E7TUTMvXeUbIdmUOwyoDaBcFUm432i', 'Stack_Two@stack.com', true);
 
-INSERT INTO stackDB.sysConfig (scName, scValue) VALUES ('myDomain', 'localhost');
-INSERT INTO stackDB.sysConfig (scName, scValue) VALUES ('myDomainProtocol', 'http');
+INSERT INTO sysConfig (scName, scValue) VALUES ('myDomain', 'localhost');
+INSERT INTO sysConfig (scName, scValue) VALUES ('myDomainProtocol', 'http');
 
-INSERT INTO stackDB.tblNavBar (nbText, nbDiscriminator, nbPath, nbProtected, nbOrder) VALUES ('Home', 'c', '/index.php', false, 1);
-INSERT INTO stackDB.tblNavBar (nbText, nbDiscriminator, nbPath, nbProtected, nbOrder) VALUES ('Dashboard', 'c', '/dashboard.php', true, 2);
-INSERT INTO stackDB.tblNavBar (nbText, nbDiscriminator, nbPath, nbProtected, nbOrder) VALUES ('Account Management', 'c', '/account_management.php', true, 3);
-INSERT INTO stackDB.tblNavBar (nbText, nbDiscriminator, nbPath, nbProtected, nbOrder) VALUES ('Error Log', 'c', '/error_log.php', true, 4);
-INSERT INTO stackDB.tblNavBar (nbText, nbDiscriminator, nbPath, nbProtected, nbOrder) VALUES ('Navbar Management', 'c', '/navbar_management.php', true, 5);
-INSERT INTO stackDB.tblNavBar (nbText, nbDiscriminator, nbPath, nbProtected, nbOrder) VALUES ('Form Management', 'c', '/form_management.php', true, 6);
-INSERT INTO stackDB.tblNavBar (nbText, nbDiscriminator, nbPath, nbProtected, nbOrder) VALUES ('Logout', 'c', '/logout', true, 7);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Home', 'c', '/', 'IndexController', false, 1);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Dashboard', 'p', '/dashboard', 'DashboardController', true, 2);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Account Management', 'p', '/account_management', 'AccountManagementController', true, 3);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Error Log', 'p', '/error_log', 'ErrorLogController', true, 4);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Navbar Management', 'p', '/navbar_management', 'NavbarManagementController', true, 5);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Form Management', 'p', '/form_management', 'FormManagementController', true, 6);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Logout', 'c', '/logout', 'LogoutAction', true, 7);
 
-INSERT INTO stackDB.tblForm (tfName, tfReadOnly) VALUES ('login', false), ('register', false), ('editUser', false), ('navbar', false), ('editForm', true), ('editColumn', true);
+-- Actions (Internal Routes)
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Login Action', 'a', '/login', 'LoginAction', false, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Register Action', 'a', '/register', 'RegisterAction', false, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Update Account', 'a', '/editAccount', 'UpdateAccountAction', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Column', 'a', '/edit_column', 'EditColumnController', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Form', 'a', '/edit_form', 'EditFormController', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Navbar', 'a', '/edit_navbar', 'EditNavbarController', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Account', 'a', '/edit_account', 'EditAccountController', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Column Action', 'a', '/editColumn', 'EditColumnAction', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Form Action', 'a', '/editForm', 'EditFormAction', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Navbar Action', 'a', '/editNavbar', 'EditNavbarAction', true, 0);
 
-INSERT INTO stackDB.tblColumns (tcFormFK, tcName, tcLabel, tcType, tcRules, tcOrder) VALUES
+INSERT INTO tblForm (tfName, tfReadOnly) VALUES ('login', false), ('register', false), ('editUser', false), ('navbar', false), ('editForm', true), ('editColumn', true);
+
+INSERT INTO tblColumns (tcFormFK, tcName, tcLabel, tcType, tcRules, tcOrder) VALUES
 (1, 'username', 'Username:', 'text', '{"required":true}', 1),
 (1, 'password', 'Password:', 'password', '{"required":true}', 2),
 (2, 'username', 'Username:', 'text', '{"required":true,"min":3}', 1),
@@ -56,44 +70,44 @@ INSERT INTO stackDB.tblColumns (tcFormFK, tcName, tcLabel, tcType, tcRules, tcOr
 INSERT INTO tblSession (sessChars, sessTransactionActive) 
 VALUES ('64 byte key', 0);
 
-INSERT INTO tblSessionAtt (sattSessionFK, sattPK, sattDisc, sattKey, sattPrimaryValueFK) 
-VALUES (1, 1, 'r', 'Local array', 1);
+INSERT INTO tblSessionAtt (sattSessionFK, sattDisc, sattKey, sattPrimaryValueFK) 
+VALUES (1, 'r', 'Local array', 1);
 
-INSERT INTO tblSessionAttValue (sattvAttFK, sattvPK, sattvValueFK) 
-VALUES (1, 1, 1);
+INSERT INTO tblSessionAttValue (sattvAttFK, sattvValueFK) 
+VALUES (1, 1);
 
-INSERT INTO tblSessionAtt (sattSessionFK, sattPK, sattDisc, sattKey, sattPrimaryValueFK) 
-VALUES (1, 2, 'l', 'user', 2);
+INSERT INTO tblSessionAtt (sattSessionFK, sattDisc, sattKey, sattPrimaryValueFK) 
+VALUES (1, 'l', 'user', 2);
 
-INSERT INTO tblSessionAttValue (sattvAttFK, sattvPK, sattvValue) 
-VALUES (2, 2, 'John');
+INSERT INTO tblSessionAttValue (sattvAttFK, sattvValue) 
+VALUES (2, 'John');
 
-INSERT INTO tblSessionAtt (sattSessionFK, sattPK, sattDisc, sattKey, sattPrimaryValueFK) 
-VALUES (1, 3, 'l', 'roles', 2);
+INSERT INTO tblSessionAtt (sattSessionFK, sattDisc, sattKey, sattPrimaryValueFK) 
+VALUES (1, 'l', 'roles', 2);
 
-INSERT INTO tblSessionAttValue (sattvAttFK, sattvPK, sattvValue) 
-VALUES (3, 3, 'admin');
+INSERT INTO tblSessionAttValue (sattvAttFK, sattvValue) 
+VALUES (3, 'admin');
 
-INSERT INTO tblSessionAttValue (sattvAttFK, sattvPK, sattvValue) 
-VALUES (3, 4, 'editor');
+INSERT INTO tblSessionAttValue (sattvAttFK, sattvValue) 
+VALUES (3, 'editor');
 
-INSERT INTO tblSessionAtt (sattSessionFK, sattPK, sattDisc, sattKey, sattPrimaryValueFK) 
-VALUES (1, 4, 'b', 'pages', 4);
+INSERT INTO tblSessionAtt (sattSessionFK, sattDisc, sattKey, sattPrimaryValueFK) 
+VALUES (1, 'b', 'pages', 4);
 
-INSERT INTO tblSessionAttValue (sattvAttFK, sattvPK, sattvValueFK) 
-VALUES (4, 5, 4);
+INSERT INTO tblSessionAttValue (sattvAttFK, sattvValueFK) 
+VALUES (4, 4);
 
-INSERT INTO tblSessionAttValue (sattvAttFK, sattvPK, sattvValueFK) 
-VALUES (4, 6, 5);
+INSERT INTO tblSessionAttValue (sattvAttFK, sattvValueFK) 
+VALUES (4, 5);
 
-INSERT INTO tblSessionAtt (sattSessionFK, sattPK, sattDisc, sattKey, sattPrimaryValueFK) 
-VALUES (1, 5, 'l', '1', 4);
+INSERT INTO tblSessionAtt (sattSessionFK, sattDisc, sattKey, sattPrimaryValueFK) 
+VALUES (1, 'l', '1', 4);
 
-INSERT INTO tblSessionAttValue (sattvAttFK, sattvPK, sattvValue) 
-VALUES (5, 7, 'home');
+INSERT INTO tblSessionAttValue (sattvAttFK, sattvValue) 
+VALUES (5, 'home');
 
-INSERT INTO tblSessionAtt (sattSessionFK, sattPK, sattDisc, sattKey, sattPrimaryValueFK) 
-VALUES (1, 6, 'l', '2', 4);
+INSERT INTO tblSessionAtt (sattSessionFK, sattDisc, sattKey, sattPrimaryValueFK) 
+VALUES (1, 'l', '2', 4);
 
-INSERT INTO tblSessionAttValue (sattvAttFK, sattvPK, sattvValue) 
-VALUES (6, 8, 'contact us');
+INSERT INTO tblSessionAttValue (sattvAttFK, sattvValue) 
+VALUES (6, 'contact us');

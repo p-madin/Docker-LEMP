@@ -7,95 +7,71 @@ class EditFormAction implements ControllerInterface {
 
         Hyperlink::handleAction($sessionController);
 
-        if($request->getMethod() === 'POST') {
-            $targetPk = 0;
-            if (isset($request->post['action']) && $request->post['action'] === 'delete') {
-                $targetPk = (int)($request->post['tfPK'] ?? 0);
-            } elseif (isset($request->post['tfPK'])) {
-                $targetPk = (int)($request->post['tfPK'] ?? 0);
+        $targetPk = 0;
+        if (isset($request->post['action']) && $request->post['action'] === 'delete') {
+            $targetPk = (int)($request->post['tfPK'] ?? 0);
+        } elseif (isset($request->post['tfPK'])) {
+            $targetPk = (int)($request->post['tfPK'] ?? 0);
+        }
+        
+        if ($targetPk > 0) {
+            $checkQb = new QueryBuilder($dialect);
+            $formStatus = $checkQb->table('tblForm')->select(['tfReadOnly'])->where('tfPK', '=', $targetPk)->getFetch($db);
+            
+            $isReadOnly = false;
+            if($formStatus['tfReadOnly']){
+                $isReadOnly = true;
             }
             
-            if ($targetPk > 0) {
-                $checkQb = new QueryBuilder($dialect);
-                $checkQb->table('tblForm')->select(['tfReadOnly'])->where('tfPK', '=', $targetPk);
-                $checkStmt = $db->prepare($checkQb->toSQL());
-                $checkQb->bindTo($checkStmt);
-                $checkStmt->execute();
-                $formStatus = $checkStmt->fetch(PDO::FETCH_ASSOC);
-                
-                $isReadOnly = false;
-                if ($formStatus) {
-                    $keys = ['tfReadOnly', 'tfreadonly', 'TFREADONLY'];
-                    foreach ($keys as $k) {
-                        if (array_key_exists($k, $formStatus)) {
-                            if ((int)$formStatus[$k] === 1) $isReadOnly = true;
-                            break;
-                        }
-                    }
-                }
-                
-                if ($isReadOnly) {
-                    header("Location: /form_management.php");
-                    exit;
-                }
-            }
-
-            // Handle pure delete request
-            if (isset($request->post['action']) && $request->post['action'] === 'delete') {
-                $pk = (int)($request->post['tfPK'] ?? 0);
-                if ($pk > 0) {
-                    $qb = new QueryBuilder($dialect);
-                    $sql = $qb->table('tblForm')->where('tfPK', '=', $pk)->delete();
-                    $stmt = $db->prepare($sql);
-                    $qb->bindTo($stmt);
-                    $stmt->execute();
-                }
-                header("Location: /form_management.php");
+            if ($isReadOnly) {
+                header("Location: /form_management");
                 exit;
             }
+        }
 
-            $cleanData = FormValidation::processAndValidate('editForm', $request->post, $formSchemas, $sessionController, function($clean) {
-                $id = $clean['tfPK'] ?? 0;
-                return "/edit_form.php" . ($id ? "?id=".$id : "");
-            });
-            
-            $data = [
-                'tfName' => $cleanData['tfName']
-            ];
-
-            $pk = (int)$cleanData['tfPK'];
-
+        // Handle pure delete request
+        if (isset($request->post['action']) && $request->post['action'] === 'delete') {
+            $pk = (int)($request->post['tfPK'] ?? 0);
             if ($pk > 0) {
-                // UPDATE
                 $qb = new QueryBuilder($dialect);
-                $sql = $qb->table('tblForm')->where('tfPK', '=', $pk)->update($data);
-                $stmt = $db->prepare($sql);
-                $qb->bindTo($stmt);
-                $stmt->execute();
-                $redirectUrl = "/edit_form.php?id=" . $pk;
-            } else {
-                // INSERT
-                $qb = new QueryBuilder($dialect);
-                $sql = $qb->table('tblForm')->insert($data);
-                $stmt = $db->prepare($sql);
-                $qb->bindTo($stmt);
-                $stmt->execute();
-                $redirectUrl = "/form_management.php";
+                $sql = $qb->table('tblForm')->where('tfPK', '=', $pk)->delete();
+                $qb->doExecute($db, $sql);
             }
-
-            if (isset($request->server['HTTP_ACCEPT']) && strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false) {
-                echo json_encode(['redirect' => $redirectUrl]);
-                exit;
-            }
-
-            header("Location: " . $redirectUrl);
+            header("Location: /form_management");
             exit;
         }
 
-        header("Location: /form_management.php");
+        $cleanData = FormValidation::processAndValidate('editForm', $request->post, $formSchemas, $sessionController, function($clean) {
+            $id = $clean['tfPK'] ?? 0;
+            return "/edit_form" . ($id ? "?id=".$id : "");
+        });
+        
+        $data = [
+            'tfName' => $cleanData['tfName']
+        ];
+
+        $pk = (int)$cleanData['tfPK'];
+        $qb = new QueryBuilder($dialect);
+
+        if ($pk > 0) {
+            // UPDATE
+            $sql = $qb->table('tblForm')->where('tfPK', '=', $pk)->update($data);
+            $qb->doExecute($db, $sql);
+        } else {
+            // INSERT
+            $sql = $qb->table('tblForm')->insert($data);
+            $qb->doExecute($db, $sql);
+            $pk = $db->lastInsertId();
+        }
+        $redirectUrl = "/edit_form?id=" . $pk;
+
+        if (isset($request->server['HTTP_ACCEPT']) && strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false) {
+            echo json_encode(['redirect' => $redirectUrl]);
+            exit;
+        }
+
+        header("Location: " . $redirectUrl);
         exit;
     }
 }
-
-$controllerList[EditFormAction::$path] = new EditFormAction();
 ?>

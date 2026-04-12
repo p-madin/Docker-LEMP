@@ -36,5 +36,4 @@ class RegisterAction implements ControllerInterface {
         exit;
     }
 }
-$controllerList[RegisterAction::$path] = new RegisterAction();
 ?>

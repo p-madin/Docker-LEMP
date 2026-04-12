@@ -19,6 +19,4 @@ class LogoutAction implements ControllerInterface {
         exit;
     }
 }
-
-$controllerList[LogoutAction::$path] = new LogoutAction();
 ?>
