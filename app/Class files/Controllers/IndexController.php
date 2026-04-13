@@ -6,11 +6,11 @@ class IndexController implements ControllerInterface {
     public function execute(Request $request) {
         global $db, $dialect, $dom, $sessionController, $formSchemas;
 
+        $wrapper = $dom->fabricateChild(parent : $dom->body, tagName : "div");
+        /*
         $users_query_builder = new QueryBuilder($dialect);
         $users_query_builder->table('appUsers')->select(['name']);
         $data = $users_query_builder->getFetchAll($db);
-
-        $wrapper = $dom->fabricateChild(parent : $dom->body, tagName : "div");
 
         $heading = $dom->fabricateChild(parent : $wrapper, tagName : "h1", innerContent : "User list");
         $unordered_list = $dom->fabricateChild(parent : $wrapper, tagName : "ul");
@@ -18,6 +18,7 @@ class IndexController implements ControllerInterface {
         foreach($data as $key=>$value){
             $list_item = $dom->fabricateChild(parent : $unordered_list, tagName : "li", innerContent : $value['name']);
         }
+        */
 
         $graph_query_builder = new QueryBuilder($dialect);
         $graph_query_builder->table('httpAction')->select([

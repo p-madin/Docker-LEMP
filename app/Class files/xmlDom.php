@@ -19,6 +19,12 @@ class xmlDom{
         $this->html->appendChild($this->head);
         $this->html->appendChild($this->body);
 
+        // meta name="viewport" content="width=device-width, initial-scale=1.0">
+        $meta = $this->dom->createElement('meta');
+        $meta->setAttribute('name', 'viewport');
+        $meta->setAttribute('content', 'width=device-width, initial-scale=1.0');
+        $this->head->appendChild($meta);
+
         // Initialize output security strategy
         // NOTE: We omit HtmlEscapeDecorator/XssSanitizer because nodeValue handles encoding
         $this->security = new \App\Security\SecurityValidation();
