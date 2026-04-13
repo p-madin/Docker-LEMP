@@ -1,3 +1,107 @@
+/* weight=400- plain doc text*/
+@font-face {
+    font-family: 'Geist';
+    src: url('/Static/Geist-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* weight=700 - For headings */
+@font-face {
+    font-family: 'Geist';
+    src: url('/Static/Geist-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* weight=900 - Only for extreme display use */
+@font-face {
+    font-family: 'Geist';
+    src: url('/Static/Geist-Black.woff2') format('woff2');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@keyframes barber-pole-spin {
+    from {
+        background-position: 0 0;
+    }
+
+    to {
+        background-position: 575px 0;
+    }
+}
+
+body {
+    font-family: 'Geist', sans-serif;
+}
+
+form,
+h1 {
+    margin: 0;
+    padding: 0
+}
+
+/* doc */
+
+body {
+    background-color: white
+}
+
+body>div {
+    max-width: 60%;
+    margin: auto;
+    padding: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-image: linear-gradient(rgba(0, 255, 85, 0.05), rgba(255, 255, 255, 0.05));
+    background-position-x: center;
+    background-position-y: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* end doc */
+
+
+/* indoc flex table */
+body>div>.flex-table {
+    width: 100%
+}
+
+/* end indoc flex table */
+
+/* indoc form */
+body>div>form.flex-form {
+    width: 40%
+}
+
+/* end indoc form */
+
+/* indoc disclosure */
+body>div>details {
+    width: 100%;
+}
+
+body>div details summary {
+    cursor: pointer;
+    user-select: none;
+    color: red
+}
+
+body>div details[open] {
+    height: 500px
+}
+
+/* end indoc disclosure */
+
+/* flex table */
+
 .flex-table {
     display: flex;
     flex-direction: column
@@ -14,6 +118,10 @@
 }
 
 .flex-cell {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     border: solid 1px black;
     flex: 1 1 0;
     padding: 5px;
@@ -29,17 +137,11 @@
     display: flex
 }
 
+/* end flex table */
 
-.flex-form .flex-row .flex-cell {
-    flex: 3 1 0
-}
-
-.flex-form .flex-row .flex-cell:first-child {
-    flex: 1 1 0
-}
+/* navbar */
 
 #main-navbar {
-    margin-bottom: 20px;
     border-bottom: 2px solid #ddd;
     position: sticky;
     top: 0;
@@ -51,6 +153,7 @@
 #main-navbar .flex-cell {
     text-align: center;
     padding: 10px;
+    border: none
 }
 
 .navbar-link-button {
@@ -62,57 +165,166 @@
     font-weight: bold;
 }
 
-.validation-error {
+#main-navbar input {
+    display: none
+}
+
+#main-navbar #disable_client_validation+label {
+    text-decoration: line-through;
+}
+
+#main-navbar #disable_client_validation+label::before {
+    content: "✗";
+}
+
+#main-navbar #disable_client_validation:checked+label {
+    text-decoration: none;
+    color: red
+}
+
+#main-navbar #disable_client_validation:checked+label::before {
+    content: "✓";
+}
+
+/* end navbar */
+
+/* flex form */
+
+.flex-form .flex-row .flex-cell {
+    flex: 2 1 0
+}
+
+.flex-form .flex-row .flex-cell:first-child {
+    flex: 1 1 0
+}
+
+.flex-form .flex-cell {
+    padding: 0 10px 0 0;
+    border: none
+}
+
+.flex-form .flex-row {
+    padding-bottom: 10px
+}
+
+.flex-form input {
+    background-color: rgba(0, 0, 0, 0);
+    border: none;
+    padding: 5px 0;
+}
+
+.flex-form input[type='text'],
+.flex-form input[type='password'],
+.flex-form input[type='email'],
+.flex-form input[type='number'] {
+    background: repeating-linear-gradient(-45deg,
+            rgba(255, 0, 0, 0.5),
+            /* Red */
+            rgba(255, 0, 0, 0.5) 100px,
+            rgba(255, 255, 255, 1) 100px,
+            /* White */
+            rgba(255, 255, 255, 1) 200px,
+            rgba(0, 0, 255, 0.5) 200px,
+            /* Blue */
+            rgba(0, 0, 255, 0.5) 300px,
+            rgba(255, 255, 255, 1) 300px,
+            /* White spacing */
+            rgba(255, 255, 255, 1) 400px);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: barber-pole-spin 10s linear infinite;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.flex-form input[type='button'],
+.flex-form input[type='submit'] {
+    cursor: pointer;
+    border: solid 1px black;
+    font-family: 'Geist', sans-serif;
+    border-radius: 10px;
+}
+
+.flex-form input:focus {
+    -webkit-background-clip: padding-box;
+    background-clip: padding-box;
+    -webkit-text-fill-color: initial;
+    color: black;
+    background: white;
+    background-image: none;
+}
+
+.flex-form input:not(:placeholder-shown) {
+    background: white;
+    background-image: none;
+    -webkit-background-clip: padding-box;
+    background-clip: padding-box;
+    -webkit-text-fill-color: initial;
+    color: black;
+}
+
+.flex-form .validation-error {
     color: #cc0000;
     font-size: 0.85em;
     margin-top: 4px;
     font-weight: bold;
 }
 
-.flex-row.required,
-.flex-row.client-error {
+.flex-form .flex-row.required,
+.flex-form .flex-row.client-error {
     background-color: rgba(204, 0, 0, 0.05);
-    /* subtle highlight */
     border-left: 3px solid #cc0000;
-    /* visual indicator */
 }
 
-.flex-row.satisfied {
+.flex-form .flex-row.satisfied {
     background-color: rgba(0, 204, 0, 0.05);
-    /* subtle green highlight */
     border-left: 3px solid #00cc00;
-    /* visual indicator */
 }
 
-.flex-row.required label::after {
+.flex-form .flex-row.required label::after {
     content: " *";
     color: #cc0000;
     font-weight: bold;
 }
 
-form.form_hyperlink a {
-    color: blue;
-    text-decoration: underline;
-    text-decoration-color: blue;
-    text-decoration-thickness: 1px;
-    transition: all 250ms ease-out;
-
+.flex-form input::placeholder {
+    color: gray;
+    opacity: 1;
+    transition: all 0.5s ease;
 }
 
-form.form_hyperlink a:hover {
-    color: black;
-    text-decoration-color: rgb(255, 0, 0);
+
+input:focus::placeholder {
+    color: transparent;
+    opacity: 0;
+    transform: translateX(10px);
 }
+
+/* end flex form */
+
+/* form hyperlink */
 
 form.form_hyperlink a.edit {
-    color: #0066cc;
-    text-decoration: underline;
+    color: #006d16;
 }
 
 form.form_hyperlink a.delete {
-    color: #cc0000;
-    text-decoration: underline;
-    cursor: pointer;
+    color: #cc009c;
+}
+
+form.form_hyperlink a {
+    display: inline-block;
+    color: blue;
+    padding: 2px;
+    background: linear-gradient(red, red) center / 0% 100% no-repeat;
+    transition: all 250ms ease-out;
+}
+
+form.form_hyperlink a:hover {
+    color: white;
+    text-decoration-color: rgba(0, 0, 0, 0);
+    background-size: 100% 100%;
 }
 
 form.form_hyperlink a.disabled {
@@ -126,3 +338,5 @@ form.form_hyperlink a.disabled {
 form.form_hyperlink a.ajax {
     transition: all 0.3s ease;
 }
+
+/* end form hyperlink */

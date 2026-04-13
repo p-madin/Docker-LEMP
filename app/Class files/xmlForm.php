@@ -106,7 +106,7 @@ class xmlForm{
         }
 
         $rowClass = 'flex-row';
-        $attributes = ['id'=>$my_id];
+        $attributes = ['id'=>$my_id, 'placeholder'=>$label];
 
         if ($rules) {
             $ruleArray = [];
@@ -141,7 +141,7 @@ class xmlForm{
 
         $row = $this->dom->fabricateChild($this->tableWrapper, "div", ['class'=>$rowClass]);
         $row_label_cell = $this->dom->fabricateChild($row, "div", ['class'=>'flex-cell']);
-        $row_label_element = $this->dom->fabricateChild($row_label_cell, "label", ['for'=>$my_id], $label);
+        $row_label_element = $this->dom->fabricateChild($row_label_cell, "label", ['for'=>$my_id], $label.":");
 
         $row_input_cell = $this->dom->fabricateChild($row, "div", ['class'=>'flex-cell']);
         

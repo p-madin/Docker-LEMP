@@ -36,7 +36,7 @@ class SessionController{
                     'httponly' => true,
                     'samesite' => 'Strict'
                     ]);
-                header("Location: /index.php");
+                header("Location: /");
                 exit;
             }else{
                 $qb = new QueryBuilder($this->dialect);

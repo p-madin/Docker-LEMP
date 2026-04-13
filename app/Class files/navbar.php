@@ -14,7 +14,7 @@ class Navbar {
     public function render($dom, $sessionController) {
         $userId = $sessionController->getPrimary('userID');
         
-        $navContainer = $dom->fabricateChild(parent: $dom->body, tagName: "div", attributes: ["class"=>"flex-table", "id"=>"main-navbar"]);
+        $navContainer = $dom->fabricateChild(parent: $dom->body, tagName: "nav", attributes: ["class"=>"flex-table", "id"=>"main-navbar"]);
 
         $navRow = $dom->fabricateChild(parent: $navContainer, tagName: "div", attributes: ["class"=>"flex-row"]);
 
@@ -34,7 +34,6 @@ class Navbar {
 
         $toggleCell = $dom->dom->createElement('div');
         $toggleCell->setAttribute('class', 'flex-cell');
-        $toggleCell->setAttribute('style', 'text-align: center; padding: 10px; display: flex; align-items: center; justify-content: center; gap: 5px;');
         
         $checkbox = $dom->dom->createElement('input');
         $checkbox->setAttribute('type', 'checkbox');
@@ -43,7 +42,7 @@ class Navbar {
         $label = $dom->dom->createElement('label');
         $label->setAttribute('for', 'disable_client_validation');
         $label->setAttribute('style', 'font-size: 0.85em; cursor: pointer;');
-        $label->textContent = 'Disable Client Validation';
+        $label->textContent = 'noValidate';
         
         $toggleCell->appendChild($checkbox);
         $toggleCell->appendChild($label);

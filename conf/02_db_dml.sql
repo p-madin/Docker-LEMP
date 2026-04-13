@@ -12,10 +12,10 @@ INSERT INTO sysConfig (scName, scValue) VALUES ('myDomainProtocol', 'http');
 
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Home', 'c', '/', 'IndexController', false, 1);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Dashboard', 'p', '/dashboard', 'DashboardController', true, 2);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Account Management', 'p', '/account_management', 'AccountManagementController', true, 3);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Accounts', 'p', '/account_management', 'AccountManagementController', true, 3);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Error Log', 'p', '/error_log', 'ErrorLogController', true, 4);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Navbar Management', 'p', '/navbar_management', 'NavbarManagementController', true, 5);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Form Management', 'p', '/form_management', 'FormManagementController', true, 6);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Navbars', 'p', '/navbar_management', 'NavbarManagementController', true, 5);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Forms', 'p', '/form_management', 'FormManagementController', true, 6);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Logout', 'c', '/logout', 'LogoutAction', true, 7);
 
 -- Actions (Internal Routes)
@@ -33,35 +33,35 @@ INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbPro
 INSERT INTO tblForm (tfName, tfReadOnly) VALUES ('login', false), ('register', false), ('editUser', false), ('navbar', false), ('editForm', true), ('editColumn', true);
 
 INSERT INTO tblColumns (tcFormFK, tcName, tcLabel, tcType, tcRules, tcOrder) VALUES
-(1, 'username', 'Username:', 'text', '{"required":true}', 1),
-(1, 'password', 'Password:', 'password', '{"required":true}', 2),
-(2, 'username', 'Username:', 'text', '{"required":true,"min":3}', 1),
-(2, 'password', 'Password:', 'password', '{"required":true,"min":6}', 2),
-(2, 'confirm_password', 'Confirm Password:', 'password', '{"match":"password"}', 3),
-(2, 'name', 'Name:', 'text', '{"required":true}', 4),
-(2, 'age', 'Age:', 'number', '{"required":true,"numeric":true}', 5),
-(2, 'city', 'City:', 'text', '{}', 6),
-(2, 'email', 'Email:', 'email', '{"required":true,"email":true}', 7),
+(1, 'username', 'Username', 'text', '{"required":true}', 1),
+(1, 'password', 'Password', 'password', '{"required":true}', 2),
+(2, 'username', 'Username', 'text', '{"required":true,"min":3}', 1),
+(2, 'password', 'Password', 'password', '{"required":true,"min":6}', 2),
+(2, 'confirm_password', 'Confirm Password', 'password', '{"match":"password"}', 3),
+(2, 'name', 'Name', 'text', '{"required":true}', 4),
+(2, 'age', 'Age', 'number', '{"required":true,"numeric":true}', 5),
+(2, 'city', 'City', 'text', '{}', 6),
+(2, 'email', 'Email', 'email', '{"required":true,"email":true}', 7),
 (3, 'auPK', '', 'hidden', '{}', 1),
-(3, 'username', 'Username:', 'text', '{"required":true,"min":3}', 2),
-(3, 'name', 'Name:', 'text', '{"required":true}', 3),
-(3, 'age', 'Age:', 'number', '{"required":true,"numeric":true}', 4),
-(3, 'city', 'City:', 'text', '{}', 5),
-(3, 'email', 'Email:', 'email', '{"required":true,"email":true}', 6),
+(3, 'username', 'Username', 'text', '{"required":true,"min":3}', 2),
+(3, 'name', 'Name', 'text', '{"required":true}', 3),
+(3, 'age', 'Age', 'number', '{"required":true,"numeric":true}', 4),
+(3, 'city', 'City', 'text', '{}', 5),
+(3, 'email', 'Email', 'email', '{"required":true,"email":true}', 6),
 (4, 'nbPK', '', 'hidden', '{}', 1),
-(4, 'nbText', 'Display Text:', 'text', '{"required":true,"min":1}', 2),
-(4, 'nbDiscriminator', 'Discriminator (c/p):', 'text', '{"required":true,"min":1,"max":1}', 3),
-(4, 'nbPath', 'Route/Path:', 'text', '{"required":true}', 4),
-(4, 'nbOrder', 'Display Order:', 'number', '{"required":true,"numeric":true}', 5),
+(4, 'nbText', 'Display Text', 'text', '{"required":true,"min":1}', 2),
+(4, 'nbDiscriminator', 'Discriminator (c/p)', 'text', '{"required":true,"min":1,"max":1}', 3),
+(4, 'nbPath', 'Route/Path', 'text', '{"required":true}', 4),
+(4, 'nbOrder', 'Display Order', 'number', '{"required":true,"numeric":true}', 5),
 (5, 'tfPK', '', 'hidden', '{}', 1),
-(5, 'tfName', 'Form Name:', 'text', '{"required":true,"min":1}', 2),
+(5, 'tfName', 'Form Name', 'text', '{"required":true,"min":1}', 2),
 (6, 'tcPK', '', 'hidden', '{}', 1),
 (6, 'tcFormFK', '', 'hidden', '{"required":true,"numeric":true}', 2),
-(6, 'tcName', 'Field Name:', 'text', '{"required":true,"min":1}', 3),
-(6, 'tcLabel', 'Field Label:', 'text', '{"required":true}', 4),
-(6, 'tcType', 'Field Type (e.g. text/password):', 'text', '{"required":true}', 5),
-(6, 'tcRules', 'Validation Rules JSON (e.g. {"required":true}):', 'text', '{}', 6),
-(6, 'tcOrder', 'Display Order:', 'number', '{"required":true,"numeric":true}', 7);
+(6, 'tcName', 'Field Name', 'text', '{"required":true,"min":1}', 3),
+(6, 'tcLabel', 'Field Label', 'text', '{"required":true}', 4),
+(6, 'tcType', 'Field Type (e.g. text/password)', 'text', '{"required":true}', 5),
+(6, 'tcRules', 'Validation Rules JSON (e.g. {"required":true})', 'text', '{}', 6),
+(6, 'tcOrder', 'Display Order', 'number', '{"required":true,"numeric":true}', 7);
 
 
 #--$Local_array = ['user' => ['name' => 'John', 'roles' => ['admin', 'editor'], 'pages' => [[1 => 'home', 2 => 'contact us']]], 
