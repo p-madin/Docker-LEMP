@@ -87,7 +87,6 @@ body>div>form.flex-form {
 
 /* indoc disclosure */
 body>div>details {
-    width: 100%;
     border: solid 1px black;
     width: fit-content
 }
@@ -100,7 +99,8 @@ body>div details summary {
 }
 
 body>div details[open] {
-    height: 500px
+    height: 500px;
+    width: 100%;
 }
 
 body>div details[open] summary {

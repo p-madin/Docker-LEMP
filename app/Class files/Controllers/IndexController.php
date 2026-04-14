@@ -54,7 +54,7 @@ class IndexController implements ControllerInterface {
         if(!is_null($sessionController->getPrimary('userID'))){
             $heading = $dom->fabricateChild(parent : $wrapper, tagName : "p", attributes: ["id" => "loginWidgetSummary"] , innerContent : "You are already signed in");
             
-            $logout_container = $dom->fabricateChild($wrapper, "div", ["style" => "margin-top: 10px;"]);
+            $logout_container = $dom->fabricateChild($wrapper, "div");
             $hyperlink = new Hyperlink();
             $hyperlink->appendHyperlinkForm($dom, $logout_container, "Click here to logout", "/logout");
         }else{

@@ -1,0 +1,6 @@
+FROM mysql:latest
+
+COPY ./conf/my.stack.conf /etc/mysql/conf.d/my-stack.cnf
+USER root
+RUN chmod 644 /etc/mysql/conf.d/my-stack.cnf
+USER mysql
