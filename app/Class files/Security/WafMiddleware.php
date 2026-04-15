@@ -12,14 +12,26 @@ class WafMiddleware implements MiddlewareInterface {
 
         // 1. Is banned?
         if ($rateLimiter->checkBan($ip)) {
-            http_response_code(403);
-            die("403 Forbidden: You are temporarily blocked.");
+            //403 Forbidden: You are temporarily blocked.
+            header("X-Tarpit: 1");
+            header("X-Accel-Redirect: /tarpit");
+            exit;
+        }
+
+        // 1.5 detecting session/cookie rotation attacks
+        if (!$rateLimiter->checkCookieRotation($ip)) {
+            //too many sessions
+            header("X-Tarpit: 1");
+            header("X-Accel-Redirect: /tarpit");
+            exit;
         }
 
         // 2. Rate limit
         if (!$rateLimiter->incrementAndCheck($ip)) {
-            http_response_code(429);
-            die("429 Too Many Requests");
+            //429 Too Many Requests
+            header("X-Tarpit: 1");
+            header("X-Accel-Redirect: /tarpit");
+            exit;
         }
 
         // 3. Payload inspection
@@ -73,8 +85,9 @@ class WafMiddleware implements MiddlewareInterface {
                     $rateLimiter = new RateLimiter($db, $dialect);
                     $rateLimiter->banIp($ip, 'Malicious payload detected', 60);
 
-                    http_response_code(403);
-                    die("403 Forbidden: Malicious payload blocked.");
+                    header("X-Tarpit: 1");
+                    header("X-Accel-Redirect: /tarpit");
+                    exit;
                 }
             }
         }

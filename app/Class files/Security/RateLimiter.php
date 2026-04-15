@@ -69,5 +69,37 @@ class RateLimiter {
         }
         return true; 
     }
+
+    /**
+     * Detects if a client has rotated between 5 or more different session cookies in the last hour.
+     * Bans the IP for 7 days if detected.
+     */
+    public function checkCookieRotation(string $ip) {
+        if ($ip == '127.0.0.1') {
+            return true;
+        }
+
+        $oneHourAgo = (new DateTime())->modify("-60 minutes")->format('Y-m-d H:i:s');
+        
+        $qb = new QueryBuilder($this->dialect);
+        $sql = $qb->table('httpAction')
+                  ->select([$qb->raw('COUNT(DISTINCT haSessionFK)')])
+                  ->where('haIP', '=', $ip)
+                  ->where('haDate', '>=', $oneHourAgo)
+                  ->toSQL();
+                  
+        $stmt = $this->db->prepare($sql);
+        $qb->bindTo($stmt);
+        $stmt->execute();
+        $countRow = $stmt->fetch(PDO::FETCH_NUM);
+        
+        $count = $countRow[0] ?? 0;
+
+        if ($count >= 5) {
+            $this->banIp($ip, 'Cookie rotation detected: >=5 different session IDs in 60 minutes', 10080); // 7 days
+            return false;
+        }
+        return true;
+    }
 }
 ?>

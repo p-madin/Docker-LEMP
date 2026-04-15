@@ -4,6 +4,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     pkg-config \
     wget tar \
+    git \
     tzdata
 
 ENV TZ=Australia/Sydney
@@ -51,6 +52,7 @@ RUN mkdir -p /usr/src/php && \
     make install
 
 RUN mkdir -p /usr/src/nginx && \
+    git clone https://github.com/openresty/echo-nginx-module.git /usr/src/echo-nginx-module && \
     wget -O nginx.tar.gz https://nginx.org/download/nginx-1.29.2.tar.gz && \
     tar -xf nginx.tar.gz -C /usr/src/nginx --strip-components=1 && \
     rm nginx.tar.gz && \
@@ -60,7 +62,8 @@ RUN mkdir -p /usr/src/nginx && \
         --conf-path=/usr/local/nginx/nginx.conf \
         --pid-path=/usr/local/nginx/nginx.pid \
         --with-http_ssl_module \
-        --with-http_v2_module && \
+        --with-http_v2_module \
+        --add-module=/usr/src/echo-nginx-module && \
     make -j$(nproc) && \
     make install
 
