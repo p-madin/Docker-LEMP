@@ -177,7 +177,7 @@
         <step>
           <action>AssertText</action>
           <expected>
-            <contains>Not yet verified</contains>
+            <contains>Pending</contains>
           </expected>
         </step>
 

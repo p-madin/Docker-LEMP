@@ -62,6 +62,13 @@ class Validator {
         return empty($this->errors);
     }
 
+    protected $db;
+
+    public function setDb(\PDO $db) {
+        $this->db = $db;
+        return $this;
+    }
+
     /**
      * Check a specific rule.
      */
@@ -118,6 +125,38 @@ class Validator {
                 $otherField = $params[0] ?? '';
                 if ($value !== ($this->data[$otherField] ?? null)) {
                     $this->addError($field, "The $field must match $otherField.");
+                    return false;
+                }
+                break;
+
+            case 'unique':
+                if (empty($value) || !$this->db) return true;
+                
+                $alias = $params[0] ?? '';
+                
+                // Define secure server-side mappings for unique checks
+                // This prevents exposing table/column names to the client
+                $uniqueMappings = [
+                    'registration_username' => ['appUsers', 'username'],
+                    'registration_email'    => ['appUsers', 'email'],
+                    'navbar_text'           => ['tblNavBar', 'nbText'],
+                    'navbar_path'           => ['tblNavBar', 'nbPath']
+                ];
+
+                if (!isset($uniqueMappings[$alias])) {
+                    // If using the old format (table,column) while transitioning, 
+                    // we can either block it or check a strict whitelist.
+                    // For maximum security, we only allow mapped aliases.
+                    return true; 
+                }
+
+                [$table, $column] = $uniqueMappings[$alias];
+
+                // 3. Identifier Escaping (using backticks for MariaDB/MySQL)
+                $stmt = $this->db->prepare("SELECT COUNT(*) FROM `$table` WHERE `$column` = :value");
+                $stmt->execute(['value' => $value]);
+                if ($stmt->fetchColumn() > 0) {
+                    $this->addError($field, "This $field is already taken.");
                     return false;
                 }
                 break;

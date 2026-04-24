@@ -32,41 +32,28 @@ class PlotItem {
     }
 }
 
-class DataGraph {
-    private $series = [];
-    private $meta;
+class DataGraphComponent extends Component {
+    private array $series;
+    private PlotMeta $meta;
 
-    private $graphXDistance = 425;
-    private $graphYDistance = 175;
-    private $plotXCanvasRatio = 80;
-    private $plotXCanvasOffset = 10;
-    private $plotYCanvasRatio = 85;
-    private $plotYCanvasOffset = -90;
+    private int $graphXDistance = 425;
+    private int $graphYDistance = 175;
+    private int $plotXCanvasRatio = 80;
+    private int $plotXCanvasOffset = 10;
+    private int $plotYCanvasRatio = 85;
+    private int $plotYCanvasOffset = -90;
 
-    public function __construct($dataSeries) {
-        $this->meta = new PlotMeta();
-        foreach ($dataSeries as $item) {
-            $plot = new PlotItem($item['x'], $item['y']);
-            $this->series[] = $plot;
-
-            if ($plot->xPrimitive > $this->meta->xMax) $this->meta->xMax = $plot->xPrimitive;
-            if ($plot->xPrimitive < $this->meta->xMin) $this->meta->xMin = $plot->xPrimitive;
-            if ($plot->yStructured > $this->meta->yMax) $this->meta->yMax = $plot->yStructured;
-            if ($plot->yStructured < $this->meta->yMin) $this->meta->yMin = $plot->yStructured;
-        }
-
-        usort($this->series, function($a, $b) {
-            return $a->xPrimitive <=> $b->xPrimitive;
-        });
-
-        $this->meta->setRange();
+    public function __construct(xmlDom $xmlDom, array $series, PlotMeta $meta) {
+        parent::__construct($xmlDom, 'div', ['class' => 'graph-container']);
+        $this->series = $series;
+        $this->meta = $meta;
     }
 
-    public function render($dom, $parent) {
+    protected function build(): void {
         $pathData = "";
         
         // Root SVG
-        $rootSvg = $dom->fabricateChild($parent, "svg", [
+        $rootSvg = $this->fabricateChild($this->root, "svg", [
             "xmlns" => "http://www.w3.org/2000/svg",
             "id" => "plot",
             "width" => "100%",
@@ -74,13 +61,13 @@ class DataGraph {
         ]);
 
         // Internal container
-        $internalHub = $dom->fabricateChild($rootSvg, "svg", [
+        $internalHub = $this->fabricateChild($rootSvg, "svg", [
             "viewBox" => "-43 0 425 200",
             "preserveAspectRatio" => "none"
         ]);
 
         // Plot Area
-        $plotArea = $dom->fabricateChild($internalHub, "svg", [
+        $plotArea = $this->fabricateChild($internalHub, "svg", [
             "id" => "plot-area",
             "viewBox" => "0 0 530 205",
             "preserveAspectRatio" => "none"
@@ -102,14 +89,14 @@ class DataGraph {
             }
 
             // Dots
-            $dotWrapper = $dom->fabricateChild($rootSvg, "svg", ["class" => "dot"]);
-            $dom->fabricateChild($dotWrapper, "circle", [
+            $dotWrapper = $this->fabricateChild($rootSvg, "svg", ["class" => "dot"]);
+            $this->fabricateChild($dotWrapper, "circle", [
                 "cx" => round($plot->xRelPercSep + 0.3, 2) . '%',
                 "cy" => round($plot->yRelPercSep, 2) . '%',
                 "r" => "10px"
             ]);
 
-            // Collision
+            // Collision / Tooltip
             $xBuf = ($plot->xRel / $this->meta->xDistance);
             if ($xBuf > 0.7) $xBuf -= 0.37;
             $xBuf = $xBuf * $this->plotXCanvasRatio + $this->plotXCanvasOffset;
@@ -118,24 +105,24 @@ class DataGraph {
             if ($yBuf < 0.2) $yBuf += 0.10;
             $yBuf = ($yBuf * $this->plotYCanvasRatio * -1 + $this->graphYDistance) + $this->plotYCanvasOffset;
 
-            $collisionWrapper = $dom->fabricateChild($rootSvg, "svg", ["class" => "collision"]);
-            $fo = $dom->fabricateChild($collisionWrapper, "foreignObject", [
+            $collisionWrapper = $this->fabricateChild($rootSvg, "svg", ["class" => "collision"]);
+            $fo = $this->fabricateChild($collisionWrapper, "foreignObject", [
                 "width" => "25%",
                 "x" => round($xBuf, 2) . '%',
                 "y" => round($yBuf, 2) . '%',
                 "style" => "overflow:visible;"
             ]);
-            $window = $dom->fabricateChild($fo, "div", ["class" => "window"]);
+            $window = $this->fabricateChild($fo, "div", ["class" => "window"]);
             
-            $divDate = $dom->fabricateChild($window, "div");
-            $dom->fabricateChild($divDate, "b", [], "Date: ");
-            $divDate->appendChild($dom->dom->createTextNode($plot->xStructured->format('d/m/Y')));
+            $divDate = $this->fabricateChild($window, "div");
+            $this->fabricateChild($divDate, "b", [], "Date: ");
+            $this->fabricateChild($divDate, "span", [], $plot->xStructured->format('d/m/Y H:i'));
 
-            $divValue = $dom->fabricateChild($window, "div");
-            $dom->fabricateChild($divValue, "b", [], "Value: ");
-            $divValue->appendChild($dom->dom->createTextNode($plot->y));
+            $divValue = $this->fabricateChild($window, "div");
+            $this->fabricateChild($divValue, "b", [], "Value: ");
+            $this->fabricateChild($divValue, "span", [], (string)$plot->y);
 
-            $dom->fabricateChild($collisionWrapper, "rect", [
+            $this->fabricateChild($collisionWrapper, "rect", [
                 "width" => "4%",
                 "height" => "5%",
                 "x" => round($plot->xRelPercSep - 2, 2) . '%',
@@ -144,7 +131,7 @@ class DataGraph {
         }
 
         // Path
-        $dom->fabricateChild($plotArea, "path", [
+        $this->fabricateChild($plotArea, "path", [
             "id" => "doc_path",
             "d" => $pathData,
             "stroke" => "black",
@@ -152,53 +139,53 @@ class DataGraph {
             "style" => "vector-effect:non-scaling-stroke"
         ]);
 
-        $this->appendAxes($dom, $plotArea, $rootSvg);
+        $this->appendAxes($plotArea, $rootSvg);
     }
 
-    private function appendAxes($dom, $plotArea, $rootSvg) {
+    private function appendAxes(\DOM\Element $plotArea, \DOM\Element $rootSvg) {
         $yStep = $this->meta->yDistance / 4;
         $yStepP = $this->graphYDistance / 4;
         
-        $yAxisLabelWrapper = $dom->fabricateChild($rootSvg, "svg");
+        $yAxisLabelWrapper = $this->fabricateChild($rootSvg, "svg");
         for ($i = 0; $i < 5; $i++) {
             $val = $this->meta->yMin + ($i * $yStep);
             $y = ($i * $yStepP * -1) + $this->graphYDistance;
             
             // Grid
-            $dom->fabricateChild($plotArea, "line", [
+            $this->fabricateChild($plotArea, "line", [
                 "class" => "axis_grid",
                 "x1" => "0",
-                "x2" => $this->graphXDistance,
-                "y1" => round($y, 2),
-                "y2" => round($y, 2)
+                "x2" => (string)$this->graphXDistance,
+                "y1" => (string)round($y, 2),
+                "y2" => (string)round($y, 2)
             ]);
 
             // Label
             $yPerc = (81 - ($i * 20));
-            $axisWrapper = $dom->fabricateChild($yAxisLabelWrapper, "svg", ["class" => "axis"]);
-            $fo = $dom->fabricateChild($axisWrapper, "foreignObject", [
+            $axisWrapper = $this->fabricateChild($yAxisLabelWrapper, "svg", ["class" => "axis"]);
+            $fo = $this->fabricateChild($axisWrapper, "foreignObject", [
                 "width" => "8%",
                 "height" => "40px",
                 "x" => "10",
                 "y" => $yPerc . "%"
             ]);
-            $dom->fabricateChild($fo, "div", [], (string)$val);
+            $this->fabricateChild($fo, "div", [], (string)$val);
         }
 
         $xStep = $this->meta->xDistance / 4;
         $xStepP = $this->graphXDistance / 4;
         
-        $xAxisLabelWrapper = $dom->fabricateChild($rootSvg, "svg");
+        $xAxisLabelWrapper = $this->fabricateChild($rootSvg, "svg");
         for ($i = 0; $i < 5; $i++) {
             $val = $this->meta->xMin + ($i * $xStep);
             $date = new DateTime("@" . (int)($val / 1000));
             $x = ($i * $xStepP);
             
             // Grid
-            $dom->fabricateChild($plotArea, "line", [
+            $this->fabricateChild($plotArea, "line", [
                 "class" => "axis_grid",
-                "x1" => round($x, 2),
-                "x2" => round($x, 2),
+                "x1" => (string)round($x, 2),
+                "x2" => (string)round($x, 2),
                 "y1" => "0",
                 "y2" => "175"
             ]);
@@ -209,27 +196,48 @@ class DataGraph {
             if($i%2 == 1){
                 $axisWrapperAttributes = ["class"=>"axis minor"];
             }
-            $axisWrapper = $dom->fabricateChild($xAxisLabelWrapper, "svg", $axisWrapperAttributes);
-            $fo = $dom->fabricateChild($axisWrapper, "foreignObject", [
+            $axisWrapper = $this->fabricateChild($xAxisLabelWrapper, "svg", $axisWrapperAttributes);
+            $fo = $this->fabricateChild($axisWrapper, "foreignObject", [
                 "width" => "15%",
                 "height" => "40px",
                 "x" => $xPerc . "%",
                 "y" => "87%",
                 "style" => "overflow:visible;"
             ]);
-            $dom->fabricateChild($fo, "div", [], $date->format('d/m/Y H:i'));
+            $this->fabricateChild($fo, "div", [], $date->format('d/m/Y H:i'));
         }
     }
+}
 
-    public static function fromXML($xmlString) {
-        $series = [];
-        $xml = new SimpleXMLElement($xmlString);
-        foreach ($xml->item as $item) {
-            $series[] = [
-                'x' => (string)$item->x,
-                'y' => (string)$item->y
-            ];
+class DataGraph {
+    private $series = [];
+    private $meta;
+
+    public function __construct($dataSeries) {
+        $this->meta = new PlotMeta();
+        foreach ($dataSeries as $item) {
+            $plot = new PlotItem($item['x'], $item['y']);
+            $this->series[] = $plot;
+
+            if ($plot->xPrimitive > $this->meta->xMax) $this->meta->xMax = $plot->xPrimitive;
+            if ($plot->xPrimitive < $this->meta->xMin) $this->meta->xMin = $plot->xPrimitive;
+            if ($plot->yStructured > $this->meta->yMax) $this->meta->yMax = $plot->yStructured;
+            if ($plot->yStructured < $this->meta->yMin) $this->meta->yMin = $plot->yStructured;
         }
-        return new self($series);
+
+        usort($this->series, function($a, $b) {
+            return $a->xPrimitive <=> $b->xPrimitive;
+        });
+
+        $this->meta->setRange();
+    }
+
+    public function render(xmlDom $dom, $parent = null) {
+        $component = new DataGraphComponent($dom, $this->series, $this->meta);
+        $element = $component->render();
+        if ($parent) {
+            $parent->appendChild($element);
+        }
+        return $element;
     }
 }

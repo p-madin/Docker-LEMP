@@ -36,8 +36,8 @@ class SystemConfigController {
      */
     public function getNavbarItems(): array {
         $qb = new QueryBuilder($this->dialect);
-        $qb->table('tblNavBar')->select(['nbText', 'nbDiscriminator', 'nbPath', 'nbControllerClass', 'nbProtected', 'nbOrder']);
-        // Order by the explicit nbOrder configuration
+        $qb->table('tblNavBar')->select(['nbPK', 'nbText', 'nbDiscriminator', 'nbPath', 'nbControllerClass', 'nbProtected', 'nbOrder', 'nbParentFK']);
+        
         $sql = $qb->toSQL();
         $sql .= " ORDER BY nbOrder ASC";
         
@@ -49,11 +49,13 @@ class SystemConfigController {
         $items = [];
         foreach($data as $row) {
             $items[] = [
+                'id' => $row['nbPK'],
                 'label' => $row['nbText'],
                 'discriminator' => $row['nbDiscriminator'],
                 'url' => $row['nbPath'],
                 'controller' => $row['nbControllerClass'],
-                'protected' => (bool)$row['nbProtected']
+                'protected' => (bool)$row['nbProtected'],
+                'parentFK' => $row['nbParentFK']
             ];
         }
 

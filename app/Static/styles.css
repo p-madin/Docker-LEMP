@@ -98,7 +98,7 @@ body>div details summary {
     font-weight: bold;
 }
 
-body>div details[open] {
+body>div>details[open] {
     height: 500px;
     width: 100%;
 }
@@ -144,7 +144,7 @@ body>div details[open] summary {
 }
 
 .flex-cell.actions-cell {
-    display: flex
+    display: flex;
 }
 
 /* end flex table */
@@ -196,6 +196,63 @@ body>div details[open] summary {
     content: "✓";
 }
 
+#main-navbar .nav-dropdown .nav-summary::before {
+    content: "📁 ";
+}
+
+#main-navbar .nav-dropdown[open] .nav-summary::before {
+    content: "📂 ";
+
+}
+
+#main-navbar .nav-dropdown {
+    position: relative;
+
+}
+
+#main-navbar .nav-dropdown .nav-summary {
+    cursor: pointer;
+    font-weight: bold;
+    list-style: none;
+    padding: 10px;
+    outline: none;
+    color: green;
+    text-decoration: underline;
+}
+
+#main-navbar .nav-summary::-webkit-details-marker {
+    display: none;
+}
+
+#main-navbar .dropdown-content {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #fff;
+    min-width: 180px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    z-index: 1001;
+    border: 1px solid #ddd;
+    border-top: none;
+    display: flex;
+    flex-direction: column;
+}
+
+#main-navbar .child-cell {
+    padding: 8px 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+#main-navbar .child-cell:last-child {
+    border-bottom: none;
+}
+
+#main-navbar .child-cell:hover {
+    background-color: #f8f9fa;
+}
+
 /* end navbar */
 
 /* flex form */
@@ -208,7 +265,8 @@ body>div details[open] summary {
     flex: 1 1 0
 }
 
-.flex-form .flex-cell {
+.flex-form .flex-cell,
+.form_hyperlink .flex-cell {
     padding: 0 10px 0 0;
     border: none
 }
@@ -374,3 +432,24 @@ form.form_hyperlink a.ajax {
 }
 
 /* end media queries */
+
+
+/* cms */
+.flex-table .flex-row-group .directory::before {
+    content: "📂 ";
+}
+
+.flex-table .flex-row-group[open] {
+    background-color: rgba(0, 204, 0, 0.05);
+}
+
+.flex-table .flex-row-group:not([open]):hover {
+    background-color: rgba(204, 0, 0, 0.05);
+}
+
+.flex-table .flex-row-group .directory {
+    font-weight: bold;
+    flex-direction: row
+}
+
+/* end cms */

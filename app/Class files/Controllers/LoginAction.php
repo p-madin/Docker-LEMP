@@ -21,11 +21,25 @@ class LoginAction implements ControllerInterface {
 
         if($user && password_verify($request->post['password'] ?? '', $user['password'])){
             if($user['verified'] == 0){
+                if (isset($request->server['HTTP_ACCEPT']) && strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false) {
+                    // http_response_code(403);
+                    // echo json_encode(['errors' => ['username' => 'Account is pending verification.']]);
+                    http_response_code(403);
+                    echo json_encode(['errors' => ['password' => 'Invalid username or password.']]);
+                    exit;
+                }
                 header("location:/?error=unverified");
                 exit;
             }
             $sessionController->setPrimary('username', $sanitizedUsername);
             $sessionController->setPrimary('userID', (int)$user['auPK']);
+        } else {
+            // Invalid credentials
+            if (isset($request->server['HTTP_ACCEPT']) && strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false) {
+                http_response_code(401);
+                echo json_encode(['errors' => ['password' => 'Invalid username or password.']]);
+                exit;
+            }
         }
         
         if (isset($request->server['HTTP_ACCEPT']) && strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false) {

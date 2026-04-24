@@ -119,29 +119,31 @@ $sql = $qb->table('users')
 
 ---
 
-## Phase 4: Router, Middleware and WAF
+## Phase 4: Router, Middleware and WAF [COMPLETED]
 ### Description
-Implement a centralized `Router` with Middleware support. The pipeline must include a "Base WAF" to intercept malicious URI patterns or payloads. The WAF will be enriched with active defense mechanisms, such as rate-limiting and auto-banning, to block abusive HTTP clients (similar to `mod_evasive`).
+Implement a centralized `Router` with Middleware support. The pipeline includes a "Base WAF" to intercept malicious URI patterns or payloads. The WAF is enriched with active defense mechanisms, such as rate-limiting and auto-banning, to block abusive HTTP clients.
 
 > [!NOTE]
 > **Ground Running**: 
-> - **Inspection**: The WAF should utilize the `SecurityValidation` strategies from Phase 1 to inspect `$_GET` and `$_POST` globally.
-> - **Active Defense (Auto-ban)**: Implement thresholds for rapid requests (e.g., brute-force attempts) or known bad payloads. Clients exceeding thresholds should be automatically temporarily banned (e.g., returning 429 Too Many Requests or 403 Forbidden).
-> - **Logging**: Use the `QueryBuilder` from Phase 3 to persist WAF events, banned IP logs, and anomalous behavior to the database.
+> - **Resource Optimized Execution**: The middleware stack is ordered so that `WafMiddleware` runs **before** `SessionMiddleware`, protecting the server's session memory from banned or malicious clients.
+> - **Nginx Integration**: Direct access to internal PHP files is blocked at the Nginx level, forcing all traffic through the WAF-protected `index.php` entry point.
+> - **Active Defense (Auto-ban)**: Thresholds for rapid requests or bad payloads trigger automatic temporary bans.
+> - **Logging**: Attack data is persisted to the `httpAction` table, even when the request is blocked before a session is established.
 
 ### Metrics (Qualities & Quantities)
-- **Complexity**: High (Chain of responsibility, request lifecycle manipulation, stateful tracking for rate limiting)
-- **Risk Level**: High (Can break routing or block valid traffic with false-positive WAF rules)
-- **Estimated Time**: 3-5 Days
-- **Number of Files**: ~5-7 (Router, Middleware interface, WAF, Auth middleware, RateLimiter)
-- **Lines of Code**: ~800 LOC
-
+- **Complexity**: High (Chain of responsibility, request lifecycle manipulation)
+- **Status**: ✅ Fully Implemented and Hardened
+- **Key Files**: `Router.php`, `WafMiddleware.php`, `RateLimiter.php`, `HttpActionMiddleware.php`
 
 ### Code Example
 ```php
 $router = new Router();
-$router->use(new WafMiddleware());
-$router->use(new AuthMiddleware());
+$router->use(new DatabaseConfigMiddleware());
+$router->use(new WafMiddleware()); // Blocks before session start
+$router->use(new SessionMiddleware());
+$router->use(new HttpActionMiddleware());
+```
+```
 
 $router->get('/dashboard', [DashboardController::class, 'index']);
 $router->post('/profile/update', [ProfileController::class, 'update']);
@@ -151,7 +153,7 @@ $router->dispatch();
 
 ---
 
-## Phase 5: Enhance DOM to Component System
+## Phase 5: Enhance DOM to Component System [COMPLETED]
 ### Description
 Refactor procedural DOM logic into a reusable `Component` system supporting **Nesting** and **Slots**. This includes transforming the extended `xmlForm` (from Phase 2) into a cohesive `FormComponent`.
 
@@ -184,95 +186,99 @@ class Card extends Component {
 
 ---
 
-## Phase 6: View Manager and Layouts
+## Phase 6: View Management and Layouts
 ### Description
-Centralize rendering through a `ViewManager` supporting Layout Inheritance and Global State Injection.
+Centralize rendering through a `ViewManager` supporting Layout Inheritance and Global State Injection. Move controllers away from direct DOM manipulation to returning declarative View results.
 
 > [!NOTE]
 > **Ground Running**: 
-> - Use output buffering to capture the view content, then inject it into a `Layout` component's "main" slot.
-> - **State Integration**: The `ViewManager` must automatically fetch Flash Cache data (Validation Errors and Old Input Data established in Phase 2) and expose it globally to Layouts. This reduces boilerplate and ensures UI components always have access to `$errors` state.
+> - **View Pipeline**: Capture component output via the `ViewManager` and inject it into a `Layout` component's "main" slot.
+> - **Global State**: The `ViewManager` must automatically expose session state (User info, Breadcrumbs, Flash messages) to all layouts, eliminating repetitive boilerplate in management controllers.
 
 ### Metrics (Qualities & Quantities)
 - **Complexity**: Medium
 - **Risk Level**: Low
 - **Estimated Time**: 2-3 Days
-- **Number of Files**: ~2-3 (ViewManager, Base Layout components)
-- **Lines of Code**: ~300 LOC
-
+- **Number of Files**: ~3 (ViewManager, BaseLayout, DashboardLayout)
+- **Lines of Code**: ~300-400 LOC
 
 ### Code Example
 ```php
-class ViewManager {
-    public function render($viewPath, $data = [], $layout = 'main') {
-        extract($data);
-        ob_start();
-        include "views/{$viewPath}.php";
-        $content = ob_get_clean();
-        
-        $layoutComp = new Layout($layout);
-        $layoutComp->setSlot('content', $content);
-        echo $layoutComp->toHtml();
+class DashboardController {
+    public function execute(Request $request) {
+        // ... logic ...
+        return View::render('dashboard/index', [
+            'graph' => $graphComponent,
+            'filters' => $filterComponent
+        ], 'layouts/admin');
     }
 }
 ```
 
 ---
 
-## Phase 7: View Data Binding
+## Phase 7: Advanced Interaction (AJAX & Hybrid Validation)
 ### Description
-Bind PHP data to DOM nodes using standard PHP `DOMDocument` and `XPath` logic, seamlessly repopulating form state using prior validation run data.
+Implement real-time form feedback via `validate.js` and transition forms to `fetch()`-based submission. This phase bridges the `tcRules` defined in the database with browser-side execution.
 
 > [!IMPORTANT]
 > **Ground Running**: 
-> - Avoid non-native methods like `querySelector`. Use `DOMXPath::query()` to find elements by ID or Class for data injection.
-> - **Form Repopulation**: Connect the Phase 2 data retention logic (flash cache) to the new DOM binding system. The DataBinder should use XPath to locate `input`, `select`, and `textarea` elements matching names in the flash cache to automatically inject their `value` properties.
-> - **Secure Data Binding Pipeline**: Explicitly require that dynamic data bound to DOM nodes uses Phase 1 `SecurityValidation` strategies based on context (e.g. `HtmlEscapeDecorator` for Text node binding).
+> - **Validator Bridge**: The `FormComponent` must serialize `tblColumns.tcRules` JSON into `data-rules` attributes on input elements.
+> - **validate.js Implementation**: Create a native Javascript validator (no jQuery) that parses `data-rules`. Implement direct browser equivalents for: `required`, `min`, `max`, `numeric`, `email`, and `match`.
+> - **Server-Only Fallback**: Validation rules requiring database checks (e.g., unique username/email) will be handled via the `fetch()` submission lifecycle.
+> - **Success Hydration**: Use the `fetch()` API to submit `FormData`. On validation failure, the server returns a JSON error fragment; on success, it returns a "Success Component" to be injected into the DOM.
 
 ### Metrics (Qualities & Quantities)
-- **Complexity**: Very High (Parsing and manipulating large DOM trees dynamically)
-- **Risk Level**: High (Performance impact on scale, potential memory leaks in PHP's un-freed DOM nodes)
-- **Estimated Time**: 5-7 Days
-- **Number of Files**: ~2-4 (DataBinder engine, parsing utilities)
-- **Lines of Code**: ~800+ LOC
-
+- **Complexity**: High (Synchronizing PHP validation logic with JS equivalents)
+- **Risk Level**: Medium (Ensuring validation parity)
+- **Estimated Time**: 4-6 Days
+- **Number of Files**: ~4 (validate.js, FormComponent updates, AjaxController)
+- **Lines of Code**: ~600+ LOC
 
 ### Code Example
-```php
-$xpath = new DOMXPath($dom);
-$node = $xpath->query("//span[@id='user-name']")->item(0);
-if ($node) {
-    $node->nodeValue = $user->getName();
-}
+```javascript
+// validate.js using fetch()
+document.querySelectorAll('form[data-ajax="true"]').forEach(form => {
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!validateForm(form)) return; // Checks data-rules
+
+        const response = await fetch(form.action, { 
+            method: 'POST', 
+            body: new FormData(form),
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const result = await response.json();
+        handleResponse(form, result);
+    });
+});
 ```
 
 ---
 
-## Phase 8: Asset Pipeline
+## Phase 8: Asset Orchestration & Security Hardening
 ### Description
-Manage CSS/JS inclusion with bundling, cache-busting, and Content Security Policy (CSP) management.
+Implement a secure Asset Pipeline for CSS/JS delivery, including cache-busting and browser-enforced Content Security Policy (CSP).
 
 > [!NOTE]
 > **Ground Running**: 
-> - The `AssetManager` should track all registered scripts/styles during the request and render the final `<link>` and `<script>` tags in the Layout's `<head>` or `<footer>`.
-> - **CSP Integration**: Securely generate and register CSP nonces for inline scripts/styles (if any are necessary) and inject the appropriate `Content-Security-Policy` headers. This acts as a browser-enforced shield, complementing the Phase 4 WAF.
-> - **Validation Delivery**: Manage the dynamic delivery of the `validator.js` client-side validation logic developed as an extension of Phase 2.
+> - **AssetManager**: Centrally track and register all scripts/styles. Automatically generate `<link>` and `<script>` tags with versioned filenames for cache-busting.
+> - **CSP Nonces**: Generate and register cryptographically strong nonces for any necessary inline scripts and inject the appropriate `Content-Security-Policy` headers.
+> - **Final Polish**: Minification and bundling of core system scripts (`validator.js`, `dashboard.js`).
 
 ### Metrics (Qualities & Quantities)
 - **Complexity**: Medium
 - **Risk Level**: Low
 - **Estimated Time**: 2-3 Days
-- **Number of Files**: ~2 (AssetManager, Cache helper)
+- **Number of Files**: ~2-3 (AssetManager, CSPMiddleware)
 - **Lines of Code**: ~200-300 LOC
-
 
 ### Code Example
 ```php
 $assets = new AssetManager();
-$assets->registerJs('app.js', ['defer' => true]);
-$assets->registerCss('theme.css');
+$assets->registerJs('validator.js', ['defer' => true]);
+$assets->registerCss('styles.css');
 
-// In Layout template:
-echo $assets->renderStyles();
-echo $assets->renderScripts();
+// In Layout:
+echo $assets->renderScripts(); // Outputs <script src="/Static/validator.js?v=1.0.1" nonce="...">
 ```

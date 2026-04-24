@@ -156,6 +156,10 @@ class Router {
             $coreAction
         );
 
-        $chain($request);
+        $result = $chain($request);
+
+        if ($result instanceof View) {
+            echo $result->execute();
+        }
     }
 }

@@ -60,59 +60,35 @@ class DashboardController implements ControllerInterface {
             $iter->modify("+1 hour");
         }
 
-        $wrapper = $dom->fabricateChild(parent : $dom->body, tagName : "div");
-
-        $graph = new DataGraph($graphData);
-        $graph_details = $dom->fabricateChild(parent: $wrapper, tagName: "details");
-        $heading = $dom->fabricateChild(parent : $graph_details, tagName : "summary", innerContent : "Visits per hour");
-        $graph->render($dom, $graph_details);
-
-        // Filter Form using new xmlForm mechanism
-        $filter_heading = $dom->fabricateChild(parent : $wrapper, tagName : "h1", innerContent : "Filter Data");
-        $filter_form = new xmlForm("dashboardFilter", $dom, $wrapper);
-        $filter_form->prep("/dashboard", "POST");
-
         // Data Fetching for filters
         $ip_query_builder = new QueryBuilder($dialect);
-
         $ip_query_builder->table('httpAction')
             ->select(['haIP', $ip_query_builder->raw('count(*) as count')])
             ->groupBy(['haIP'])->orderBy($ip_query_builder->raw('count'), 'DESC');
-        $stmt_ip = $db->prepare($ip_query_builder->toSQL());
-        $ip_query_builder->bindTo($stmt_ip);
-        $stmt_ip->execute();
-        $ipData = $stmt_ip->fetchAll();
+        $ipData = $ip_query_builder->getFetchAll($db);
 
         $user_query_builder = new QueryBuilder($dialect);
-
         $user_query_builder->table('httpAction')
             ->select(['haUserFK', $user_query_builder->raw('count(*) as count')])
             ->groupBy(['haUserFK'])->orderBy($user_query_builder->raw('count'), 'DESC');
-        $stmt_user = $db->prepare($user_query_builder->toSQL());
-        $user_query_builder->bindTo($stmt_user);
-        $stmt_user->execute();
-        $userData = $stmt_user->fetchAll();
+        $userData = $user_query_builder->getFetchAll($db);
 
         $ua_query_builder = new QueryBuilder($dialect);
-
         $ua_query_builder->table('httpAction')
             ->select(['haUserAgent', $ua_query_builder->raw('count(*) as count')])
             ->groupBy(['haUserAgent'])->orderBy($ua_query_builder->raw('count'), 'DESC');
-        $stmt_ua = $db->prepare($ua_query_builder->toSQL());
-        $ua_query_builder->bindTo($stmt_ua);
-        $stmt_ua->execute();
-        $uaData = $stmt_ua->fetchAll();
+        $uaData = $ua_query_builder->getFetchAll($db);
 
-        $filter_form->addMultiSelectGroup("ip", "IP Addresses", $ipData, "haIP");
-        $filter_form->addMultiSelectGroup("user", "User FKs", $userData, "haUserFK");
-        $filter_form->addMultiSelectGroup("ua", "User Agents", $uaData, "haUserAgent");
+        $script = $dom->dom->createElement('script');
+        $script->setAttribute('src', 'Static/dashboard.js');
+        $dom->head->appendChild($script);
 
-        $filter_form->submitRow();
-
-        // Link JS
-        $dom->fabricateChild(parent : $dom->body, tagName : "script", attributes : ["src" => "Static/dashboard.js"]);
-
-        echo $dom->dom->saveHTML();
+        return View::render('dashboard/index', [
+            'graphData' => $graphData,
+            'ipData' => $ipData,
+            'userData' => $userData,
+            'uaData' => $uaData
+        ]);
     }
 }
 ?>

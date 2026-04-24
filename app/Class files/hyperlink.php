@@ -28,20 +28,21 @@ class Hyperlink {
         $method = "POST";
         
         $formId = "nav_" . str_replace([' ', '.'], '_', $label);
-        $form = new xmlForm($formId, $dom, $parent);
+        $form = new xmlForm($formId, $dom);
         
         // If it's an action, we POST directly to it. 
         // If it's a page, we POST to self for PRG handling in config.php.
         $target = $isAction ? $url : "";
-        $form->prep($target, $method, false); 
+        $form->prep($target, $method, true); 
+        $form->setCompact(true);
         $form->formWrapper->setAttribute("class", "form_hyperlink");
 
         if (!$isAction) {
-            $form->addInput($form->formWrapper, 'nav_target', 'hidden', $url);
+            $form->addField('nav_target', '', 'hidden', $url);
         }
 
         foreach ($post_params as $key => $value) {
-            $form->addInput($form->formWrapper, $key, 'hidden', $value);
+            $form->addField($key, '', 'hidden', $value);
         }
 
         $form->formWrapper->setAttribute('id', $formId);
@@ -60,9 +61,11 @@ class Hyperlink {
             $hyperlink_attributes['disabled'] = 'disabled';
         }
         
-        $form->addHyperlinkSubmit($form->formWrapper, $formId, $hyperlink_attributes);
+        $form->addHyperlinkSubmit($formId, $hyperlink_attributes);
 
-        return $form->formWrapper;
+        $element = $form->render();
+        $parent->append($element);
+        return $element;
     }
 
     /**

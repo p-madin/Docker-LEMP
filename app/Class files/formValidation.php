@@ -23,7 +23,12 @@ class FormValidation {
         $cleanData = $security->process($dataToClean);
 
         // 2. Validation
+        global $db;
         $validator = new \App\Security\Validator($inputData);
+        if (isset($db)) {
+            $validator->setDb($db);
+        }
+
         if (isset($formSchemas[$schemaName])) {
             foreach ($formSchemas[$schemaName] as $field) {
                 if (!empty($field['rules'])) {
@@ -44,7 +49,8 @@ class FormValidation {
             $redirectUrl = is_callable($failRedirectClosure) ? $failRedirectClosure($cleanData) : $failRedirectClosure;
 
             if (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) {
-                echo json_encode(['redirect' => $redirectUrl]);
+                http_response_code(400);
+                echo json_encode(['errors' => $validator->errors()]);
                 exit;
             }
             header("Location: " . $redirectUrl);

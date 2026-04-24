@@ -68,15 +68,18 @@ class WafMiddleware implements MiddlewareInterface {
                 }
 
                 if ($ip != "127.0.0.1" && $triggered) {
-                    // Log to WAF inside the existing httpAction
+                    // Log the attack to httpAction
                     $qb = new QueryBuilder($dialect);
-                    // Update the last recorded httpAction for this IP (which should be the current request from preinclude.php)
-                    $sql = $qb->table('httpAction')
-                              ->where('haIP', '=', $ip)
-                              ->update([
-                                  'haWafPayload' => substr($key . "=" . $value, 0, 65535),
-                                  'haWafRuleTriggered' => substr($rule, 0, 255)
-                              ]) . " ORDER BY haPK DESC LIMIT 1";
+                    $sql = $qb->table('httpAction')->insert([
+                        'haSessionFK' => 0, // No session yet
+                        'haUserFK'    => 0,
+                        'haIP'        => $ip,
+                        'haURL'       => substr($request->server['REQUEST_URI'] ?? '', 0, 512),
+                        'haMethod'    => substr($request->server['REQUEST_METHOD'] ?? '', 0, 8),
+                        'haUserAgent' => substr($request->server['HTTP_USER_AGENT'] ?? '', 0, 512),
+                        'haWafPayload' => substr($key . "=" . $value, 0, 65535),
+                        'haWafRuleTriggered' => substr($rule, 0, 255)
+                    ]);
 
                     $stmt = $db->prepare($sql);
                     $qb->bindTo($stmt);

@@ -4,11 +4,16 @@ include_once(__DIR__ . "/db.php");
 include_once(__DIR__ . "/QueryBuilder.php");
 include_once(__DIR__ . "/Security/SecurityValidation.php");
 include_once(__DIR__ . "/session.php");
+include_once(__DIR__ . "/Component.php");
+include_once(__DIR__ . "/Components/FlexTableComponent.php");
+include_once(__DIR__ . "/Components/FormComponent.php");
 include_once(__DIR__ . "/dataGraph.php");
 include_once(__DIR__ . "/Router/Request.php");
 include_once(__DIR__ . "/Router/MiddlewareInterface.php");
 include_once(__DIR__ . "/Router/Router.php");
 include_once(__DIR__ . "/Router/ControllerInterface.php");
+include_once(__DIR__ . "/View.php");
+include_once(__DIR__ . "/Components/LayoutComponent.php");
 
 include_once(__DIR__ . "/errorHandler.php");
 include_once(__DIR__ . "/SystemConfigController.php");
@@ -19,15 +24,15 @@ include_once(__DIR__ . "/xmlForm.php");
 include_once(__DIR__ . "/DatabaseForm.php");
 include_once(__DIR__ . "/formValidation.php");
 include_once(__DIR__ . "/navbar.php");
-
 include_once(__DIR__ . "/Security/RateLimiter.php");
-include_once(__DIR__ . "/Security/DatabaseConfigMiddleware.php");
-include_once(__DIR__ . "/Security/SessionMiddleware.php");
-include_once(__DIR__ . "/Security/HttpActionMiddleware.php");
-include_once(__DIR__ . "/Security/WafMiddleware.php");
-include_once(__DIR__ . "/Security/CsrfMiddleware.php");
-include_once(__DIR__ . "/Security/ExtranetMiddleware.php");
-include_once(__DIR__ . "/Security/ViewDecorationMiddleware.php");
+
+include_once(__DIR__ . "/Middleware/DatabaseConfigMiddleware.php");
+include_once(__DIR__ . "/Middleware/SessionMiddleware.php");
+include_once(__DIR__ . "/Middleware/HttpActionMiddleware.php");
+include_once(__DIR__ . "/Middleware/WafMiddleware.php");
+include_once(__DIR__ . "/Middleware/CsrfMiddleware.php");
+include_once(__DIR__ . "/Middleware/ExtranetMiddleware.php");
+include_once(__DIR__ . "/Middleware/ViewDecorationMiddleware.php");
 
 
 // Setup Router, Request, and global DOM
@@ -40,12 +45,14 @@ $formSchemas;
 // 1. Establish Database Connection & Fetch Config
 $router->use(new DatabaseConfigMiddleware());
 
-// 2. Establish Session Controller & Run PRG Handler
+// 2. Security Checks (WAF)
+$router->use(new WafMiddleware());
+
+// 3. Establish Session Controller & Run PRG Handler
 $router->use(new SessionMiddleware());
 
-// 3. Security Checks (WAF, CSRF, etc.)
+// 4. Security Checks (CSRF, etc.)
 $router->use(new HttpActionMiddleware());
-$router->use(new WafMiddleware());
 $router->use(new ExtranetMiddleware());
 $router->use(new CsrfMiddleware());
 

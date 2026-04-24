@@ -10,13 +10,23 @@ VALUES ('Stack_Two', 2, 'Stack_Two', 'Stack_Two', '$2y$10$fkjGHwVncM0YQ9Jg0gHvku
 INSERT INTO sysConfig (scName, scValue) VALUES ('myDomain', 'localhost');
 INSERT INTO sysConfig (scName, scValue) VALUES ('myDomainProtocol', 'http');
 
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Home', 'c', '/', 'IndexController', false, 1);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Dashboard', 'p', '/dashboard', 'DashboardController', true, 2);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Accounts', 'p', '/account_management', 'AccountManagementController', true, 3);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Error Log', 'p', '/error_log', 'ErrorLogController', true, 4);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Navbars', 'p', '/navbar_management', 'NavbarManagementController', true, 5);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Forms', 'p', '/form_management', 'FormManagementController', true, 6);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Logout', 'c', '/logout', 'LogoutAction', true, 7);
+-- Root Items
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Home', 'c', '/', 'IndexController', false, 1, NULL);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Dashboard', 'p', '/dashboard', 'DashboardController', true, 2, NULL);
+
+-- Settings Menu
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Settings', 'p', NULL, NULL, true, 3, NULL);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Accounts', 'p', '/account_management', 'AccountManagementController', true, 1, 3);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Error Log', 'p', '/error_log', 'ErrorLogController', true, 2, 3);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Banned IPs', 'p', '/banned_ips', 'BannedIpManagementController', true, 3, 3);
+
+-- CMS Menu
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('CMS', 'p', NULL, NULL, true, 4, NULL);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Navbars', 'p', '/navbar_management', 'NavbarManagementController', true, 1, 7);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Forms', 'p', '/form_management', 'FormManagementController', true, 2, 7);
+
+-- Logout
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Logout', 'c', '/logout', 'LogoutAction', true, 5, NULL);
 
 -- Actions (Internal Routes)
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Login Action', 'a', '/login', 'LoginAction', false, 0);
@@ -29,15 +39,16 @@ INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbPro
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Column Action', 'a', '/editColumn', 'EditColumnAction', true, 0);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Form Action', 'a', '/editForm', 'EditFormAction', true, 0);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Navbar Action', 'a', '/editNavbar', 'EditNavbarAction', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Unban IP Action', 'a', '/unban_ip', 'UnbanIpAction', true, 0);
 
-INSERT INTO tblForm (tfName, tfReadOnly) VALUES ('login', false), ('register', false), ('editUser', false), ('navbar', false), ('editForm', true), ('editColumn', true);
+INSERT INTO tblForm (tfName, tfReadOnly) VALUES ('login', false), ('register', false), ('editUser', false), ('navbar', false), ('editForm', true), ('editColumn', true), ('banned_ips', true);
 
 INSERT INTO tblColumns (tcFormFK, tcName, tcLabel, tcType, tcRules, tcOrder) VALUES
 (1, 'username', 'Username', 'text', '{"required":true}', 1),
 (1, 'password', 'Password', 'password', '{"required":true}', 2),
-(2, 'username', 'Username', 'text', '{"required":true,"min":3}', 1),
+(2, 'username', 'Username', 'text', '{"required":true,"min":3,"unique":"registration_username"}', 1),
 (2, 'password', 'Password', 'password', '{"required":true,"min":6}', 2),
-(2, 'confirm_password', 'Confirm Password', 'password', '{"match":"password"}', 3),
+(2, 'confirm_password', 'Confirm Password', 'password', '{"required":true,"match":"password"}', 3),
 (2, 'name', 'Name', 'text', '{"required":true}', 4),
 (2, 'age', 'Age', 'number', '{"required":true,"numeric":true}', 5),
 (2, 'city', 'City', 'text', '{}', 6),
@@ -53,6 +64,7 @@ INSERT INTO tblColumns (tcFormFK, tcName, tcLabel, tcType, tcRules, tcOrder) VAL
 (4, 'nbDiscriminator', 'Discriminator (c/p)', 'text', '{"required":true,"min":1,"max":1}', 3),
 (4, 'nbPath', 'Route/Path', 'text', '{"required":true}', 4),
 (4, 'nbOrder', 'Display Order', 'number', '{"required":true,"numeric":true}', 5),
+(4, 'nbParentFK', 'Parent Item ID (Optional)', 'number', '{"numeric":true}', 6),
 (5, 'tfPK', '', 'hidden', '{}', 1),
 (5, 'tfName', 'Form Name', 'text', '{"required":true,"min":1}', 2),
 (6, 'tcPK', '', 'hidden', '{}', 1),

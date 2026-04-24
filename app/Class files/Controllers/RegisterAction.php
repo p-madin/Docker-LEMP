@@ -29,7 +29,10 @@ class RegisterAction implements ControllerInterface {
         $stmt->execute();
 
         if (isset($request->server['HTTP_ACCEPT']) && strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false) {
-            echo json_encode(['redirect' => '/']);
+            echo json_encode([
+                'success' => true,
+                'html' => '<div class="success-message"><h1>Registration Successful!</h1><p>Welcome, ' . htmlspecialchars($cleanData['name']) . '. You can now sign in.</p><a href="/">Go to Home</a></div>'
+            ]);
             exit;
         }
         header("location:/");

@@ -1,85 +1,23 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Extracted validation logic for a single input
-    function validateInput(input, form) {
-        // Skip buttons, fieldsets, hidden inputs
-        if (['submit', 'button', 'fieldset', 'hidden'].includes(input.type)) return true;
+/**
+ * validator.js - Merged Validation Engine (Phase 7)
+ * 
+ * Combines schema-driven rules (data-rules) with advanced visual feedback.
+ */
 
-        let isValid = true;
-        let message = '';
-
-        if (!input.checkValidity()) {
-            isValid = false;
-            message = input.validationMessage;
-            if (input.validity.valueMissing) {
-                message = `The ${input.name} field is required.`;
-            }
-        }
-
-        // Custom Match validation (e.g. confirm_password)
-        if (input.name === 'confirm_password') {
-            const passwordInput = form.querySelector('[name="password"]');
-            if (passwordInput && input.value !== passwordInput.value) {
-                isValid = false;
-                message = "The confirm_password must match password.";
-            }
-        }
-
-        const flexCell = input.closest('.flex-cell');
-        const flexRow = input.closest('.flex-row');
-
-        if (flexCell && flexRow) {
-            // 1. Clear previous errors for this specific input
-            const existingErrors = flexCell.querySelectorAll('.validation-error');
-            existingErrors.forEach(err => err.remove());
-            flexRow.classList.remove('client-error');
-            flexRow.classList.remove('satisfied');
-
-            // 2. Add feedback based on status
-            if (!isValid) {
-                flexRow.classList.add('client-error');
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'validation-error client-validation-error';
-                errorDiv.textContent = message;
-                flexCell.appendChild(errorDiv);
-            } else if (input.value.length > 0) {
-                // Only show satisfied (green) if there's actually a value
-                flexRow.classList.add('satisfied');
-            }
-        }
-
-        return isValid;
+class Validator {
+    constructor() {
+        this.submitted = false;
+        this.init();
     }
 
-    // Attach real-time validation to all inputs using event delegation
-    document.addEventListener('input', (e) => {
-        const disableValidationToggle = document.getElementById('disable_client_validation');
-        if (disableValidationToggle && disableValidationToggle.checked) return;
+    init() {
+        document.addEventListener('submit', (e) => this.handleSubmit(e));
+        document.addEventListener('blur', (e) => this.handleBlur(e), true);
+        document.addEventListener('input', (e) => this.handleInput(e), true);
+        document.addEventListener('click', (e) => this.handleHyperlinkClick(e));
+    }
 
-        const form = e.target.closest('form[novalidate]');
-        if (form && ['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName)) {
-            validateInput(e.target, form);
-
-            // Special case: if password changes, proactively revalidate confirm_password
-            if (e.target.name === 'password') {
-                const confirmPass = form.querySelector('[name="confirm_password"]');
-                if (confirmPass && confirmPass.value.length > 0) {
-                    validateInput(confirmPass, form);
-                }
-            }
-        }
-    });
-
-    // Trigger initial validation on page load for specific forms
-    document.querySelectorAll('form[novalidate][data-initial-validate]').forEach(form => {
-        Array.from(form.elements).forEach(input => {
-            if (['INPUT', 'SELECT', 'TEXTAREA'].includes(input.tagName)) {
-                validateInput(input, form);
-            }
-        });
-    });
-
-    // Handle hyperlink-form <a> tag clicks (supports Ctrl/Cmd+click → new tab)
-    document.addEventListener('click', (e) => {
+    handleHyperlinkClick(e) {
         const link = e.target.closest('form.form_hyperlink a');
         if (!link) return;
 
@@ -101,76 +39,245 @@ document.addEventListener('DOMContentLoaded', () => {
             form.target = '_self';
             form.submit();
         }
-    });
+    }
 
-    // Handle form submission
-    document.addEventListener('submit', async (e) => {
-        const form = e.target;
-
-        // Only run this on forms we control (those with novalidate)
-        if (!form.hasAttribute('novalidate')) return;
-
-        const disableValidationToggle = document.getElementById('disable_client_validation');
-        if (disableValidationToggle && disableValidationToggle.checked) {
-            // Let the browser submit the form normally (server-side validation only)
-            return;
+    handleBlur(e) {
+        if (this.shouldValidate(e.target)) {
+            this.validateField(e.target);
         }
+    }
 
+    handleInput(e) {
+        const input = e.target;
+        if (!this.shouldValidate(input)) return;
+
+        // Clear error as user types to give immediate positive feedback
+        this.clearError(input);
+        
+        // Real-time validation: Validate as the user types
+        this.validateField(input);
+
+        // Proactive Revalidation: If password changes, re-check confirm_password
+        if (input.name === 'password') {
+            const form = input.closest('form');
+            const confirmPass = form?.querySelector('[name="confirm_password"]');
+            if (confirmPass && confirmPass.value.length > 0) {
+                this.validateField(confirmPass);
+            }
+        }
+    }
+
+    shouldValidate(input) {
+        return input.hasAttribute('data-rules') || input.name === 'confirm_password';
+    }
+
+    async handleSubmit(e) {
+        const form = e.target;
+        if (!form.classList.contains('flex-form')) return;
+
+        // Skip if client validation is explicitly disabled
+        const noValidateToggle = document.getElementById('disable_client_validation');
+        if (noValidateToggle && noValidateToggle.checked) return;
+
+        this.submitted = true;
         e.preventDefault();
 
-
-        let isFormValid = true;
-
-        // Validate all elements on submit
-        Array.from(form.elements).forEach(input => {
-            if (!validateInput(input, form)) {
-                isFormValid = false;
+        // 1. Client-side validation
+        let isValid = true;
+        const inputs = form.querySelectorAll('[data-rules], [name="confirm_password"]');
+        inputs.forEach(input => {
+            if (!this.validateField(input)) {
+                isValid = false;
             }
         });
 
-        // Submit via Fetch if valid
-        if (isFormValid) {
-            try {
-                const formData = new FormData(form);
+        if (!isValid) {
+            console.warn('Form validation failed on client.');
+            return;
+        }
 
-                // Ensure unchecked checkboxes send "not checked"
-                form.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                    if (!checkbox.checked) {
-                        formData.append(checkbox.name, 'not checked');
-                    }
-                });
+        // 2. AJAX Submission
+        await this.submitForm(form);
+    }
 
-                const response = await fetch(form.action, {
-                    method: form.method || 'POST',
-                    body: formData,
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                });
+    validateField(input) {
+        const rulesString = input.getAttribute('data-rules') || '';
+        const rules = rulesString ? rulesString.split('|') : [];
+        const value = input.value.trim();
+        const flexRow = input.closest('.flex-row');
+        
+        this.clearError(input);
 
-                if (response.ok) {
-                    try {
-                        const result = await response.json();
-                        if (result.redirect) {
-                            window.location.href = result.redirect;
-                        } else {
-                            console.error('No redirect provided by server');
-                        }
-                    } catch (e) {
-                        console.error("Failed to parse JSON response:", e);
-                        // If we get a 302 or similar that the browser followed to HTML, 
-                        // and it's a navigation form, we might just want to reload or follow suit?
-                        // For now, logging it is safer to see if it persists.
-                    }
-                } else {
-                    console.error('Server returned an error status:', response.status);
-                    // Fall back to general failure navigation if something broke
-                    window.location.href = '/index.php?error=server_failure';
-                }
+        // Fallback for confirm_password if not in schema but present in DOM
+        if (input.name === 'confirm_password' && !rules.some(r => r.startsWith('match'))) {
+            rules.push('match:password');
+        }
 
-            } catch (err) {
-                console.error("Fetch submission failed:", err);
+        const knownRules = ['required', 'min', 'max', 'numeric', 'email', 'match', 'unique'];
+
+        for (let rule of rules) {
+            let [ruleName, param] = rule.split(':');
+            
+            if (!knownRules.includes(ruleName)) {
+                throw new Error(`Configuration Integrity Exception: Unknown validation rule "${ruleName}" encountered on field "${input.name}".`);
             }
+
+            if (ruleName === 'required' && !value) {
+                this.showError(input, 'This field is required.');
+                return false;
+            }
+            
+            if (value || ruleName === 'match') {
+                if (ruleName === 'min' && value.length < parseInt(param)) {
+                    this.showError(input, `Minimum length is ${param} characters.`);
+                    return false;
+                }
+                if (ruleName === 'max' && value.length > parseInt(param)) {
+                    this.showError(input, `Maximum length is ${param} characters.`);
+                    return false;
+                }
+                if (ruleName === 'numeric' && isNaN(value)) {
+                    this.showError(input, 'Must be a number.');
+                    return false;
+                }
+                if (ruleName === 'email' && !/^\S+@\S+\.\S+$/.test(value)) {
+                    this.showError(input, 'Invalid email address.');
+                    return false;
+                }
+                if (ruleName === 'match') {
+                    const form = input.closest('form');
+                    const target = form.querySelector(`[name="${param}"]`);
+                    if (target && value !== target.value) {
+                        this.showError(input, `Does not match ${param}.`);
+                        return false;
+                    }
+                }
+            }
+        }
+
+        // If we reach here, the field is valid
+        if (value.length > 0 && flexRow) {
+            flexRow.classList.add('satisfied');
+        }
+        return true;
+    }
+
+    showError(input, message) {
+        const container = input.closest('.flex-cell');
+        const flexRow = input.closest('.flex-row');
+        if (!container) return;
+
+        let errorDiv = container.querySelector('.validation-error');
+        if (!errorDiv) {
+            errorDiv = document.createElement('div');
+            errorDiv.className = 'validation-error';
+            container.prepend(errorDiv);
+        }
+        errorDiv.textContent = message;
+        input.classList.add('input-error');
+        if (flexRow) {
+            flexRow.classList.add('client-error');
+            flexRow.classList.remove('satisfied');
+        }
+    }
+
+    clearError(input) {
+        const container = input.closest('.flex-cell');
+        const flexRow = input.closest('.flex-row');
+        if (!container) return;
+
+        const errorDiv = container.querySelector('.validation-error');
+        if (errorDiv) errorDiv.remove();
+        
+        input.classList.remove('input-error');
+        if (flexRow) {
+            flexRow.classList.remove('client-error');
+            flexRow.classList.remove('satisfied');
+        }
+    }
+
+    async submitForm(form) {
+        const submitBtn = form.querySelector('[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.setAttribute('data-original-value', submitBtn.value);
+            submitBtn.value = 'Processing...';
+        }
+
+        const formData = new FormData(form);
+        const url = form.getAttribute('action') || window.location.href;
+
+        // Ensure unchecked checkboxes send "not checked"
+        form.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            if (!checkbox.checked) {
+                formData.append(checkbox.name, 'not checked');
+            }
+        });
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                if (result.redirect) {
+                    window.location.href = result.redirect;
+                } else if (result.success) {
+                    this.handleSuccess(form, result);
+                }
+            } else {
+                if (result.errors) {
+                    this.displayServerErrors(form, result.errors);
+                } else {
+                    console.error('Server error:', result.message || 'Unknown error');
+                }
+            }
+        } catch (error) {
+            console.error('Submission failed:', error);
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.value = submitBtn.getAttribute('data-original-value');
+            }
+        }
+    }
+
+    displayServerErrors(form, errors) {
+        for (let field in errors) {
+            const input = form.querySelector(`[name="${field}"]`);
+            if (input) {
+                const messages = Array.isArray(errors[field]) ? errors[field] : [errors[field]];
+                this.showError(input, messages[0]);
+            }
+        }
+    }
+
+    handleSuccess(form, result) {
+        if (result.html) {
+            const container = form.closest('.container') || form.parentNode;
+            container.innerHTML = result.html;
+        } else {
+            alert('Success!');
+        }
+    }
+}
+
+// Initialize on DOM load
+document.addEventListener('DOMContentLoaded', () => {
+    window.validator = new Validator();
+
+    // Initial Validation for flashed data: 
+    // Validate any field that already has a value on page load
+    document.querySelectorAll('[data-rules], [name="confirm_password"]').forEach(input => {
+        if (input.value.trim().length > 0) {
+            window.validator.validateField(input);
         }
     });
 });

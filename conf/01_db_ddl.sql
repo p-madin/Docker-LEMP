@@ -58,7 +58,9 @@ CREATE TABLE tblNavBar(
     nbControllerClass VARCHAR(64) NULL,
     nbProtected TINYINT(1) NOT NULL,
     nbOrder INT NOT NULL,
-    PRIMARY KEY(nbPK)
+    nbParentFK INT NULL DEFAULT NULL,
+    PRIMARY KEY(nbPK),
+    FOREIGN KEY(nbParentFK) REFERENCES tblNavBar(nbPK) ON DELETE SET NULL
 );
 
 CREATE UNIQUE INDEX idx_session_chars ON tblSession(sessChars);

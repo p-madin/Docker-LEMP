@@ -36,8 +36,17 @@ Legacy `.php` extensions have been removed from the application's routing regist
 
 ## 5. Controller Migration
 The following legacy modules were successfully refactored into the `ControllerInterface` pattern:
-*   **Pages**: `Dashboard`, `AccountManagement`, `ErrorLog`, `NavbarManagement`, `FormManagement`.
-*   **Actions**: `Login`, `Logout`, `Register`, `UpdateAccount`, `EditNavbar`, `EditForm`, `EditColumn`.
+*   **Pages**: `Dashboard`, `AccountManagement`, `ErrorLog`, `NavbarManagement`, `FormManagement`, `BannedIpManagement`.
+*   **Actions**: `Login`, `Logout`, `Register`, `UpdateAccount`, `EditNavbar`, `EditForm`, `EditColumn`, `UnbanIpAction`.
 
-## Status: COMPLETED
-Implementation is fully verified. The expanded test suite (Test 10 & 11) confirms that all management CRUD operations are functional within the new Front Controller architecture. Phase 4 is hardened and stable.
+## Phase 4.1: Post-Implementation Hardening
+Following the successful deployment of the Front Controller, the architecture was further hardened to improve resource resilience and security:
+
+*   **Resource-Optimized Pipeline**: The middleware stack was reordered to run `WafMiddleware` (IP/Ban check) *before* `SessionMiddleware`. This ensures that banned or malicious clients are rejected before the server spends resources initializing a session.
+*   **Administrative IP Management**: A new management interface allows administrators to view and remove IP bans. The "Unban" action automatically clears the client's `httpAction` history, resetting rate limits and allowing immediate re-access.
+*   **Entry-Point Enforcement (Nginx Lockdown)**: Nginx was reconfigured to block all direct access to `.php` files except for `index.php` and `exception.php`. This forces 100% of the application's PHP execution through the WAF and Router.
+
+*   **Decoupled Logging**: `WafMiddleware` was updated to perform independent logging for blocked attacks, ensuring audit trails are maintained even when the request is terminated early.
+
+## Status: COMPLETED & HARDENED
+Implementation is fully verified. The architecture now provides high performance for legitimate users while being extremely resilient against automated probes and resource-exhaustion attacks. Phase 4 is fully stable.
