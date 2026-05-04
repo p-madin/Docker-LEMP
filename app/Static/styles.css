@@ -50,7 +50,8 @@ h1 {
 /* doc */
 
 body {
-    background-color: white
+    background-color: white;
+    margin: 0
 }
 
 body>div {
@@ -147,6 +148,10 @@ body>div details[open] summary {
     display: flex;
 }
 
+.flex-cell.flex-wide {
+    flex: 3 1 0;
+}
+
 /* end flex table */
 
 /* navbar */
@@ -158,11 +163,49 @@ body>div details[open] summary {
     background-color: #f8f9fa;
     z-index: 1000;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-height: 20px
 }
+
+#main-navbar>.flex-row {
+    align-items: baseline;
+    max-height: 20px
+}
+
+#main-navbar>.flex-row .flex-cell.icon {
+    align-self: flex-start;
+    flex: unset;
+    background-color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin: 0;
+    padding: 0;
+}
+
+#main-navbar>.flex-row .flex-cell.icon.disabled {
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+#main-navbar>.flex-row .flex-cell.icon.disabled a {
+    color: grey;
+}
+
+#main-navbar>.flex-row .flex-cell.icon a {
+    text-decoration: none;
+    text-wrap-mode: nowrap;
+}
+
+#main-navbar>.flex-row .flex-cell.logo {
+    background-color: rgba(0, 0, 0, 0);
+    width: 50px;
+    height: 50px;
+}
+
 
 #main-navbar .flex-cell {
     text-align: center;
-    padding: 10px;
+    padding: 0 10px;
     border: none
 }
 
@@ -207,14 +250,12 @@ body>div details[open] summary {
 
 #main-navbar .nav-dropdown {
     position: relative;
-
 }
 
 #main-navbar .nav-dropdown .nav-summary {
     cursor: pointer;
     font-weight: bold;
     list-style: none;
-    padding: 10px;
     outline: none;
     color: green;
     text-decoration: underline;
@@ -384,7 +425,6 @@ form.form_hyperlink a.delete {
 form.form_hyperlink a {
     display: inline-block;
     color: blue;
-    padding: 2px;
     background: linear-gradient(red, red) center / 0% 100% no-repeat;
     transition: all 250ms ease-out;
 }
@@ -453,3 +493,26 @@ form.form_hyperlink a.ajax {
 }
 
 /* end cms */
+
+/* platform recovery */
+
+.platform-recovery-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.recovery-tools {
+    background: #f8d7da;
+    padding: 20px;
+    margin-bottom: 30px;
+    border-radius: 5px;
+    border: 1px solid #f5c6cb;
+}
+
+.recovery-tools h3 {
+    margin-top: 0;
+    color: #721c24;
+}
+
+/* end platform recovery */

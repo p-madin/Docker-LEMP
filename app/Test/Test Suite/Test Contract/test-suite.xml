@@ -291,6 +291,50 @@
           </expected>
         </step>
         
+        <!-- 3. Verify Undo/Redo cycle on the Delete action (Event Sourcing State Assurance) -->
+        <step>
+          <action>Click</action>
+          <selector>.undo-button</selector>
+        </step>
+        <step>
+          <action>AssertText</action>
+          <expected>
+            <contains>Temporary Test Link</contains>
+          </expected>
+        </step>
+        <step>
+          <action>Click</action>
+          <selector>.redo-button</selector>
+        </step>
+        <step>
+          <action>AssertText</action>
+          <expected>
+            <not_contains>Temporary Test Link</not_contains>
+          </expected>
+        </step>
+        <step>
+          <action>Click</action>
+          <selector>.undo-button</selector>
+        </step>
+        <step>
+          <action>AssertText</action>
+          <expected>
+            <contains>Temporary Test Link</contains>
+          </expected>
+        </step>
+        
+        <!-- 4. Final Tear Down (Manual Delete to ensure environment is clean) -->
+        <step>
+          <action>Click</action>
+          <selector>.form_hyperlink[id^="delete-navbar-/test_path"]</selector>
+        </step>
+        <step>
+          <action>AssertText</action>
+          <expected>
+            <not_contains>Temporary Test Link</not_contains>
+          </expected>
+        </step>
+        
         <step>
           <action>Click</action>
           <selector>logout</selector>

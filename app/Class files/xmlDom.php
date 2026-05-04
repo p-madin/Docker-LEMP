@@ -41,39 +41,13 @@ class xmlDom{
         $this->setTitle("LEMP Stack App");
     }
 
-    public function decorate_javascript(){
-        $script = $this->dom->createElement('script');
-
-        $script->setAttribute('type', 'text/javascript');
-        $script->setAttribute('src', 'Static/exceptions.js');
-
-        $this->head->appendChild($script);
-
-        $script2 = $this->dom->createElement('script');
-        $script2->setAttribute('type', 'text/javascript');
-        $script2->setAttribute('src', 'Static/validator.js');
-        $this->head->appendChild($script2);
+    public function injectAssets(AssetManager $assetManager){
+        $assetManager->applyToDom($this);
     }
 
-    public function decorate_cascade(){
-        $link = $this->dom->createElement('link');
 
-        $link->setAttribute('rel', 'stylesheet');
-        $link->setAttribute('type', 'text/css');
-        $link->setAttribute('href', 'Static/styles.css');
-
-        $this->head->appendChild($link);
-        $link = $this->dom->createElement('link');
-
-        $link->setAttribute('rel', 'stylesheet');
-        $link->setAttribute('type', 'text/css');
-        $link->setAttribute('href', 'Static/dataGraphStyles.css');
-
-        $this->head->appendChild($link);
-    }
-
-    public function decorate_navbar($navbar, $sessionController){
-        $navbar->render($this, $sessionController);
+    public function decorate_navbar($navbar, $sessionController, $assetManager){
+        $navbar->render($this, $sessionController, $assetManager);
     }
 
     public function setTitle($title) {

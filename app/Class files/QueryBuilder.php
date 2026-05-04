@@ -115,6 +115,9 @@ class QueryBuilder {
      */
     public function whereIn(string $column, array $values, string $boolean = 'AND', bool $not = false) {
         $paramNames = [];
+        if(count($values)==0){
+            return $this->where($column,'=','null');
+        }
         foreach ($values as $value) {
             $paramNames[] = $this->nextParam($value);
         }

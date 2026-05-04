@@ -4,6 +4,7 @@ include_once(__DIR__ . "/db.php");
 include_once(__DIR__ . "/QueryBuilder.php");
 include_once(__DIR__ . "/Security/SecurityValidation.php");
 include_once(__DIR__ . "/session.php");
+include_once(__DIR__ . "/EventStore.php");
 include_once(__DIR__ . "/Component.php");
 include_once(__DIR__ . "/Components/FlexTableComponent.php");
 include_once(__DIR__ . "/Components/FormComponent.php");
@@ -25,6 +26,7 @@ include_once(__DIR__ . "/DatabaseForm.php");
 include_once(__DIR__ . "/formValidation.php");
 include_once(__DIR__ . "/navbar.php");
 include_once(__DIR__ . "/Security/RateLimiter.php");
+include_once(__DIR__ . "/AssetManager.php");
 
 include_once(__DIR__ . "/Middleware/DatabaseConfigMiddleware.php");
 include_once(__DIR__ . "/Middleware/SessionMiddleware.php");
@@ -33,12 +35,15 @@ include_once(__DIR__ . "/Middleware/WafMiddleware.php");
 include_once(__DIR__ . "/Middleware/CsrfMiddleware.php");
 include_once(__DIR__ . "/Middleware/ExtranetMiddleware.php");
 include_once(__DIR__ . "/Middleware/ViewDecorationMiddleware.php");
+include_once(__DIR__ . "/Middleware/CspMiddleware.php");
+include_once(__DIR__ . "/Middleware/TransactionEndMiddleware.php");
 
 
 // Setup Router, Request, and global DOM
 $router = new Router();
 $request = new Request();
 $dom = new xmlDom();
+$assetManager = new AssetManager();
 $formSchemas;
 
 // Global Middlewares Pipeline (Execution Order)
@@ -51,10 +56,14 @@ $router->use(new WafMiddleware());
 // 3. Establish Session Controller & Run PRG Handler
 $router->use(new SessionMiddleware());
 
-// 4. Security Checks (CSRF, etc.)
+// 4. Security Checks (CSRF, CSP, etc.)
 $router->use(new HttpActionMiddleware());
 $router->use(new ExtranetMiddleware());
 $router->use(new CsrfMiddleware());
+$router->use(new CspMiddleware());
 
 // 4. Final View Decoration (DOM/Navbar)
 $router->use(new ViewDecorationMiddleware());
+
+// 5. Transaction End (Unlock Session)
+$router->use(new TransactionEndMiddleware());

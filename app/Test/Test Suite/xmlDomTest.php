@@ -40,9 +40,12 @@ class xmlDomTest extends TestSuiteBase {
                 unlink($this->cookieFile);
                 $this->cookieFile = sys_get_temp_dir() . '/test_cookie_' . uniqid() . '.txt';
                 $GLOBALS['returnable'] .= " - Test: " . $test->name . "\n";
+                $step_number = 1;
                 foreach ($test->stepList->step as $step) {
                     $action = (string)$step->action;
-                    $GLOBALS['returnable'] .= "   - Action: $action\n";
+                    $GLOBALS['returnable'] .= "   - Step: $step_number ($action)\n";
+
+                    $step_number++;
 
                     $res = false;
                     switch ($action) {
@@ -103,6 +106,10 @@ class xmlDomTest extends TestSuiteBase {
         }
         
         $ch = $this->prepare_curl($url, $this->cookieFile);
+        
+        if (!empty($this->lastUrl)) {
+            curl_setopt($ch, CURLOPT_REFERER, $this->lastUrl);
+        }
         
         $follow = true;
         if ($expected && isset($expected->statusCode) && (int)$expected->statusCode === 302) {
@@ -218,6 +225,9 @@ class xmlDomTest extends TestSuiteBase {
         }
 
         $ch = $this->prepare_curl($actionUrl, $this->cookieFile);
+        if (!empty($this->lastUrl)) {
+            curl_setopt($ch, CURLOPT_REFERER, $this->lastUrl);
+        }
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
@@ -349,6 +359,9 @@ class xmlDomTest extends TestSuiteBase {
                 $postData[$input->getAttribute('name')] = $input->getAttribute('value');
             }
             $ch = $this->prepare_curl($actionUrl, $this->cookieFile);
+            if (!empty($this->lastUrl)) {
+                curl_setopt($ch, CURLOPT_REFERER, $this->lastUrl);
+            }
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);

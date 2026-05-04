@@ -11,11 +11,11 @@ class Router {
      */
     protected array $middlewares = [];
 
-    /**
-     * @var array $registry The master registry for all paths.
-     * Maps path string -> ['controller' => Instance, 'protected' => bool]
-     */
     protected array $registry = [];
+
+    public function getRegistry(): array {
+        return $this->registry;
+    }
 
     /**
      * Registers a global middleware into the execution pipeline.

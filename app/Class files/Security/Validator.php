@@ -63,9 +63,11 @@ class Validator {
     }
 
     protected $db;
+    protected $dialect;
 
-    public function setDb(\PDO $db) {
+    public function setDb(\PDO $db, $dialect) {
         $this->db = $db;
+        $this->dialect = $dialect;
         return $this;
     }
 
@@ -74,6 +76,8 @@ class Validator {
      */
     protected function check($field, $value, $ruleName, $ruleValue) {
         if ($ruleValue === false) return true; // skip disabled rules
+
+        global $qb;
 
         // Convert scalar parameter to array (e.g. '5' to ['5']) for rules expecting array keys
         $params = is_string($ruleValue) ? explode(',', (string)$ruleValue) : (array)$ruleValue;
@@ -152,10 +156,11 @@ class Validator {
 
                 [$table, $column] = $uniqueMappings[$alias];
 
-                // 3. Identifier Escaping (using backticks for MariaDB/MySQL)
-                $stmt = $this->db->prepare("SELECT COUNT(*) FROM `$table` WHERE `$column` = :value");
-                $stmt->execute(['value' => $value]);
-                if ($stmt->fetchColumn() > 0) {
+                // 3. Identifier Escaping
+                $qb = new \QueryBuilder($this->dialect);
+                $qb->table($table)->select([$qb->raw('COUNT(*) as count')])->where($column, '=', $value);
+                
+                if ($qb->getFetch($this->db)['count'] > 0) {
                     $this->addError($field, "This $field is already taken.");
                     return false;
                 }

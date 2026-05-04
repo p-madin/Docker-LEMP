@@ -30,6 +30,9 @@ class FlexTableComponent extends Component {
         $header = $this->fabricateChild($this->root, 'div', ['class' => 'flex-row flex-header', 'data-slot' => 'header']);
         foreach ($this->columns as $column) {
             $class = 'flex-cell' . ($column['isAction'] ? ' actions-cell' : '');
+            if (!empty($column['cssClass'])) {
+                $class .= ' ' . $column['cssClass'];
+            }
             $this->fabricateChild($header, 'div', ['class' => $class], $column['label']);
         }
 
@@ -62,16 +65,30 @@ class FlexTableComponent extends Component {
                 'style' => $depth > 0 ? "padding-left: " . ($depth * 20) . "px; background: rgba(0,0,0,0.02);" : ""
             ]);
 
-            foreach ($this->columns as $col) {
-                $class = 'flex-cell' . ($col['isAction'] ? ' actions-cell' : '');
-                $cell = $this->fabricateChild($flexRow, 'div', ['class' => $class]);
-                
-                $val = $rowData[$col['key']] ?? '';
-                
-                if (isset($col['renderCallback']) && is_callable($col['renderCallback'])) {
-                    $col['renderCallback']($this->xmlDom, $cell, $rowData);
-                } else {
-                    $cell->textContent = $this->security->process((string)$val);
+            if (isset($rowData['is_full_width']) && $rowData['is_full_width']) {
+                $cell = $this->fabricateChild($flexRow, 'div', [
+                    'class' => 'flex-cell flex-wide',
+                    'style' => 'width: 100%; border-top: 1px dashed #ccc; padding: 15px; background: #fff;'
+                ]);
+                $this->fabricateChild($cell, 'strong', [], 'Payload Data:');
+                $this->fabricateChild($cell, 'pre', [
+                    'style' => 'background: #f4f4f4; padding: 10px; border-radius: 4px; overflow: auto; margin-top: 5px;white-space: pre-wrap'
+                ], $rowData['content'] ?? '');
+            } else {
+                foreach ($this->columns as $col) {
+                    $class = 'flex-cell' . ($col['isAction'] ? ' actions-cell' : '');
+                    if (!empty($col['cssClass'])) {
+                        $class .= ' ' . $col['cssClass'];
+                    }
+                    $cell = $this->fabricateChild($flexRow, 'div', ['class' => $class]);
+                    
+                    $val = $rowData[$col['key']] ?? '';
+                    
+                    if (isset($col['renderCallback']) && is_callable($col['renderCallback'])) {
+                        $col['renderCallback']($this->xmlDom, $cell, $rowData);
+                    } else {
+                        $cell->textContent = $this->security->process((string)$val);
+                    }
                 }
             }
 

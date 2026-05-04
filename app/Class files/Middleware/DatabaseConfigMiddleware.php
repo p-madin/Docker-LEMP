@@ -2,7 +2,7 @@
 
 class DatabaseConfigMiddleware implements MiddlewareInterface {
     public function handle(Request $request, Closure $next) {
-        global $db_controller, $db, $dialect, $systemConfigController, $scvRows, $router;
+        global $db_controller, $db, $dialect, $systemConfigController, $scvRows, $router, $eventStore;
 
         // 1. Database Connection
         $vendor = getenv('DB_VENDOR') ?: 'mysql';
@@ -23,6 +23,9 @@ class DatabaseConfigMiddleware implements MiddlewareInterface {
         $db = $db_controller->connect();
         $dialect = $db_controller->getDialect();
 
+        // Initialize Global Event Store
+        $eventStore = new EventStore($db, $dialect);
+
         // 2. Error Handler
         registerErrorHandler($db, $dialect);
 
@@ -32,7 +35,10 @@ class DatabaseConfigMiddleware implements MiddlewareInterface {
 
         // 4. Initialize Router from Database (Lazy Resolution)
         // Since the router registry depends on the DB, we do it here.
-        $router->initializeFromDatabase($systemConfigController);
+        // Guard: $router may not exist in CLI contexts (e.g., cron worker).
+        if (isset($router)) {
+            $router->initializeFromDatabase($systemConfigController);
+        }
 
         return $next($request);
     }

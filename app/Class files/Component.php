@@ -101,4 +101,8 @@ abstract class Component {
         $parent->appendChild($element);
         return $element;
     }
+
+    public function getRoot(): \DOM\Element {
+        return $this->root;
+    }
 }

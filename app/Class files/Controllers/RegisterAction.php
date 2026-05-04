@@ -4,7 +4,7 @@ class RegisterAction implements ControllerInterface {
     public bool $isAction = true;
 
     public function execute(Request $request) {
-        global $sessionController, $formSchemas, $dialect, $db;
+        global $sessionController, $formSchemas, $eventStore;
 
         Hyperlink::handleAction($sessionController);
 
@@ -12,9 +12,8 @@ class RegisterAction implements ControllerInterface {
 
         $passwordHash = password_hash($request->post['password'] ?? '', PASSWORD_DEFAULT);
 
-        $qb = new QueryBuilder($dialect);
-        $qb->table('appUsers');
-        $sql = $qb->insert([
+        $authorId = $sessionController->getSystemUserId();
+        $eventId = $eventStore->append('UserCreated', [
             'name'     => $cleanData['name'] ?? '',
             'age'      => (int)($cleanData['age'] ?? 0),
             'city'     => $cleanData['city'] ?? "",
@@ -22,11 +21,9 @@ class RegisterAction implements ControllerInterface {
             'password' => $passwordHash,
             'email'    => $cleanData['email'] ?? "",
             'verified' => 0
-        ]);
-
-        $stmt = $db->prepare($sql);
-        $qb->bindTo($stmt);
-        $stmt->execute();
+        ], null, $authorId);
+        
+        $eventStore->waitUntilProcessed($eventId);
 
         if (isset($request->server['HTTP_ACCEPT']) && strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false) {
             echo json_encode([
@@ -37,6 +34,40 @@ class RegisterAction implements ControllerInterface {
         }
         header("location:/");
         exit;
+    }
+
+    public static function getEventHandlers(): array {
+        return [
+            'UserCreated' => function($payload, $db, $dialect) {
+                $qb = new QueryBuilder($dialect);
+                $insertData = [
+                    'name'     => $payload['name'] ?? '',
+                    'age'      => (int)($payload['age'] ?? 0),
+                    'city'     => $payload['city'] ?? "",
+                    'username' => $payload['username'] ?? '',
+                    'password' => $payload['password'] ?? '',
+                    'email'    => $payload['email'] ?? "",
+                    'verified' => 0
+                ];
+                if (isset($payload['auPK'])) {
+                    $insertData['auPK'] = (int)$payload['auPK'];
+                }
+                $sql = $qb->table('appUsers')->insert($insertData);
+                $stmt = $db->prepare($sql);
+                $qb->bindTo($stmt);
+                $stmt->execute();
+                return isset($payload['auPK']) ? (int)$payload['auPK'] : (int)$db->lastInsertId();
+            },
+            'UserDeleted' => function($payload, $db, $dialect) {
+                $qb = new QueryBuilder($dialect);
+                $sql = $qb->table('appUsers')
+                          ->where('auPK', '=', (int)$payload['auPK'])
+                          ->delete();
+                $stmt = $db->prepare($sql);
+                $qb->bindTo($stmt);
+                return $stmt->execute();
+            }
+        ];
     }
 }
 ?>

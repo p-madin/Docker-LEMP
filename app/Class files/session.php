@@ -28,24 +28,44 @@ class SessionController{
             $data = $stmt->fetchAll();
             if(count($data) == 0){
                 //was set but it didnt exist... redirect to login
-                setcookie("session", "", [
-                    'expires' => time() - 3600, 
-                    'path' => '/',
-                    'domain' => $scvRows['myDomain'] ?? '',
-                    'secure' => false,
-                    'httponly' => true,
-                    'samesite' => 'Strict'
-                    ]);
+                $this->destroySession();
                 header("Location: /");
                 exit;
             }else{
+                //this session is valid, verify that it is not in transaction...
+                $this->sessPK = $data[0]["sessPK"];
+
+                $count = 0;
+
+                while(1==1){
+                    $count++;
+                    $qb->table('tblSession')->select(['sessTransactionActive'])->where('sessPK', '=', $this->sessPK);
+                    $stmt = $this->db->prepare($qb->toSQL());
+                    $qb->bindTo($stmt);
+                    $stmt->execute();
+                    $data = $stmt->fetch();
+                    if($count>100){
+                        $this->destroySession();
+                        header("Location: /");
+                        exit;
+                    }
+                    if($data['sessTransactionActive'] == 0){
+                        break;
+                    }
+                    usleep(100000);
+                }
+
                 $qb = new QueryBuilder($this->dialect);
                 $qb->table('tblSession')->select(['sessPK', 'sessUser', 'sessTransactionActive'])->where('sessChars', '=', $sanitizedSessChars);
                 $sql = $qb->update(['sessUpdated' => $qb->raw('NOW()')]);
                 $stmt = $this->db->prepare($sql);
                 $qb->bindTo($stmt);
                 $stmt->execute();
-                $this->sessPK = $data[0]["sessPK"];
+
+                $sql = $qb->update(['sessTransactionActive' => 1]);
+                $stmt = $this->db->prepare($sql);
+                $qb->bindTo($stmt);
+                $stmt->execute();
             }
         }else{
             //we need to set this
@@ -105,6 +125,17 @@ class SessionController{
         $this->sessPK = null;
     }
 
+    public function completeTransaction() {
+        $qb = new QueryBuilder($this->dialect);
+        $qb->table('tblSession')->where('sessPK', '=', $this->sessPK);
+
+        $sql = $qb->update(['sessTransactionActive' => 0]);
+        $stmt = $this->db->prepare($sql);
+        $qb->bindTo($stmt);
+        $stmt->execute();
+        
+    }
+
     public function isLoggedIn(){
         $userID = $this->getPrimary('userID');
         if (is_null($userID)) return false;
@@ -127,33 +158,25 @@ class SessionController{
         return true;
     }
 
+    public function getSystemUserId(){
+        return $this->getPrimary('userID');
+    }
+
     private function isList(array $arr) {
         if ($arr === []) return true;
         return array_keys($arr) === range(0, count($arr) - 1);
     }
 
     private function saveNode($key, $value, $disc, $sessPK){
-        // 1. Insert Attribute Node
-        $qb = new QueryBuilder($this->dialect);
-        $qb->table('tblSessionAtt');
-        $sql = $qb->insert([
-            'sattSessionFK' => $sessPK,
-            'sattDisc' => $disc,
-            'sattKey' => $key,
-            'sattPrimaryValueFK' => 0
-        ]);
-        $stmt = $this->db->prepare($sql);
-        $qb->bindTo($stmt);
-        $stmt->execute();
-        $attPK = $this->db->lastInsertId();
-        
         $mode = 'b';
         if($disc === 'l'){
              $mode = 'l';
+        } elseif($disc === 's'){
+             $mode = 's';
         } elseif($disc === 'r'){
-             // Root can be Leaf (scalar) or Branch (array)
+             // Root can be Scalar (s), List (l) or Branch (b)
              if(!is_array($value)){
-                 $mode = 'l';
+                 $mode = 's';
              } else {
                  $allScalars = true;
                  foreach($value as $v){ if(is_array($v)) $allScalars = false; }
@@ -168,11 +191,34 @@ class SessionController{
              }
         }
 
+        // Use the mode to determine the discriminator for children if we're a branch
+        // We use X, Y, Z for roots to distinguish type without collapsing.
+        $finalDisc = $mode;
+        if ($disc === 'r') {
+             if ($mode === 's') $finalDisc = 'X';
+             elseif ($mode === 'l') $finalDisc = 'Y';
+             elseif ($mode === 'b') $finalDisc = 'Z';
+        }
+
+        // 1. Insert Attribute Node
+        $qb = new QueryBuilder($this->dialect);
+        $qb->table('tblSessionAtt');
+        $sql = $qb->insert([
+            'sattSessionFK' => $sessPK,
+            'sattDisc' => $finalDisc,
+            'sattKey' => $key,
+            'sattPrimaryValueFK' => 0
+        ]);
+        $stmt = $this->db->prepare($sql);
+        $qb->bindTo($stmt);
+        $stmt->execute();
+        $attPK = $this->db->lastInsertId();
+
         $firstValPK = 0;
 
         // 2. Insert Values
-        if($mode === 'l'){
-            // Leaf: value is scalar or list of scalars
+        if($mode === 'l' || $mode === 's'){
+            // Leaf or List: value is scalar or list of scalars
             $values = is_array($value) ? $value : [$value];
             foreach($values as $v){
                 $qbv = new QueryBuilder($this->dialect);
@@ -186,7 +232,7 @@ class SessionController{
         } else {
             // Branch: values are children
             foreach($value as $k => $v){
-                 $childDisc = 'l';
+                 $childDisc = 's';
                  if(is_array($v)){
                      $allScalars = true;
                      foreach($v as $sub){ if(is_array($sub)) $allScalars = false; }
@@ -267,27 +313,12 @@ class SessionController{
         $stmt2->execute();
         $rows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
         
-        $treatAsLeaf = false;
-        if($disc === 'l'){
-             $treatAsLeaf = true;
-        } elseif($disc === 'r' || $disc === 'b'){
-             if(count($rows) > 0 && $rows[0]['sattvValueFK']){
-                 $treatAsLeaf = false;
-             } else {
-                 if(count($rows) > 0) $treatAsLeaf = true;
-                 else return []; 
-             }
-        }
-        
-        if($treatAsLeaf){
-             if(count($rows) > 1){
-                 $arr = [];
-                 foreach($rows as $r) $arr[] = $r['sattvValue'];
-                 return $arr;
-             } elseif(count($rows) === 1){
-                 return $rows[0]['sattvValue'];
-             }
-             return null;
+        if($disc === 'l' || $disc === 'Y'){
+             $arr = [];
+             foreach($rows as $r) $arr[] = $r['sattvValue'];
+             return $arr;
+        } elseif($disc === 's' || $disc === 'X'){
+             return $rows[0]['sattvValue'] ?? null;
         } else {
             $arr = [];
             foreach($rows as $r){
@@ -313,7 +344,7 @@ class SessionController{
             ->select(['sattPK'])
             ->where('sattSessionFK', '=', $this->sessPK)
             ->where('sattKey', '=', $key)
-            ->where('sattDisc', '=', 'r');
+            ->whereIn('sattDisc', ['X', 'Y', 'Z']);
         $stmt = $this->db->prepare($qb->toSQL());
         $qb->bindTo($stmt);
         $stmt->execute();
@@ -369,7 +400,7 @@ class SessionController{
             ->select(['sattPK'])
             ->where('sattSessionFK', '=', $this->sessPK)
             ->where('sattKey', '=', $key)
-            ->where('sattDisc', '=', 'r');
+            ->whereIn('sattDisc', ['X', 'Y', 'Z']);
         $stmt = $this->db->prepare($qb->toSQL());
         $qb->bindTo($stmt);
         $stmt->execute();
@@ -381,10 +412,35 @@ class SessionController{
     }
 
     /**
+     * Standardizes session variables on successful login.
+     */
+    public function initializeUserSession($userId) {
+        $this->setPrimary('userID', $userId);
+        
+        // Find most recent event for this user to synchronize the playhead
+        $qb = new QueryBuilder($this->dialect);
+        $qb->table('event_store')
+           ->select(['id'])
+           ->where('user_id', '=', (int)$userId)
+           ->orderBy('id', 'DESC')
+           ->limit(1);
+        $stmt = $this->db->prepare($qb->toSQL());
+        $qb->bindTo($stmt);
+        $stmt->execute();
+        $latestEventId = $stmt->fetchColumn();
+
+        $this->setPrimary('current_event_id', $latestEventId ? (int)$latestEventId : null);
+        $this->setPrimary('redo_stack', []);
+        $this->setPrimary('form_errors', []);
+        $this->setPrimary('csrf_token', null); // Force regeneration on next use
+        $this->setPrimary('pending_event_id', null);
+    }
+
+    /**
      * Generates or retrieves a CSRF token for the current session.
      */
     public function getCSRFToken() {
-        $token = $this->getPrimary('csrf_token');
+        $token = $this->getPrimary('csrf_token');        
         if (is_null($token)) {
             $token = bin2hex(random_bytes(32)); // 64 chars
             $this->setPrimary('csrf_token', $token);

@@ -2,8 +2,9 @@
 class UpdateAccountAction implements ControllerInterface {
     public static string $path = '/editAccount';
     public bool $isAction = true;
+
     public function execute(Request $request) {
-        global $sessionController, $formSchemas, $dialect, $db;
+        global $sessionController, $formSchemas, $dialect, $db, $eventStore;
 
         Hyperlink::handleAction($sessionController);
 
@@ -13,34 +14,33 @@ class UpdateAccountAction implements ControllerInterface {
                 return "/edit_account.php?id=" . $clean['auPK'];
             });
 
-            if(isset($request->post['toggle_verify'])){
-                // Legacy toggle support (if needed)
-                $isVerified = (isset($request->post['is_verified']) && $request->post['is_verified'] === '1') ? 1 : 0;
-                $qb = new QueryBuilder($dialect);
-                $sql = $qb->table('appUsers')->where('auPK', '=', $cleanData['auPK'])->update(['verified' => $isVerified]);
-                $stmt = $db->prepare($sql);
-                $qb->bindTo($stmt);
-                $stmt->execute();
-            } else {
-                // Build the update query
-                $updateData = [
-                    'username' => $cleanData['username'],
-                    'name'     => $cleanData['name'],
-                    'age'      => (int)$cleanData['age'],
-                    'city'     => $cleanData['city'],
-                    'email'    => $cleanData['email']
-                ];
+            $userId = (int)($cleanData['auPK'] ?? 0);
+            $authorId = $sessionController->getSystemUserId();
 
-                // Admin verification update
-                $updateData['verified'] = (isset($request->post['verified_status']) && $request->post['verified_status'] === '1') ? 1 : 0;
-
-                $qb = new QueryBuilder($dialect);
-                $sql = $qb->table('appUsers')->where('auPK', '=', (int)$cleanData['auPK'])->update($updateData);
-                
-                $stmt = $db->prepare($sql);
-                $qb->bindTo($stmt);
-                $stmt->execute();
+            if ($userId <= 0) {
+                error_log("UpdateAccountAction: Invalid auPK provided in cleanData.");
+                header("Location: /account_management");
+                exit;
             }
+
+            // Fetch current state for Memento support
+            $qb_old = new QueryBuilder($dialect);
+            $oldData = $qb_old->table('appUsers')->where('auPK', '=', $userId)->getFetch($db);
+            
+            // Ensure we have an array for the event store
+            $previousPayload = is_array($oldData) ? $oldData : null;
+
+            $updateData = [
+                'username' => $cleanData['username'],
+                'name'     => $cleanData['name'],
+                'age'      => (int)$cleanData['age'],
+                'city'     => $cleanData['city'],
+                'email'    => $cleanData['email'],
+                'verified' => (isset($request->post['verified_status']) && $request->post['verified_status'] === '1') ? 1 : 0,
+            ];
+            
+            $eventId = $eventStore->append('AccountUpdated', array_merge(['auPK' => $userId], $updateData), $userId, $authorId, $previousPayload);
+            $eventStore->waitUntilProcessed($eventId);
 
             $redirectUrl = "/account_management";
             if (isset($request->server['HTTP_ACCEPT']) && strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false) {
@@ -54,6 +54,20 @@ class UpdateAccountAction implements ControllerInterface {
 
         header("Location: /account_management");
         exit;
+    }
+
+    public static function getEventHandlers(): array {
+        return [
+            'AccountUpdated' => function($payload, $db, $dialect) {
+                $pk = (int)$payload['auPK'];
+                unset($payload['auPK'], $payload['original_event_id']);
+                $qb = new QueryBuilder($dialect);
+                $sql = $qb->table('appUsers')->where('auPK', '=', $pk)->update($payload);
+                $stmt = $db->prepare($sql);
+                $qb->bindTo($stmt);
+                $stmt->execute();
+            },
+        ];
     }
 }
 ?>

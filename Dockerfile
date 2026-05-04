@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
 
 ENV TZ=Australia/Sydney
 
-
+RUN apt update
 RUN apt install libxml2-dev -y
 RUN apt install libsqlite3-dev -y
 RUN apt install libssl-dev -y
@@ -19,6 +19,7 @@ RUN apt install libreadline-dev -y
 RUN apt install zlib1g-dev -y
 RUN apt install libpcre3-dev -y
 RUN apt install libpq-dev -y
+RUN apt install cron -y
 
 
 RUN mkdir -p /usr/src/php && \
@@ -80,8 +81,9 @@ COPY ./conf/nginx.conf /usr/local/nginx/nginx.conf
 COPY ./conf/php-fpm.conf /usr/local/etc/php-fpm.conf
 COPY ./conf/www.conf /usr/local/etc/php-fpm.d/www.conf
 COPY ./conf/php.ini /usr/local/etc/php/php.ini
+RUN printenv > /etc/cron.d/environment.env
 
-
+COPY ./conf/crontab /etc/cron.d/worker-source
 
 
 #COPY --from=build_stage /usr/src/php/php.ini-production /usr/local/etc/php/php.ini

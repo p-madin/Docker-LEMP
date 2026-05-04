@@ -57,7 +57,9 @@ CREATE TABLE tblNavBar(
     nbControllerClass VARCHAR(64) NULL,
     nbProtected BOOLEAN NOT NULL,
     nbOrder INT NOT NULL,
-    PRIMARY KEY(nbPK)
+    nbParentFK INT NULL DEFAULT NULL,
+    PRIMARY KEY(nbPK),
+    FOREIGN KEY(nbParentFK) REFERENCES tblNavBar(nbPK) ON DELETE SET NULL
 );
 
 CREATE UNIQUE INDEX idx_session_chars ON tblSession(sessChars);
@@ -116,4 +118,18 @@ CREATE TABLE banned_ips(
     biExpires TIMESTAMP NOT NULL,
     biDateAdded TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY(biPK)
+);
+
+CREATE TABLE event_store(
+    id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
+    aggregate_id INT NULL,
+    event_type VARCHAR(128) NOT NULL,
+    payload TEXT NOT NULL,
+    previous_payload TEXT NULL,
+    status VARCHAR(32) NOT NULL DEFAULT 'pending',
+    user_id INT NULL,
+    is_reversal BOOLEAN NOT NULL DEFAULT false,
+    predecessor_id INT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY(id)
 );

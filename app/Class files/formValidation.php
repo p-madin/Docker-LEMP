@@ -23,10 +23,10 @@ class FormValidation {
         $cleanData = $security->process($dataToClean);
 
         // 2. Validation
-        global $db;
+        global $db, $dialect;
         $validator = new \App\Security\Validator($inputData);
         if (isset($db)) {
-            $validator->setDb($db);
+            $validator->setDb($db, $dialect);
         }
 
         if (isset($formSchemas[$schemaName])) {

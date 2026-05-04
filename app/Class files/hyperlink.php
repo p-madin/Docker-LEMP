@@ -35,7 +35,11 @@ class Hyperlink {
         $target = $isAction ? $url : "";
         $form->prep($target, $method, true); 
         $form->setCompact(true);
-        $form->formWrapper->setAttribute("class", "form_hyperlink");
+        $formClass = "form_hyperlink";
+        if (!empty($css_decorators)) {
+            $formClass .= ' ' . implode(' ', $css_decorators);
+        }
+        $form->formWrapper->setAttribute("class", $formClass);
 
         if (!$isAction) {
             $form->addField('nav_target', '', 'hidden', $url);
@@ -85,6 +89,7 @@ class Hyperlink {
                     echo json_encode(['redirect' => $target]);
                     exit;
                 }
+                $sessionController->completeTransaction();
 
                 header("Location: " . $target);
                 exit;

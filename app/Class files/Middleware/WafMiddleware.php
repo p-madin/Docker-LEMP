@@ -56,7 +56,9 @@ class WafMiddleware implements MiddlewareInterface {
         ];
 
         foreach ($payload as $key => $value) {
-            if (is_string($value)) {
+            if (is_array($value)) {
+                $this->inspectPayload($value, $ip, $request);
+            } else if (is_string($value)) {
                 $triggered = false;
                 $rule = '';
                 foreach ($dangerousPatterns as $pattern) {
