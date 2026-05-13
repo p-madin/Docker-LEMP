@@ -9,17 +9,7 @@
       <description>Verify admin login and logout</description>
       <stepList>
         <step>
-          <action>NavigateTo</action>
-          <url>/</url>
-        </step>
-        <step>
-          <action>FillForm</action>
-          <selector>#loginFormComponent</selector>
-          <parameters>
-            <parameter><name>username</name><value>Stack</value></parameter>
-            <parameter><name>password</name><value>Stack</value></parameter>
-          </parameters>
-          <submit>true</submit>
+          <action>Admin Login</action>
         </step>
         <step>
           <action>AssertText</action>
@@ -66,17 +56,7 @@
 
         <!-- Login as admin to verify the new user -->
         <step>
-          <action>NavigateTo</action>
-          <url>/</url>
-        </step>
-        <step>
-          <action>FillForm</action>
-          <selector>#loginFormComponent</selector>
-          <parameters>
-            <parameter><name>username</name><value>Stack</value></parameter>
-            <parameter><name>password</name><value>Stack</value></parameter>
-          </parameters>
-          <submit>true</submit>
+          <action>Admin Login</action>
         </step>
 
         <!-- Navigate to account management and edit the new user's row -->
@@ -130,17 +110,7 @@
       <stepList>
         <!-- 1. Login as Admin -->
         <step>
-          <action>NavigateTo</action>
-          <url>/</url>
-        </step>
-        <step>
-          <action>FillForm</action>
-          <selector>#loginFormComponent</selector>
-          <parameters>
-            <parameter><name>username</name><value>Stack</value></parameter>
-            <parameter><name>password</name><value>Stack</value></parameter>
-          </parameters>
-          <submit>true</submit>
+          <action>Admin Login</action>
         </step>
 
         <!-- 2. Verify that clicking Edit for Stack_Two opens the correct edit page -->
@@ -209,17 +179,7 @@
       <description>Update/Revert existing item and Create/Delete new item</description>
       <stepList>
         <step>
-          <action>NavigateTo</action>
-          <url>/</url>
-        </step>
-        <step>
-          <action>FillForm</action>
-          <selector>#loginFormComponent</selector>
-          <parameters>
-            <parameter><name>username</name><value>Stack</value></parameter>
-            <parameter><name>password</name><value>Stack</value></parameter>
-          </parameters>
-          <submit>true</submit>
+          <action>Admin Login</action>
         </step>
         
         <!-- 1. Update Dashboard label & revert -->
@@ -349,17 +309,7 @@
       <description>Verify Form creation, Field addition, and subsequent deletion</description>
       <stepList>
         <step>
-          <action>NavigateTo</action>
-          <url>/</url>
-        </step>
-        <step>
-          <action>FillForm</action>
-          <selector>#loginFormComponent</selector>
-          <parameters>
-            <parameter><name>username</name><value>Stack</value></parameter>
-            <parameter><name>password</name><value>Stack</value></parameter>
-          </parameters>
-          <submit>true</submit>
+          <action>Admin Login</action>
         </step>
 
         <!-- 1. Create Form -->
@@ -444,6 +394,40 @@
           </expected>
         </step>
 
+        <step>
+          <action>Click</action>
+          <selector>logout</selector>
+        </step>
+      </stepList>
+    </test>
+
+    <!-- Test 12: Platform Recovery Lifecycle -->
+    <test>
+      <index>12</index>
+      <name>Platform Recovery Lifecycle</name>
+      <description>Verify Platform Recovery queuing and functionality</description>
+      <stepList>
+        <step>
+          <action>Admin Login</action>
+        </step>
+        <step>
+          <action>NavigateTo</action>
+          <url>/platform_recovery</url>
+        </step>
+        <step>
+          <action>FillForm</action>
+          <selector>#platformRecoveryFormComponent</selector>
+          <parameters>
+            <parameter><name>target_time</name><value>2020-01-01T00:00</value></parameter>
+          </parameters>
+          <submit>true</submit>
+        </step>
+        <step>
+          <action>AssertText</action>
+          <expected>
+            <contains>Recovery replay has been queued</contains>
+          </expected>
+        </step>
         <step>
           <action>Click</action>
           <selector>logout</selector>

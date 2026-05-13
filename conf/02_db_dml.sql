@@ -43,7 +43,7 @@ INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbPro
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Unban IP Action', 'a', '/unban_ip', 'UnbanIpAction', true, 0);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Undo Redo Action', 'h', '/undo', 'UndoRedoController', true, 0);
 
-INSERT INTO tblForm (tfName, tfReadOnly) VALUES ('login', false), ('register', false), ('editUser', false), ('navbar', false), ('editForm', true), ('editColumn', true), ('banned_ips', true);
+INSERT INTO tblForm (tfName, tfReadOnly) VALUES ('login', false), ('register', false), ('editUser', false), ('navbar', false), ('editForm', true), ('editColumn', true), ('banned_ips', true), ('platform_recovery', false);
 
 INSERT INTO tblColumns (tcFormFK, tcName, tcLabel, tcType, tcRules, tcOrder) VALUES
 (1, 'username', 'Username', 'text', '{"required":true}', 1),
@@ -75,7 +75,10 @@ INSERT INTO tblColumns (tcFormFK, tcName, tcLabel, tcType, tcRules, tcOrder) VAL
 (6, 'tcLabel', 'Field Label', 'text', '{"required":true}', 4),
 (6, 'tcType', 'Field Type (e.g. text/password)', 'text', '{"required":true}', 5),
 (6, 'tcRules', 'Validation Rules JSON (e.g. {"required":true})', 'text', '{}', 6),
-(6, 'tcOrder', 'Display Order', 'number', '{"required":true,"numeric":true}', 7);
+(6, 'tcOrder', 'Display Order', 'number', '{"required":true,"numeric":true}', 7),
+(8, 'tcPK', '', 'hidden', '{}', 1),
+(8, 'action', '', 'hidden', '{}', 2),
+(8, 'target_time', 'Recover to Timestamp', 'datetime-local', '{"required":true}', 3);
 
 
 #--$Local_array = ['user' => ['name' => 'John', 'roles' => ['admin', 'editor'], 'pages' => [[1 => 'home', 2 => 'contact us']]], 

@@ -92,7 +92,7 @@ $eventStore->append('UserRegistered', [
 
 ---
 
-## Phase 4: Implement worker.php
+## Phase 4: Implement worker.php [COMPLETED]
 ### Description
 `worker.php` is implemented to execute users' actions in the event sourcing pattern established in Phase 3, functioning as an "Event Handler".
 > [!IMPORTANT]
@@ -169,7 +169,7 @@ $eventStore->append($inverseEventType, ['original_event_id' => $lastEvent['id']]
 
 ---
 
-## Phase 6: Platform Recovery User Interface
+## Phase 6: Platform Recovery User Interface [COMPLETED]
 ### Description
 Implement a Platform Recovery User Interface that includes an Immutable Event Store viewer, allowing administrators to recover their platform from a corrupted state.
 > [!IMPORTANT]
@@ -196,3 +196,16 @@ $flexTable->setColumns([
 $flexTable->setData($events);
 $container->appendChild($flexTable->getRoot());
 ```
+
+---
+
+## Phase 7: Page Builder & Block Editor
+### Description
+A page builder is introduced with a vanilla javascript client-side (only) block editor.
+
+The following blocks may be clicked and dragged into a (page) workspace: Text (Heading, Paragraph), Form (FormComponent), Table (FlexTableComponent), Chart (DataGraphComponent), Container (flexbox), Buttons (CTA buttons, hyperlink.php), Divider (Separator)
+
+## Phase 8: DBMS Vendor Support
+### Description
+SQLite - AUTOINCREMENT or INTEGER PRIMARY KEY, Boolean = INTEGER (0/1), strftime('%H', haDate)
+MS SQL - auPK INT NOT NULL IDENTITY(1,1), Boolean = BIT, SELECT TOP(), IDENTITY(1,1), DATEPART(datepart, date)

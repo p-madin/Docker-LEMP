@@ -383,13 +383,21 @@ class SessionController{
     }
 
     public function setPrimary($key, $array){
-        $this->db->beginTransaction();
+        $ownsTransaction = false;
+        if (!$this->db->inTransaction()) {
+            $this->db->beginTransaction();
+            $ownsTransaction = true;
+        }
         try {
             $this->detachPrimary($key);
             $this->saveNode($key, $array, 'r', $this->sessPK);
-            $this->db->commit();
+            if ($ownsTransaction) {
+                $this->db->commit();
+            }
         } catch (Exception $e) {
-            $this->db->rollBack();
+            if ($ownsTransaction) {
+                $this->db->rollBack();
+            }
             throw $e;
         }
     }

@@ -42,8 +42,9 @@ class xmlDomTest extends TestSuiteBase {
                 $GLOBALS['returnable'] .= " - Test: " . $test->name . "\n";
                 $step_number = 1;
                 foreach ($test->stepList->step as $step) {
-                    $action = (string)$step->action;
-                    $GLOBALS['returnable'] .= "   - Step: $step_number ($action)\n";
+                    $rawAction = (string)$step->action;
+                    $action = str_replace(' ', '', $rawAction);
+                    $GLOBALS['returnable'] .= "   - Step: $step_number ($rawAction)\n";
 
                     $step_number++;
 
@@ -60,6 +61,9 @@ class xmlDomTest extends TestSuiteBase {
                             break;
                         case 'Click':
                             $res = $this->handleClick($step);
+                            break;
+                        case 'AdminLogin':
+                            $res = $this->handleAdminLogin();
                             break;
                         default:
                             $GLOBALS['returnable'] .= "     [WARN] Unknown action: $action\n";
@@ -98,6 +102,22 @@ class xmlDomTest extends TestSuiteBase {
      */
     protected function buildDom(): DOM\HTMLDocument {
         return DOM\HTMLDocument::createFromString('<!DOCTYPE html>' . $this->lastResponse, Dom\HTML_NO_DEFAULT_NS);
+    }
+
+    protected function handleAdminLogin() {
+        $xmlStr = <<<XML
+        <step>
+          <selector>#loginFormComponent</selector>
+          <parameters>
+            <parameter><name>username</name><value>Stack</value></parameter>
+            <parameter><name>password</name><value>Stack</value></parameter>
+          </parameters>
+        </step>
+XML;
+        $step = simplexml_load_string($xmlStr);
+        $res = $this->handleNavigate('/');
+        if (!$res) return false;
+        return $this->handleFillForm($step);
     }
 
     protected function handleNavigate($url, $expected = null) {

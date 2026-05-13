@@ -4,6 +4,7 @@
 /** @var array $undoableEvents */
 /** @var array $redoEvents */
 /** @var string|null $msg */
+/** @var array $formSchemas */
 
 $dom->fabricateChild($target, 'h1', [], 'Platform Recovery & Event Log');
 $dom->fabricateChild($target, 'p', [], 'View the immutable event log and perform point-in-time recovery.');
@@ -16,18 +17,15 @@ if ($msg === 'replay_queued') {
 $recoveryTools = $dom->fabricateChild($target, 'div', ['class' => 'recovery-tools card']);
 $dom->fabricateChild($recoveryTools, 'h2', [], 'Point-in-Time Recovery');
 
-$form = $dom->fabricateChild($recoveryTools, 'form', ['method' => 'POST', 'action' => '/platform_recovery']);
-$dom->fabricateChild($form, 'input', ['type' => 'hidden', 'name' => 'action', 'value' => 'replay']);
-
-$formGroup = $dom->fabricateChild($form, 'div', ['class' => 'form-group']);
-$dom->fabricateChild($formGroup, 'label', ['for' => 'target_time'], 'Recover to Timestamp:');
-$dom->fabricateChild($formGroup, 'input', ['type' => 'datetime-local', 'id' => 'target_time', 'name' => 'target_time', 'class' => 'form-control', 'required' => 'required']);
-
-$dom->fabricateChild($form, 'button', [
-    'type' => 'submit',
-    'class' => 'btn btn-danger',
+$form = new xmlForm('platform_recovery', $dom);
+$form->prep('/platform_recovery', 'POST');
+$form->formWrapper->setAttribute('id', 'platformRecoveryFormComponent');
+$form->buildFromSchema('platform_recovery', $formSchemas, ['action' => 'replay']);
+$form->addSubmit('Replay Events', [
+    'class' => 'btn btn-danger', 
     'onclick' => "return confirm('Are you sure? This will overwrite the current database state.');"
-], 'Replay Events');
+]);
+$recoveryTools->appendChild($form->render());
 
 // Undo Last Action
 $undoTools = $dom->fabricateChild($target, 'div', ['class' => 'recovery-tools card']);
