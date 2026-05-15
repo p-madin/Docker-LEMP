@@ -98,7 +98,12 @@ class QueryBuilder {
             return $this;
         }
 
-        $paramName = $this->nextParam($value);
+        $op = strtoupper($operator);
+        $paramName = null;
+        if ($op !== 'IS' && $op !== 'IS NOT') {
+            $paramName = $this->nextParam($value);
+        }
+
         $this->components['wheres'][] = [
             'type' => 'Basic',
             'column' => $column,
@@ -268,10 +273,12 @@ class QueryBuilder {
      * Explicitly bind current values to a PDOStatement.
      */
     public function bindTo(\PDOStatement $stmt) {
+        $sql = $stmt->queryString;
         foreach ($this->bindings as $key => $value) {
-            // Using bindValue is standard for most cases unless specifically needing reference (bindParam)
-            // But we'll follow the user's bindParam preference
-            $stmt->bindValue(":" . $key, $value);
+            // Only bind if the parameter is actually in the SQL
+            if (preg_match('/:' . preg_quote($key, '/') . '\b/', $sql)) {
+                $stmt->bindValue(":" . $key, $value);
+            }
         }
     }
 

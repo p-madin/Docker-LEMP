@@ -16,6 +16,9 @@ class AssetManager {
     }
 
     public function registerJs(string $path, array $attributes = []): void {
+        foreach ($this->jsFiles as $js) {
+            if ($js['path'] === $path) return;
+        }
         $this->jsFiles[] = [
             'path' => $path,
             'attributes' => $attributes
@@ -23,6 +26,9 @@ class AssetManager {
     }
 
     public function registerCss(string $path, array $attributes = []): void {
+        foreach ($this->cssFiles as $css) {
+            if ($css['path'] === $path) return;
+        }
         $this->cssFiles[] = [
             'path' => $path,
             'attributes' => $attributes

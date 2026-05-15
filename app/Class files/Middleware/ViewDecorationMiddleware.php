@@ -16,10 +16,13 @@ class ViewDecorationMiddleware implements MiddlewareInterface {
         $assetManager->registerCss('/Static/styles.css');
         $assetManager->registerCss('/Static/dataGraphStyles.css');
 
-        // 4. Decorate DOM
+        // 4. Execute Controller/Pipeline
+        $result = $next($request);
+        
+        // 5. Decorate DOM
         $dom->injectAssets($assetManager);
         $dom->decorate_navbar($navbar, $sessionController, $assetManager);
-
-        return $next($request);
+        
+        return $result;
     }
 }

@@ -165,6 +165,20 @@ class Validator {
                     return false;
                 }
                 break;
+
+            case 'regex':
+                if (!empty($value) && !preg_match($ruleValue, $value)) {
+                    $this->addError($field, "The $field format is invalid.");
+                    return false;
+                }
+                break;
+
+            case 'alpha_dash':
+                if (!empty($value) && !preg_match('/^[a-zA-Z0-9\-_]+$/', $value)) {
+                    $this->addError($field, "The $field may only contain letters, numbers, dashes and underscores.");
+                    return false;
+                }
+                break;
         }
 
         return true;

@@ -40,6 +40,22 @@ class SanitizerFactory {
             'number' => new IntegerSanitizerDecorator(
                 new CleanSanitizer()
             ),
+            // URL Slugs: lowercase, alphanumeric, and hyphens only
+            'slug' => new SlugDecorator(
+                new HtmlEscapeDecorator(
+                    new StripTagsDecorator(
+                        new CleanSanitizer()
+                    )
+                )
+            ),
+            // CSS Classes: alphanumeric, hyphens, underscores, and spaces only
+            'css_class' => new CssClassDecorator(
+                new HtmlEscapeDecorator(
+                    new StripTagsDecorator(
+                        new CleanSanitizer()
+                    )
+                )
+            ),
             // Skipped fields — sanitized separately or not at all
             'password', 'hidden' => null,
             // Falls back to global default strategy

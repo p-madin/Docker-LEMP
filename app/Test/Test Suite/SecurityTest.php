@@ -90,6 +90,29 @@ class SecurityTest extends TestSuiteBase {
             if ($s->sanitize("  <b>Hello</b>   World  ") !== "Hello World") throw new Exception("Failed: " . $s->sanitize("  <b>Hello</b>   World  "));
         });
 
+        $runTest("HtmlEscapeDecorator (JSON conflict & fix)", function() {
+            $s = new \App\Security\HtmlEscapeDecorator(new \App\Security\CleanSanitizer());
+            $json = '{"key":"value"}';
+            $escaped = $s->sanitize($json);
+            
+            // 1. Demonstrate that it escapes quotes to &quot;
+            if (strpos($escaped, '&quot;') === false) {
+                throw new Exception("Expected quotes to be escaped to &quot;, but got: $escaped");
+            }
+            
+            // 2. Demonstrate that this breaks native json_decode
+            if (json_decode($escaped) !== null) {
+                throw new Exception("Escaped JSON string incorrectly passed json_decode!");
+            }
+            
+            // 3. Demonstrate the required fix (decoding before parsing)
+            $decoded = htmlspecialchars_decode($escaped, ENT_QUOTES);
+            $parsed = json_decode($decoded, true);
+            if ($parsed === null || $parsed['key'] !== 'value') {
+                throw new Exception("Decoding fix failed to restore valid JSON");
+            }
+        });
+
         return $pass;
     }
 }

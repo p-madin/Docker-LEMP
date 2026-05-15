@@ -43,13 +43,56 @@ class DataGraphComponent extends Component {
     private int $plotYCanvasRatio = 85;
     private int $plotYCanvasOffset = -90;
 
-    public function __construct(xmlDom $xmlDom, array $series, PlotMeta $meta) {
+    private ?string $dataSource = null;
+    private array $dataConfig = [];
+
+    public function __construct(xmlDom $xmlDom, array $series = [], ?PlotMeta $meta = null) {
         parent::__construct($xmlDom, 'div', ['class' => 'graph-container']);
         $this->series = $series;
-        $this->meta = $meta;
+        $this->meta = $meta ?? new PlotMeta();
+    }
+
+    public function setDataSource(?string $source) {
+        $this->dataSource = $source;
+        return $this;
+    }
+
+    public function setDataConfig(array $config) {
+        $this->dataConfig = $config;
+        return $this;
     }
 
     protected function build(): void {
+        if ($this->dataSource) {
+            global $db, $dialect;
+            $qb = new QueryBuilder($dialect);
+            
+            $rawData = $qb->table($this->dataSource)->getFetchAll($db);
+
+            $mapper = new \Services\GenericDataMapper();
+            $mappedData = $mapper->map($rawData, $this->dataConfig['mapping'] ?? []);
+
+            // Repopulate series and meta
+            $this->series = [];
+            $this->meta = new PlotMeta();
+            foreach ($mappedData as $item) {
+                // Expecting 'x' and 'y' after mapping
+                $plot = new PlotItem($item['x'] ?? '', $item['y'] ?? 0);
+                $this->series[] = $plot;
+
+                if ($plot->xPrimitive > $this->meta->xMax) $this->meta->xMax = $plot->xPrimitive;
+                if ($plot->xPrimitive < $this->meta->xMin) $this->meta->xMin = $plot->xPrimitive;
+                if ($plot->yStructured > $this->meta->yMax) $this->meta->yMax = $plot->yStructured;
+                if ($plot->yStructured < $this->meta->yMin) $this->meta->yMin = $plot->yStructured;
+            }
+
+            usort($this->series, function($a, $b) {
+                return $a->xPrimitive <=> $b->xPrimitive;
+            });
+
+            $this->meta->setRange();
+        }
+
         $pathData = "";
         
         // Root SVG

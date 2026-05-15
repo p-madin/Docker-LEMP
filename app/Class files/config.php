@@ -8,11 +8,13 @@ include_once(__DIR__ . "/EventStore.php");
 include_once(__DIR__ . "/Component.php");
 include_once(__DIR__ . "/Components/FlexTableComponent.php");
 include_once(__DIR__ . "/Components/FormComponent.php");
+include_once(__DIR__ . "/Services/GenericDataMapper.php");
 include_once(__DIR__ . "/dataGraph.php");
 include_once(__DIR__ . "/Router/Request.php");
 include_once(__DIR__ . "/Router/MiddlewareInterface.php");
 include_once(__DIR__ . "/Router/Router.php");
 include_once(__DIR__ . "/Router/ControllerInterface.php");
+include_once(__DIR__ . "/Data/DataProviderInterface.php");
 include_once(__DIR__ . "/View.php");
 include_once(__DIR__ . "/Components/LayoutComponent.php");
 

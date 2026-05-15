@@ -7,9 +7,6 @@ VALUES ('Stack', 1, 'Stack', 'Stack', '$2y$10$m3vCndDU2/CavRvxwB2Gne5lnusLha8NJp
 INSERT INTO appUsers (name, age, city, username, password, email, verified) 
 VALUES ('Stack_Two', 2, 'Stack_Two', 'Stack_Two', '$2y$10$fkjGHwVncM0YQ9Jg0gHvku.E7TUTMvXeUbIdmUOwyoDaBcFUm432i', 'Stack_Two@stack.com', true);
 
-INSERT INTO sysConfig (scName, scValue) VALUES ('myDomain', 'localhost');
-INSERT INTO sysConfig (scName, scValue) VALUES ('myDomainProtocol', 'http');
-
 -- Root Items
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Home', 'c', '/', 'IndexController', false, 1, NULL);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Dashboard', 'p', '/dashboard', 'DashboardController', true, 2, NULL);
@@ -25,11 +22,13 @@ INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbPro
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('CMS', 'p', NULL, NULL, true, 4, NULL);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Navbars', 'p', '/navbar_management', 'NavbarManagementController', true, 1, 8);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Forms', 'p', '/form_management', 'FormManagementController', true, 2, 8);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Pages', 'p', '/page_management', 'PageManagementController', true, 3, 8);
 
 -- Logout
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Logout', 'c', '/logout', 'LogoutAction', true, 5, NULL);
 
--- Actions (Internal Routes)
+-- Actions (Internal Routes) 
+-- -- nbDiscriminator = [a = {action, dont show on nav_bar but its a route}, h = {hidden}, p = {page, show on navbar}, c = {core}]
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Login Action', 'a', '/login', 'LoginAction', false, 0);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Register Action', 'a', '/register', 'RegisterAction', false, 0);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Update Account', 'a', '/editAccount', 'UpdateAccountAction', true, 0);
@@ -42,8 +41,14 @@ INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbPro
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Navbar Action', 'a', '/editNavbar', 'EditNavbarAction', true, 0);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Unban IP Action', 'a', '/unban_ip', 'UnbanIpAction', true, 0);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Undo Redo Action', 'h', '/undo', 'UndoRedoController', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Page Action', 'a', '/pageAction', 'PageAction', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Element Action', 'a', '/elementAction', 'ElementAction', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Page Editor', 'a', '/page_editor', 'PageController', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Form JSON Action', 'a', '/formAction', 'FormAction', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Preview Page', 'a', '/preview', 'PreviewController', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Data Provider JSON Action', 'a', '/dataProviders', 'DataProviderAction', true, 0);
 
-INSERT INTO tblForm (tfName, tfReadOnly) VALUES ('login', false), ('register', false), ('editUser', false), ('navbar', false), ('editForm', true), ('editColumn', true), ('banned_ips', true), ('platform_recovery', false);
+INSERT INTO tblForm (tfName, tfReadOnly) VALUES ('login', false), ('register', false), ('editUser', false), ('navbar', false), ('editForm', true), ('editColumn', true), ('banned_ips', true), ('platform_recovery', false), ('page', false), ('element', false);
 
 INSERT INTO tblColumns (tcFormFK, tcName, tcLabel, tcType, tcRules, tcOrder) VALUES
 (1, 'username', 'Username', 'text', '{"required":true}', 1),
@@ -78,7 +83,15 @@ INSERT INTO tblColumns (tcFormFK, tcName, tcLabel, tcType, tcRules, tcOrder) VAL
 (6, 'tcOrder', 'Display Order', 'number', '{"required":true,"numeric":true}', 7),
 (8, 'tcPK', '', 'hidden', '{}', 1),
 (8, 'action', '', 'hidden', '{}', 2),
-(8, 'target_time', 'Recover to Timestamp', 'datetime-local', '{"required":true}', 3);
+(8, 'target_time', 'Recover to Timestamp', 'datetime-local', '{"required":true}', 3),
+(9, 'pagPK', 'ID', 'hidden', '{}', 10),
+(9, 'pagTitle', 'Title', 'text', '{"required":true}', 20),
+(9, 'pagSlug', 'Slug', 'slug', '{"required":true,"alpha_dash":true}', 30),
+(10, 'elePK', 'ID', 'hidden', '{}', 10),
+(10, 'eleType', 'Type', 'text', '{"required":true}', 20),
+(10, 'eleContent', 'Content', 'textarea', '{}', 30),
+(10, 'eleCSSClasses', 'CSS Classes', 'css_class', '{"regex":"/^[a-zA-Z0-9\\\\-_ ]*$/"}', 40),
+(10, 'eleParentFK', 'Parent ID', 'number', '{}', 50);
 
 
 #--$Local_array = ['user' => ['name' => 'John', 'roles' => ['admin', 'editor'], 'pages' => [[1 => 'home', 2 => 'contact us']]], 
@@ -128,3 +141,11 @@ VALUES (1, 'l', '2', 4);
 
 INSERT INTO tblSessionAttValue (sattvAttFK, sattvValue) 
 VALUES (6, 'contact us');
+
+-- Sample Analytics Data
+INSERT INTO tblAnalytics (anaLabel, anaValue, anaCategory) VALUES ('Jan', 100, 'Sales');
+INSERT INTO tblAnalytics (anaLabel, anaValue, anaCategory) VALUES ('Feb', 150, 'Sales');
+INSERT INTO tblAnalytics (anaLabel, anaValue, anaCategory) VALUES ('Mar', 200, 'Sales');
+INSERT INTO tblAnalytics (anaLabel, anaValue, anaCategory) VALUES ('Apr', 180, 'Sales');
+INSERT INTO tblAnalytics (anaLabel, anaValue, anaCategory) VALUES ('May', 250, 'Sales');
+INSERT INTO tblAnalytics (anaLabel, anaValue, anaCategory) VALUES ('Jun', 300, 'Sales');

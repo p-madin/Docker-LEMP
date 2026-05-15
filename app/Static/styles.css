@@ -69,6 +69,11 @@ body>div {
     align-items: center;
 }
 
+body>div.full-width {
+    max-width: 100%;
+    align-items: stretch;
+}
+
 /* end doc */
 
 
@@ -477,6 +482,32 @@ form.form_hyperlink a.ajax {
 /* cms */
 .flex-table .flex-row-group .directory::before {
     content: "📂 ";
+}
+
+.flex-table .flex-row-group {
+    border-bottom: 1px solid #eee;
+}
+
+.flex-table .flex-row-group .flex-row-summary {
+    list-style: none;
+    outline: none;
+    cursor: pointer;
+}
+
+.flex-table .flex-row-group .flex-nested-container .flex-cell.flex-wide {
+    width: 100%;
+    border-top: 1px dashed #ccc;
+    padding: 15px;
+    background: #fff;
+}
+
+.flex-table .flex-row-group .flex-cell pre {
+    background: #f4f4f4;
+    padding: 10px;
+    border-radius: 4px;
+    overflow: auto;
+    margin-top: 5px;
+    white-space: pre-wrap
 }
 
 .flex-table .flex-row-group[open] {

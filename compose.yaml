@@ -31,7 +31,9 @@ services:
       TZ: Australia/Sydney
     volumes:
       - db_data:/var/lib/mysql
-      - ./conf/:/docker-entrypoint-initdb.d/
+      - ./conf/common/01_db_ddl.sql:/docker-entrypoint-initdb.d/01_db_ddl.sql
+      - ./conf/common/02_db_dml.sql:/docker-entrypoint-initdb.d/02_db_dml.sql
+      - ./conf/${TARGET_ENV}/03_db_dml.sql:/docker-entrypoint-initdb.d/03_db_dml.sql:ro
     ports:
       - "3306:3306"
     networks:

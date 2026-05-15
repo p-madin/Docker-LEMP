@@ -1,3 +1,5 @@
 .idea
 .aider*
 .agents*
+.continue
+.playwright-mcp

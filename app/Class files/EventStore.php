@@ -226,5 +226,18 @@ class EventStore {
         ];
         return $map[$eventType] ?? null;
     }
+
+    /**
+     * Retrieves the aggregate_id assigned to an event after it has been processed.
+     */
+    public function getAggregateId(int $eventId): ?int {
+        $qb = new QueryBuilder($this->dialect);
+        $sql = $qb->table('event_store')->select(['aggregate_id'])->where('id', '=', $eventId)->toSQL();
+        $stmt = $this->db->prepare($sql);
+        $qb->bindTo($stmt);
+        $stmt->execute();
+        $event = $stmt->fetch();
+        return ($event && isset($event['aggregate_id'])) ? (int)$event['aggregate_id'] : null;
+    }
 }
 ?>

@@ -24,7 +24,9 @@ services:
       TZ: Australia/Sydney
     volumes:
       - postgres_db_data:/var/lib/postgresql
-      - ./postgres conf/:/docker-entrypoint-initdb.d/
+      - ./postgres conf/common/01_db_ddl.sql:/docker-entrypoint-initdb.d/01_db_ddl.sql
+      - ./postgres conf/common/02_db_dml.sql:/docker-entrypoint-initdb.d/02_db_dml.sql
+      - ./conf/${TARGET_ENV}/03_db_dml.sql:/docker-entrypoint-initdb.d/03_db_dml.sql:ro
     ports:
       - "5432:5432"
     networks:

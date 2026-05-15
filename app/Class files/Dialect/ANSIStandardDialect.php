@@ -123,7 +123,12 @@ abstract class ANSIStandardDialect implements DatabaseDialect {
 
             switch ($where['type']) {
                 case 'Basic':
-                    $sql .= $quotedCol . " " . $where['operator'] . " :" . $where['paramName'];
+                    $op = strtoupper($where['operator']);
+                    if ($op === 'IS' || $op === 'IS NOT') {
+                        $sql .= $quotedCol . " " . $op . " NULL";
+                    } else {
+                        $sql .= $quotedCol . " " . $where['operator'] . " :" . $where['paramName'];
+                    }
                     break;
                 case 'In':
                     $placeholders = array_map(function($p) { return ":" . $p; }, $where['paramNames']);
