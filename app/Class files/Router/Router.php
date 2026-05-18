@@ -76,15 +76,27 @@ class Router {
         $items = $sysConfigController->getNavbarItems();
         foreach ($items as $item) {
             $className = $item['controller'];
+            $pageId = $item['pageFK'];
+            
+            // 1. Attempt to load the controller class if defined (might be needed by components)
             if ($className && !empty($className)) {
                 $filePath = __DIR__ . "/../Controllers/" . $className . ".php";
                 if (file_exists($filePath)) {
                     include_once($filePath);
-                    if (class_exists($className)) {
-                        $controllerInstance = new $className();
-                        $this->registerController($item['url'], $controllerInstance, $item['protected']);
-                    }
                 }
+            }
+
+            // 2. Register the route - Page Builder takes priority
+            if ($pageId) {
+                include_once(__DIR__ . "/../Controllers/PageRendererController.php");
+                if (class_exists('PageRendererController')) {
+                    $controllerInstance = new PageRendererController();
+                    $controllerInstance->setPageId($pageId);
+                    $this->registerController($item['url'], $controllerInstance, $item['protected']);
+                }
+            } else if ($className && class_exists($className)) {
+                $controllerInstance = new $className();
+                $this->registerController($item['url'], $controllerInstance, $item['protected']);
             }
         }
         

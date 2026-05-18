@@ -15,6 +15,38 @@ CREATE TABLE appUsers(
     PRIMARY KEY(auPK)
 );
 
+CREATE TABLE tblPages (
+    pagPK INT NOT NULL AUTO_INCREMENT,
+    pagCreated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    pagUpdated DATETIME NULL,
+    pagDeleted DATETIME NULL,
+    pagAuthorFK INT NOT NULL,
+    pagTitle VARCHAR(128) NOT NULL,
+    pagSlug VARCHAR(128) NULL,
+    PRIMARY KEY(pagPK)
+);
+
+CREATE TABLE tblElements (
+    elePK INT NOT NULL AUTO_INCREMENT,
+    eleType VARCHAR(32) NOT NULL,
+    eleContent TEXT NULL,
+    eleCSSClasses VARCHAR(255) NULL,
+    eleParentFK INT NULL DEFAULT NULL,
+    eleCreated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY(elePK),
+    FOREIGN KEY(eleParentFK) REFERENCES tblElements(elePK) ON DELETE CASCADE
+);
+
+CREATE TABLE brgPageElements (
+    pelPK INT NOT NULL AUTO_INCREMENT,
+    pelPageFK INT NOT NULL,
+    pelElementFK INT NOT NULL,
+    pelOrder INT NOT NULL,
+    PRIMARY KEY(pelPK),
+    FOREIGN KEY(pelPageFK) REFERENCES tblPages(pagPK) ON DELETE CASCADE,
+    FOREIGN KEY(pelElementFK) REFERENCES tblElements(elePK) ON DELETE CASCADE
+);
+
 CREATE TABLE tblSession(
     sessPK INT NOT NULL AUTO_INCREMENT,
     sessCreated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -54,13 +86,15 @@ CREATE TABLE tblNavBar(
     nbPK INT NOT NULL AUTO_INCREMENT,
     nbText VARCHAR(32) NOT NULL,
     nbDiscriminator CHAR(1) NOT NULL,
+    nbPageFK INT NULL,
     nbPath VARCHAR(64) NULL,
     nbControllerClass VARCHAR(64) NULL,
     nbProtected TINYINT(1) NOT NULL,
     nbOrder INT NOT NULL,
     nbParentFK INT NULL DEFAULT NULL,
     PRIMARY KEY(nbPK),
-    FOREIGN KEY(nbParentFK) REFERENCES tblNavBar(nbPK) ON DELETE SET NULL
+    FOREIGN KEY(nbParentFK) REFERENCES tblNavBar(nbPK) ON DELETE SET NULL,
+    FOREIGN KEY(nbPageFK) REFERENCES tblPages(pagPK) ON DELETE SET NULL
 );
 
 CREATE UNIQUE INDEX idx_session_chars ON tblSession(sessChars);
@@ -135,37 +169,7 @@ CREATE TABLE event_store(
     PRIMARY KEY(id)
 );
 
-CREATE TABLE tblPages (
-    pagPK INT NOT NULL AUTO_INCREMENT,
-    pagCreated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    pagUpdated DATETIME NULL,
-    pagDeleted DATETIME NULL,
-    pagAuthorFK INT NOT NULL,
-    pagTitle VARCHAR(128) NOT NULL,
-    pagSlug VARCHAR(128) NULL,
-    PRIMARY KEY(pagPK)
-);
 
-CREATE TABLE tblElements (
-    elePK INT NOT NULL AUTO_INCREMENT,
-    eleType VARCHAR(32) NOT NULL,
-    eleContent TEXT NULL,
-    eleCSSClasses VARCHAR(255) NULL,
-    eleParentFK INT NULL DEFAULT NULL,
-    eleCreated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY(elePK),
-    FOREIGN KEY(eleParentFK) REFERENCES tblElements(elePK) ON DELETE CASCADE
-);
-
-CREATE TABLE brgPageElements (
-    pelPK INT NOT NULL AUTO_INCREMENT,
-    pelPageFK INT NOT NULL,
-    pelElementFK INT NOT NULL,
-    pelOrder INT NOT NULL,
-    PRIMARY KEY(pelPK),
-    FOREIGN KEY(pelPageFK) REFERENCES tblPages(pagPK) ON DELETE CASCADE,
-    FOREIGN KEY(pelElementFK) REFERENCES tblElements(elePK) ON DELETE CASCADE
-);
 
 CREATE TABLE tblAnalytics (
     anaPK INT NOT NULL AUTO_INCREMENT,

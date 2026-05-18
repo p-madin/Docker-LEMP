@@ -7,46 +7,87 @@ VALUES ('Stack', 1, 'Stack', 'Stack', '$2y$10$m3vCndDU2/CavRvxwB2Gne5lnusLha8NJp
 INSERT INTO appUsers (name, age, city, username, password, email, verified) 
 VALUES ('Stack_Two', 2, 'Stack_Two', 'Stack_Two', '$2y$10$fkjGHwVncM0YQ9Jg0gHvku.E7TUTMvXeUbIdmUOwyoDaBcFUm432i', 'Stack_Two@stack.com', true);
 
+-- Create Management Pages
+INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle, pagSlug) VALUES (1, 1, 'Account Management', 'account_management');
+INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle, pagSlug) VALUES (2, 1, 'Error Log', 'error_log');
+INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle, pagSlug) VALUES (3, 1, 'Navbar Management', 'navbar_management');
+INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle, pagSlug) VALUES (4, 1, 'Form Management', 'form_management');
+INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle, pagSlug) VALUES (5, 1, 'Page Management', 'page_management');
+INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle, pagSlug) VALUES (6, 1, 'Banned IP Management', 'banned_ips');
+INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle, pagSlug) VALUES (7, 1, 'Platform Recovery', 'platform_recovery');
+
+-- Create Table Elements for these pages
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (1, 'heading', 'Account Management');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (2, 'table', '{"dataProvider":"AccountDataProvider"}');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (3, 'heading', 'Error Log');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (4, 'table', '{"dataProvider":"ErrorLogDataProvider"}');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (5, 'heading', 'Navbar Management');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (6, 'table', '{"dataProvider":"NavbarDataProvider"}');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (7, 'heading', 'Form Management');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (8, 'table', '{"dataProvider":"FormDataProvider"}');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (9, 'heading', 'Page Management');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (10, 'table', '{"dataProvider":"PageDataProvider"}');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (11, 'heading', 'Banned IPs');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (12, 'table', '{"dataProvider":"BannedIpDataProvider"}');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (13, 'heading', 'Platform Recovery');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (14, 'table', '{"dataProvider":"PlatformRecoveryDataProvider"}');
+
+-- Link Elements to Pages
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (1, 1, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (1, 2, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (2, 3, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (2, 4, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (3, 5, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (3, 6, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (4, 7, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (4, 8, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (5, 9, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (5, 10, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (6, 11, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (6, 12, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (7, 13, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (7, 14, 1);
+
 -- Root Items
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Home', 'c', '/', 'IndexController', false, 1, NULL);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Dashboard', 'p', '/dashboard', 'DashboardController', true, 2, NULL);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Home', 'c', NULL, '/', 'IndexController', false, 1, NULL);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Dashboard', 'p', NULL, '/dashboard', 'DashboardController', true, 2, NULL);
 
 -- Settings Menu
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Settings', 'p', NULL, NULL, true, 3, NULL);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Accounts', 'p', '/account_management', 'AccountManagementController', true, 1, 3);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Error Log', 'p', '/error_log', 'ErrorLogController', true, 2, 3);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Banned IPs', 'p', '/banned_ips', 'BannedIpManagementController', true, 3, 3);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Platform Recovery', 'p', '/platform_recovery', 'PlatformRecoveryController', true, 5, 3);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Settings', 'p', NULL, NULL, NULL, true, 3, NULL);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Accounts', 'p', 1, '/account_management', NULL, true, 1, 3);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Error Log', 'p', 2, '/error_log', NULL, true, 2, 3);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Banned IPs', 'p', 6, '/banned_ips', NULL, true, 3, 3);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Platform Recovery', 'p', 7, '/platform_recovery', NULL, true, 5, 3);
 
 -- CMS Menu
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('CMS', 'p', NULL, NULL, true, 4, NULL);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Navbars', 'p', '/navbar_management', 'NavbarManagementController', true, 1, 8);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Forms', 'p', '/form_management', 'FormManagementController', true, 2, 8);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Pages', 'p', '/page_management', 'PageManagementController', true, 3, 8);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('CMS', 'p', NULL, NULL, NULL, true, 4, NULL);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Navbars', 'p', 3, '/navbar_management', NULL, true, 1, 8);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Forms', 'p', 4, '/form_management', NULL, true, 2, 8);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Pages', 'p', 5, '/page_management', NULL, true, 3, 8);
 
 -- Logout
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Logout', 'c', '/logout', 'LogoutAction', true, 5, NULL);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Logout', 'c', NULL, '/logout', 'LogoutAction', true, 5, NULL);
 
 -- Actions (Internal Routes) 
 -- -- nbDiscriminator = [a = {action, dont show on nav_bar but its a route}, h = {hidden}, p = {page, show on navbar}, c = {core}]
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Login Action', 'a', '/login', 'LoginAction', false, 0);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Register Action', 'a', '/register', 'RegisterAction', false, 0);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Update Account', 'a', '/editAccount', 'UpdateAccountAction', true, 0);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Column', 'a', '/edit_column', 'EditColumnController', true, 0);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Form', 'a', '/edit_form', 'EditFormController', true, 0);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Navbar', 'a', '/edit_navbar', 'EditNavbarController', true, 0);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Account', 'a', '/edit_account', 'EditAccountController', true, 0);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Column Action', 'a', '/editColumn', 'EditColumnAction', true, 0);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Form Action', 'a', '/editForm', 'EditFormAction', true, 0);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Navbar Action', 'a', '/editNavbar', 'EditNavbarAction', true, 0);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Unban IP Action', 'a', '/unban_ip', 'UnbanIpAction', true, 0);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Undo Redo Action', 'h', '/undo', 'UndoRedoController', true, 0);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Page Action', 'a', '/pageAction', 'PageAction', true, 0);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Element Action', 'a', '/elementAction', 'ElementAction', true, 0);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Page Editor', 'a', '/page_editor', 'PageController', true, 0);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Form JSON Action', 'a', '/formAction', 'FormAction', true, 0);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Preview Page', 'a', '/preview', 'PreviewController', true, 0);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Data Provider JSON Action', 'a', '/dataProviders', 'DataProviderAction', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Login Action', 'a', NULL, '/login', 'LoginAction', false, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Register Action', 'a', NULL, '/register', 'RegisterAction', false, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Update Account', 'a', NULL, '/editAccount', 'UpdateAccountAction', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Column', 'a', NULL, '/edit_column', 'EditColumnController', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Form', 'a', NULL, '/edit_form', 'EditFormController', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Navbar', 'a', NULL, '/edit_navbar', 'EditNavbarController', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Account', 'a', NULL, '/edit_account', 'EditAccountController', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Column Action', 'a', NULL, '/editColumn', 'EditColumnAction', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Form Action', 'a', NULL, '/editForm', 'EditFormAction', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Navbar Action', 'a', NULL, '/editNavbar', 'EditNavbarAction', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Unban IP Action', 'a', NULL, '/unban_ip', 'UnbanIpAction', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Undo Redo Action', 'h', NULL, '/undo', 'UndoRedoController', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Page Action', 'a', NULL, '/pageAction', 'PageAction', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Element Action', 'a', NULL, '/elementAction', 'ElementAction', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Page Editor', 'a', NULL, '/page_editor', 'PageController', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Form JSON Action', 'a', NULL, '/formAction', 'FormAction', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Preview Page', 'a', NULL, '/preview', 'PreviewController', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Data Provider JSON Action', 'a', NULL, '/dataProviders', 'DataProviderAction', true, 0);
 
 INSERT INTO tblForm (tfName, tfReadOnly) VALUES ('login', false), ('register', false), ('editUser', false), ('navbar', false), ('editForm', true), ('editColumn', true), ('banned_ips', true), ('platform_recovery', false), ('page', false), ('element', false);
 

@@ -42,6 +42,7 @@ function renderElement($el, $dom, $target, $formSchemas) {
         $rawContent = htmlspecialchars_decode($el['eleContent'], ENT_QUOTES);
         $config = json_decode($rawContent, true);
         if ($config) {
+            
             $table = new FlexTableComponent($dom);
             if (!empty($config['dataProvider'])) {
                 $table->setDataProvider($config['dataProvider']);

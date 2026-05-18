@@ -7,21 +7,26 @@ class DataProviderAction implements ControllerInterface {
     public function execute(Request $request) {
         $providers = [];
         
-        // Scan for controllers that implement DataProviderInterface
-        $controllerDir = __DIR__;
-        $files = scandir($controllerDir);
-        foreach ($files as $file) {
-            if ($file === '.' || $file === '..' || !str_ends_with($file, '.php')) continue;
-            
-            $className = str_replace('.php', '', $file);
-            if (class_exists($className)) {
-                $reflection = new ReflectionClass($className);
-                if ($reflection->implementsInterface('DataProviderInterface') && !$reflection->isAbstract()) {
-                    $instance = new $className();
-                    $providers[] = [
-                        'id' => $className,
-                        'name' => $instance->getDataSourceName()
-                    ];
+        // Scan for DataProvider classes in the dedicated Providers directory
+        $providerDir = __DIR__ . '/../Data/Providers';
+        if (is_dir($providerDir)) {
+            $files = scandir($providerDir);
+            foreach ($files as $file) {
+                if ($file === '.' || $file === '..' || !str_ends_with($file, '.php')) continue;
+                
+                $filePath = $providerDir . '/' . $file;
+                include_once($filePath);
+                
+                $className = str_replace('.php', '', $file);
+                if (class_exists($className)) {
+                    $reflection = new ReflectionClass($className);
+                    if ($reflection->implementsInterface('DataProviderInterface') && !$reflection->isAbstract()) {
+                        $instance = new $className();
+                        $providers[] = [
+                            'id' => $className,
+                            'name' => $instance->getDataSourceName()
+                        ];
+                    }
                 }
             }
         }

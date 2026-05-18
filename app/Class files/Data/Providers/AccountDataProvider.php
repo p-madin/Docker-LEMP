@@ -1,9 +1,5 @@
 <?php
-
-class AccountManagementController implements ControllerInterface, DataProviderInterface {
-    public static string $path = '/account_management';
-    public bool $isAction = false;
-
+class AccountDataProvider implements DataProviderInterface {
     public function getColumns(): array {
         return [
             ['key' => 'auPK', 'label' => 'ID'],
@@ -27,15 +23,4 @@ class AccountManagementController implements ControllerInterface, DataProviderIn
     public function getDataSourceName(): string {
         return "System Accounts";
     }
-
-    public function execute(Request $request) {
-        global $db, $dialect, $dom, $sessionController;
-
-        $users = $this->getData();
-
-        return View::render('management/accounts', [
-            'users' => $users
-        ]);
-    }
 }
-?>

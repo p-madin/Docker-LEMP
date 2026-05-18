@@ -44,12 +44,20 @@ class FlexTableComponent extends Component {
     }
 
     protected function build(): void {
-        if ($this->dataProviderClass && class_exists($this->dataProviderClass)) {
-            $provider = new $this->dataProviderClass();
-            if ($provider instanceof DataProviderInterface) {
-                $this->columns = $provider->getColumns();
-                $this->data = $provider->getData();
-                $this->nestedKey = $provider->getNestedKey();
+        if ($this->dataProviderClass) {
+            if (!class_exists($this->dataProviderClass)) {
+                $filePath = __DIR__ . "/../Data/Providers/" . $this->dataProviderClass . ".php";
+                if (file_exists($filePath)) {
+                    include_once($filePath);
+                }
+            }
+            if (class_exists($this->dataProviderClass)) {
+                $provider = new $this->dataProviderClass();
+                if ($provider instanceof DataProviderInterface) {
+                    $this->columns = $provider->getColumns();
+                    $this->data = $provider->getData();
+                    $this->nestedKey = $provider->getNestedKey();
+                }
             }
         } else if ($this->dataSource) {
             global $db, $dialect;
@@ -149,9 +157,7 @@ class FlexTableComponent extends Component {
                 $val = $rowData[$colKey] ?? false;
                 $label = $val ? ($config['true'] ?? 'Active') : ($config['false'] ?? 'Inactive');
                 $color = $val ? ($config['trueColor'] ?? 'green') : ($config['falseColor'] ?? 'red');
-                $badge = $this->fabricateChild($cell, 'span', [
-                    'style' => "color:$color; font-weight:bold; padding: 2px 6px; border-radius: 4px; background: rgba(0,0,0,0.05);"
-                ], $label);
+                $badge = $this->fabricateChild($cell, 'span', ['style' => "color:$color; font-weight:bold"], $label);
                 return true;
 
             case 'link':

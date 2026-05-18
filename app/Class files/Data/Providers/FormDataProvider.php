@@ -1,8 +1,5 @@
 <?php
-class FormManagementController implements ControllerInterface, DataProviderInterface {
-    public static string $path = '/form_management';
-    public bool $isAction = false;
-
+class FormDataProvider implements DataProviderInterface {
     public function getColumns(): array {
         return [
             ['key' => 'tfPK', 'label' => 'ID'],
@@ -33,7 +30,7 @@ class FormManagementController implements ControllerInterface, DataProviderInter
         $qb = new QueryBuilder($dialect);
         return $qb->table('tblForm')->select(['tfPK', 'tfName', 'tfReadOnly', $qb->raw('COUNT(tcPK) AS columnCount')])
                     ->leftJoin('tblColumns', 'tblForm.tfPK', '=', 'tblColumns.tcFormFK')
-                    ->groupBy(['tfPK', 'tfName', 'tfReadOnly', 'tfPK']) // Grouping by PK too to satisfy some dialects
+                    ->groupBy(['tfPK', 'tfName', 'tfReadOnly', 'tfPK'])
                     ->orderBy('tfName', 'ASC')->getFetchAll($db);
     }
 
@@ -44,13 +41,4 @@ class FormManagementController implements ControllerInterface, DataProviderInter
     public function getDataSourceName(): string {
         return "Form Definitions";
     }
-
-    public function execute(Request $request) {
-        $items = $this->getData();
-
-        return View::render('management/forms', [
-            'items' => $items
-        ]);
-    }
 }
-?>
