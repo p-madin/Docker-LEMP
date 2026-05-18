@@ -20,6 +20,7 @@ RUN apt install zlib1g-dev -y
 RUN apt install libpcre2-dev -y
 RUN apt install libpq-dev -y
 RUN apt install cron -y
+RUN apt install libicu-dev -y
 
 
 RUN mkdir -p /usr/src/php && \
