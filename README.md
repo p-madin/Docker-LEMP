@@ -50,6 +50,16 @@ docker compose -f compose.mariadb.yaml up --build
 docker compose -f compose.postgreSQL.yaml up --build
 ```
 
+**Using .env.dev::**
+```bash
+docker compose --env-file .env.dev up --build
+```
+
+**On Live::**
+```bash
+docker compose --env-file .env.live up --build
+```
+
 ### Accessing the Application
 - **Home/Login**: [https://localhost/](https://localhost/)
 - **Dashboard**: [https://localhost/dashboard](https://localhost/dashboard)

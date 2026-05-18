@@ -17,7 +17,7 @@ RUN apt install libcurl4-openssl-dev -y
 RUN apt install libonig-dev -y
 RUN apt install libreadline-dev -y
 RUN apt install zlib1g-dev -y
-RUN apt install libpcre3-dev -y
+RUN apt install libpcre2-dev -y
 RUN apt install libpq-dev -y
 RUN apt install cron -y
 
