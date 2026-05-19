@@ -5,7 +5,7 @@ class BannedIpDataProvider implements DataProviderInterface {
             ['key' => 'biIP', 'label' => 'IP Address'],
             ['key' => 'biDateAdded', 'label' => 'Banned At'],
             ['key' => 'biReason', 'label' => 'Reason'],
-            ['key' => 'actions', 'label' => 'Actions', 'action' => 'button_form', 'actionConfig' => ['url' => '/unban_ip', 'params' => ['biPK' => 'biPK'], 'buttonLabel' => 'Unban']]
+            ['key' => 'actions', 'label' => 'Actions', 'action' => 'button_form', 'actionConfig' => ['url' => '/unban_ip', 'params' => ['biPK' => 'biPK', 'action' => 'unban'], 'buttonLabel' => 'Unban']]
         ];
     }
 
