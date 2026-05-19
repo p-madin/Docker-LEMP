@@ -1,9 +1,9 @@
 <?php
 class HttpActionMiddleware implements MiddlewareInterface {
     public function handle(Request $request, Closure $next) {
-        global $db, $dialect, $sessionController;
+        global $db, $dialect, $sessionController, $scvRows;
 
-        $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+        $ip = $_SERVER[$scvRows['clientAddress']] ?? '';
         $url = $_SERVER['REQUEST_URI'] ?? '';
         $referrer = $_SERVER['HTTP_REFERER'] ?? null;
         $method = $_SERVER['REQUEST_METHOD'] ?? '';

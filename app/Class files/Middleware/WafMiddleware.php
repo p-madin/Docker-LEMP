@@ -1,8 +1,8 @@
 <?php
 class WafMiddleware implements MiddlewareInterface {
     public function handle(Request $request, Closure $next) {
-        global $db_controller, $db, $dialect;
-        $ip = $request->server['REMOTE_ADDR'] ?? '';
+        global $db_controller, $db, $dialect, $scvRows;
+        $ip = $request->server[$scvRows['clientAddress']] ?? '';
 
         $rateLimiter = new RateLimiter($db, $dialect);
 
