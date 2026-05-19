@@ -223,6 +223,28 @@ The properties include:
 
 This allows the user to edit the content of the block directly on the canvas, features like italics, bold, underline, hyperlink, ordered list and unordered list may be applied to this inner text.
 
+### Data Model
+
+Pages are recorded to `tblPages` and blocks are recorded to `tblElements`. A many-to-many bridge table `brgPageElements` associates elements to pages and defines their ordering via `pelOrder`.
+
+```
+┌──────────────┐       ┌──────────────────┐       ┌──────────────┐
+│   tblPages   │       │  brgPageElements │       │  tblElements │
+├──────────────┤       ├──────────────────┤       ├──────────────┤
+│ pagPK (PK)   │◄──────│ pelPageFK (FK)   │       │ elePK (PK)   │
+│ pagTitle     │       │ pelElementFK(FK) │──────►│ eleType      │
+│ pagSlug      │       │ pelOrder         │       │ eleContent   │
+│ pagAuthorFK  │       └──────────────────┘       │ eleCSSClasses│
+│ pagCreated   │                                  │ eleParentFK ─┼──┐
+│ pagUpdated   │                                  │ eleCreated   │  │
+│ pagDeleted   │                                  └──────────────┘  │
+└──────────────┘                                        ▲           │
+                                                        └───────────┘
+                                                     (self-referential)
+```
+
+Container elements (e.g. flexbox) may have children. The parent-child hierarchy is defined by `tblElements.eleParentFK`, which is a self-referential foreign key back to `tblElements.elePK`. This allows arbitrarily nested block structures within a single page.
+
 ## Phase 8: Persistence & C(-r)UD Controller
 ### Description
 Introduce a server-side controller to manage the persistence of pages and their associated elements using the established Event Sourcing architecture. This ensures all changes to the site structure are auditable and reversible.
