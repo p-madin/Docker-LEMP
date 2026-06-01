@@ -7,9 +7,9 @@ class DatabaseConfigMiddleware implements MiddlewareInterface {
         // 1. Database Connection
         $vendor = getenv('DB_VENDOR') ?: 'mysql';
         $host = getenv('DB_HOST') ?: 'db';
-        $dbname = getenv('DB_NAME') ?: 'stackDB';
-        $username = getenv('DB_USER') ?: 'docker_user_lemp';
-        $password = getenv('DB_PASS') ?: 'docker_user_lemp';
+        $dbname = getenv('TENANT_DB_NAME') ?: 'stackDB';
+        $username = getenv('TENANT_DB_USER') ?: 'docker_user_lemp';
+        $password = getenv('TENANT_DB_PASS') ?: 'docker_user_lemp';
         $charset = 'utf8mb4';
 
         $dsn = "$vendor:host=$host;dbname=$dbname" . ($vendor === 'mysql' ? ";charset=$charset" : "");

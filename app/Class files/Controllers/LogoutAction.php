@@ -11,12 +11,10 @@ class LogoutAction implements ControllerInterface {
         $sessionController->destroySession();
 
         if (isset($request->server['HTTP_ACCEPT']) && strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false) {
-            echo json_encode(['redirect' => '/']);
-            exit;
+            Hyperlink::clientSideRedirection("/");
         }
 
-        header("location:/");
-        exit;
+        Hyperlink::redirection("/");
     }
 }
 ?>

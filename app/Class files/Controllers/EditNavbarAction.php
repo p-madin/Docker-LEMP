@@ -23,8 +23,7 @@ class EditNavbarAction implements ControllerInterface {
                         $eventStore->append('NavbarItemDeleted', $itemData, $pk, $authorId);
                     }
                 }
-                header("Location: /navbar_management");
-                exit;
+                Hyperlink::redirection("/navbar_management");
             }
 
             $cleanData = FormValidation::processAndValidate('navbar', $request->post, $formSchemas, $sessionController, function($clean) {
@@ -60,16 +59,14 @@ class EditNavbarAction implements ControllerInterface {
 
             $redirectUrl = "/navbar_management";
             if (isset($request->server['HTTP_ACCEPT']) && strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false) {
-                echo json_encode(['redirect' => $redirectUrl]);
-                exit;
+                Hyperlink::clientSideRedirection($redirectUrl);
             }
 
-            header("Location: " . $redirectUrl);
-            exit;
+            
+            Hyperlink::redirection($redirectUrl);
         }
 
-        header("Location: /navbar_management");
-        exit;
+        Hyperlink::redirection("/navbar_management");
     }
 
     public static function getEventHandlers(): array {

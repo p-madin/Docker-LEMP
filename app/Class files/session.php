@@ -9,15 +9,23 @@ class SessionController{
         $this->db = $db;
         $this->dialect = $dialect;
     }
+    private function getSessionCookieName(): string {
+        $tenantName = getenv('TENANT_NAME');
+        if ($tenantName && !empty($tenantName)) {
+            return 'session-' . $tenantName;
+        }
+        return 'session';
+    }
     public function seed(){
         global $scvRows;
         // Ensure $scvRows is initialized if global lookup fails in some contexts
         
-        if(isset($_COOKIE["session"])) {
+        $cookieName = $this->getSessionCookieName();
+        if(isset($_COOKIE[$cookieName])) {
             // Sanitize session cookie using the Security Strategy context
             $security = new \App\Security\SecurityValidation();
             $security->setStrategy(new \App\Security\AlphanumericDecorator(new \App\Security\CleanSanitizer()));
-            $sanitizedSessChars = $security->process($_COOKIE["session"]);
+            $sanitizedSessChars = $security->process($_COOKIE[$cookieName]);
             
             //we need to check if this is in the database
             $qb = new QueryBuilder($this->dialect);
@@ -29,8 +37,7 @@ class SessionController{
             if(count($data) == 0){
                 //was set but it didnt exist... redirect to login
                 $this->destroySession();
-                header("Location: /");
-                exit;
+                Hyperlink::redirection("/");
             }else{
                 //this session is valid, verify that it is not in transaction...
                 $this->sessPK = $data[0]["sessPK"];
@@ -46,8 +53,7 @@ class SessionController{
                     $data = $stmt->fetch();
                     if($count>100){
                         $this->destroySession();
-                        header("Location: /");
-                        exit;
+                        Hyperlink::redirection("/");
                     }
                     if($data['sessTransactionActive'] == 0){
                         break;
@@ -92,7 +98,7 @@ class SessionController{
                 $this->sessPK = $this->db->lastInsertId();
             }
             
-            setcookie("session", $randString, [
+            setcookie($cookieName, $randString, [
                       'expires' => time() + (3600), 
                       'path' => '/',
                       'domain' => $scvRows['myDomain'] ?? '',
@@ -108,10 +114,10 @@ class SessionController{
 
     public function destroySession() {
         global $scvRows;
-        setcookie("session", "", [
+        setcookie($this->getSessionCookieName(), "", [
             'expires' => time() - 3600, 
             'path' => '/',
-            'domain' => $scvRows['myDomain'],
+            'domain' => $scvRows['myDomain'] ?? '',
             'secure' => false,
             'httponly' => true,
             'samesite' => 'Strict'

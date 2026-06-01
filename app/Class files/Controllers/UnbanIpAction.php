@@ -7,8 +7,7 @@ class UnbanIpAction implements ControllerInterface {
         global $db, $dialect, $sessionController;
 
         if ($request->getMethod() !== 'POST') {
-            header("Location: /banned_ips");
-            exit;
+            Hyperlink::redirection("/banned_ips");
         }
 
         $pk = $request->post['biPK'] ?? null;
@@ -36,9 +35,7 @@ class UnbanIpAction implements ControllerInterface {
             echo json_encode(['success' => false, 'error' => 'Invalid request']);
             exit;
         }
-
-        header("Location: /banned_ips");
-        exit;
+        Hyperlink::redirection("/banned_ips");
     }
 
     public static function getEventHandlers(): array {

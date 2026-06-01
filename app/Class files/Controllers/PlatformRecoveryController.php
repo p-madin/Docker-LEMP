@@ -9,8 +9,7 @@ class PlatformRecoveryController implements ControllerInterface {
         // Ensure user has admin privileges to access platform recovery
         $userId = $sessionController->getSystemUserId();
         if (!$userId) {
-            header("Location: /");
-            exit;
+            Hyperlink::redirection("/");
         }
 
         $qb = new QueryBuilder($dialect);
@@ -20,9 +19,7 @@ class PlatformRecoveryController implements ControllerInterface {
             $targetTime = $request->post['target_time'] ?? null;
             if ($targetTime) {
                 $eventStore->append('PlatformRecoveryReplay', ['target_time' => $targetTime, 'user_id' => $userId], null, $userId);
-
-                header("Location: /platform_recovery?msg=replay_queued");
-                exit;
+                Hyperlink::redirection("/platform_recovery?msg=replay_queued");
             }
         }
 

@@ -22,8 +22,7 @@ class EditColumnAction implements ControllerInterface {
                 $checkQb = new QueryBuilder($dialect);
                 $formStatus = $checkQb->table('tblForm')->select(['tfReadOnly'])->where('tfPK', '=', $targetFormPk)->getFetch($db);
                 if($formStatus['tfReadOnly']) {
-                    header("Location: /form_management");
-                    exit;
+                    Hyperlink::redirection("/form_management");
                 }
             }
 
@@ -42,8 +41,7 @@ class EditColumnAction implements ControllerInterface {
                         $eventStore->append('ColumnDeleted', $columnData, $targetFormPk, $authorId);
                     }
                 }
-                header("Location: /edit_form?id=" . $form_id);
-                exit;
+                Hyperlink::redirection("/edit_form?id=" . $form_id);
             }
 
             $cleanData = FormValidation::processAndValidate('editColumn', $request->post, $formSchemas, $sessionController, function($clean) {
@@ -83,15 +81,13 @@ class EditColumnAction implements ControllerInterface {
             $eventStore->waitUntilProcessed($eventId);
 
             if (isset($request->server['HTTP_ACCEPT']) && strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false) {
-                echo json_encode(['redirect' => $redirectUrl]);
-                exit;
+                Hyperlink::clientSideRedirection($redirectUrl);
             }
 
-            header("Location: " . $redirectUrl);
-            exit;
+            Hyperlink::redirection($redirectUrl);
         }
 
-        header("Location: /form_management");
+        Hyperlink::redirection("/form_management");
         exit;
     }
 

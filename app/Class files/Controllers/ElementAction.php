@@ -56,8 +56,7 @@ class ElementAction implements ControllerInterface {
                 exit;
             }
 
-            header("Location: /");
-            exit;
+            Hyperlink::redirection("/");
         }
     }
 

@@ -88,8 +88,19 @@ INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerCl
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Form JSON Action', 'a', NULL, '/formAction', 'FormAction', true, 0);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Preview Page', 'a', NULL, '/preview', 'PreviewController', true, 0);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Data Provider JSON Action', 'a', NULL, '/dataProviders', 'DataProviderAction', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Boot Child Action', 'a', NULL, '/bootChild', 'BootChildAction', true, 0);
 
-INSERT INTO tblForm (tfName, tfReadOnly) VALUES ('login', false), ('register', false), ('editUser', false), ('navbar', false), ('editForm', true), ('editColumn', true), ('banned_ips', true), ('platform_recovery', false), ('page', false), ('element', false);
+INSERT INTO tblForm (tfName, tfAction, tfReadOnly) 
+VALUES ('login', 'login', false), 
+('register', 'register', false), 
+('editUser', 'editAccount', false), 
+('navbar', 'editNavbar', false), 
+('editForm', 'editForm', true), 
+('editColumn', 'editColumn', true), 
+('banned_ips', 'banned_ips', true), 
+('platform_recovery', 'platform_recovery', false), 
+('page', 'page', false), 
+('element', 'element', false);
 
 INSERT INTO tblColumns (tcFormFK, tcName, tcLabel, tcType, tcRules, tcOrder) VALUES
 (1, 'username', 'Username', 'text', '{"required":true}', 1),

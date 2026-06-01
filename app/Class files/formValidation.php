@@ -30,7 +30,8 @@ class FormValidation {
         }
 
         if (isset($formSchemas[$schemaName])) {
-            foreach ($formSchemas[$schemaName] as $field) {
+            foreach ($formSchemas[$schemaName] as $key => $field) {
+                if ($key === '__meta') continue;
                 if (!empty($field['rules'])) {
                     $validator->rule($field['name'], $field['rules']);
                 }
@@ -53,8 +54,7 @@ class FormValidation {
                 echo json_encode(['errors' => $validator->errors()]);
                 exit;
             }
-            header("Location: " . $redirectUrl);
-            exit;
+            Hyperlink::redirection($redirectUrl);
         }
 
         // Clear previous errors and data on success

@@ -24,8 +24,7 @@ class PageAction implements ControllerInterface {
                     echo json_encode(['success' => true]);
                     exit;
                 }
-                header("Location: /");
-                exit;
+                Hyperlink::redirection("/");
             }
 
             $cleanData = FormValidation::processAndValidate('page', $request->post, $formSchemas, $sessionController, function($clean) {
@@ -55,8 +54,7 @@ class PageAction implements ControllerInterface {
                 exit;
             }
 
-            header("Location: /");
-            exit;
+            Hyperlink::redirection("/");
         }
     }
 

@@ -119,7 +119,13 @@ class FormComponent extends Component {
 
     public function buildFromSchema(string $schemaName, array $globalSchemas, array $overrideValues = []) {
         if (!isset($globalSchemas[$schemaName])) return $this;
-        foreach ($globalSchemas[$schemaName] as $field) {
+        
+        if (isset($globalSchemas[$schemaName]['__meta']) && !empty($globalSchemas[$schemaName]['__meta']['action'])) {
+            $this->setAction($globalSchemas[$schemaName]['__meta']['action']);
+        }
+
+        foreach ($globalSchemas[$schemaName] as $key => $field) {
+            if ($key === '__meta') continue;
             $value = $overrideValues[$field['name']] ?? null;
             $this->addField($field['name'], $field['label'], $field['type'], $value, $field['rules']);
         }

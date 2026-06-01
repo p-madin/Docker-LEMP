@@ -11,6 +11,7 @@ class DatabaseForm {
         $qb->table('tblForm')
            ->select([
                'tblForm.tfName',
+               'tblForm.tfAction',
                'tblColumns.tcName',
                'tblColumns.tcLabel',
                'tblColumns.tcType',
@@ -29,11 +30,14 @@ class DatabaseForm {
         }
 
         foreach ($rows as $row) {
-            $formName = $row['tfName'] ?? $row['tfname'] ?? $row['TFNAME']; // PGSQL lowercase protection alias catch
+            $formName = $row['tfName']; // PGSQL lowercase protection alias catch
             if (!$formName) continue;
             
             if (!isset($schemas[$formName])) {
                 $schemas[$formName] = [];
+            }
+            if (!isset($schemas[$formName]['__meta'])) {
+                $schemas[$formName]['__meta'] = ['action' => $row['tfAction'] ?? ''];
             }
             
             // Decodes from MySQL or PgSQL text/json type

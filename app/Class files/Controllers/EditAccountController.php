@@ -8,8 +8,7 @@ class EditAccountController implements ControllerInterface {
 
         $id = (int)($request->get['id'] ?? 0);
         if ($id <= 0) {
-            header("Location: /account_management");
-            exit;
+            Hyperlink::redirection("/account_management");
         }
 
         $qb = new QueryBuilder($dialect);

@@ -37,8 +37,7 @@ class EditColumnController implements ControllerInterface {
             $checkQb->table('tblForm')->select(['tfReadOnly'])->where('tfPK', '=', $form_id);
             $fraw = $checkQb->getFetch($db);
             if ($fraw && (int)($fraw['tfReadOnly']) === 1) {
-                header("Location: /edit_form?id=" . $form_id);
-                exit;
+                Hyperlink::redirection("/edit_form?id=" . $form_id);
             }
         }
 

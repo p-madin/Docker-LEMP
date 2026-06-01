@@ -19,8 +19,7 @@ class UpdateAccountAction implements ControllerInterface {
 
             if ($userId <= 0) {
                 error_log("UpdateAccountAction: Invalid auPK provided in cleanData.");
-                header("Location: /account_management");
-                exit;
+                Hyperlink::redirection("/account_management");
             }
 
             // Fetch current state for Memento support
@@ -44,16 +43,13 @@ class UpdateAccountAction implements ControllerInterface {
 
             $redirectUrl = "/account_management";
             if (isset($request->server['HTTP_ACCEPT']) && strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false) {
-                echo json_encode(['redirect' => $redirectUrl]);
-                exit;
+                Hyperlink::clientSideRedirection($redirectUrl);
             }
 
-            header("Location: " . $redirectUrl);
-            exit;
+            Hyperlink::redirection($redirectUrl);
         }
 
-        header("Location: /account_management");
-        exit;
+        Hyperlink::redirection("/account_management");
     }
 
     public static function getEventHandlers(): array {

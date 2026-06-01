@@ -5,7 +5,8 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     wget tar \
     git \
-    tzdata
+    tzdata \
+    sudo
 
 ENV TZ=Australia/Sydney
 
@@ -69,10 +70,41 @@ RUN mkdir -p /usr/src/nginx && \
     make -j$(nproc) && \
     make install
 
+#Get the docker-cli
+RUN wget https://download.docker.com/linux/static/stable/x86_64/docker-27.3.1.tgz && \
+    tar -xzvf docker-27.3.1.tgz && \
+    mv docker/* /usr/local/bin/ && \
+    rm -rf docker docker-27.3.1.tgz
 
 
+RUN wget https://github.com/docker/compose/releases/download/v2.33.1/docker-compose-linux-x86_64 -O /usr/local/bin/docker-compose && \
+    chmod +x /usr/local/bin/docker-compose
 
+#RUN mkdir /home/ubunut/Workspace
+COPY ./ /home/ubuntu/Workspace/
+
+
+RUN chmod -R 777 /home/ubuntu/
+RUN chmod -R 777 /home/ubuntu/Workspace/
+
+RUN mkdir -p /var/www/html
+COPY ./app /var/www/html
+
+RUN openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
+    -keyout /var/www/html/nginx-selfsigned.key \
+    -out /var/www/html/nginx-selfsigned.crt \
+    -subj "/CN=localhost" && \
+    chmod 640 /var/www/html/nginx-selfsigned.key && \
+    chown root:www-data /var/www/html/nginx-selfsigned.key && \
+    chmod 644 /var/www/html/nginx-selfsigned.crt && \
+    chown root:www-data /var/www/html/nginx-selfsigned.crt 
+
+RUN chmod 755 /usr/local/nginx/logs && \
+    touch /usr/local/nginx/logs/error.log && \
+    chown www-data:www-data /usr/local/nginx/logs/error.log
 #RUN groupadd -r www-data && useradd -r -g www-data www-data
+
+RUN echo "www-data ALL=(root) NOPASSWD: /usr/local/nginx/nginx" >> /etc/sudoers
 
 RUN cp /usr/src/php/php.ini-production /usr/local/etc/php.ini
 #RUN cp /usr/local/etc/php-fpm.conf.default /usr/local/etc/php-fpm.conf
@@ -86,6 +118,8 @@ RUN printenv > /etc/cron.d/environment.env
 
 COPY ./conf/crontab /etc/cron.d/worker-source
 
+RUN mkdir /usr/local/nginx/conf.d
+RUN chmod -R 777 /usr/local/nginx/conf.d
 
 #COPY --from=build_stage /usr/src/php/php.ini-production /usr/local/etc/php/php.ini
 #COPY --from=build_stage /usr/src/php/sapi/fpm/php-fpm.conf /usr/local/etc/php/php-fpm.conf

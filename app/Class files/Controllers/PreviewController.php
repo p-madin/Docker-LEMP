@@ -8,16 +8,14 @@ class PreviewController implements ControllerInterface {
 
         $pageId = (int)($request->get['id'] ?? 0);
         if ($pageId <= 0) {
-             header("Location: /");
-             exit;
+            Hyperlink::redirection("/");
         }
 
         $qb_page = new QueryBuilder($dialect);
         $pageData = $qb_page->table('tblPages')->where('pagPK', '=', $pageId)->getFetch($db);
         
         if (!$pageData) {
-             header("Location: /");
-             exit;
+            Hyperlink::redirection("/");
         }
 
         $qb_elements = new QueryBuilder($dialect);

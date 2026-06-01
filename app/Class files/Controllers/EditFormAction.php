@@ -19,8 +19,7 @@ class EditFormAction implements ControllerInterface {
             $checkQb = new QueryBuilder($dialect);
             $formStatus = $checkQb->table('tblForm')->select(['tfReadOnly'])->where('tfPK', '=', $targetPk)->getFetch($db);
             if($formStatus['tfReadOnly']) {
-                header("Location: /form_management");
-                exit;
+                Hyperlink::redirection("/form_management");
             }
         }
 
@@ -38,8 +37,7 @@ class EditFormAction implements ControllerInterface {
                     $eventStore->append('FormDeleted', $formData, $pk, $authorId);
                 }
             }
-            header("Location: /form_management");
-            exit;
+            Hyperlink::redirection("/form_management");
         }
 
         $cleanData = FormValidation::processAndValidate('editForm', $request->post, $formSchemas, $sessionController, function($clean) {
@@ -69,8 +67,7 @@ class EditFormAction implements ControllerInterface {
             exit;
         }
 
-        header("Location: " . $redirectUrl);
-        exit;
+        Hyperlink::redirection($redirectUrl);
     }
 
     public static function getEventHandlers(): array {

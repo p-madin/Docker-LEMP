@@ -49,7 +49,8 @@ class SecurityValidation {
         // Set a secure default for fields lacking a specific override
         $this->setStrategy(SanitizerFactory::createDefault());
 
-        foreach ($schemaFields as $field) {
+        foreach ($schemaFields as $key => $field) {
+            if ($key === '__meta') continue;
             $type = $field['type'] ?? 'text'; // Fallback to text if type is unexpectedly missing
             $fieldStrategy = SanitizerFactory::createForType($type);
             

@@ -11,8 +11,7 @@ class ErrorLogController implements ControllerInterface {
             $qb_clear = new QueryBuilder($dialect);
             $qb_clear->table('phpErrorLog');
             $db->prepare($qb_clear->delete())->execute();
-            header("Location: /error_log");
-            exit;
+            Hyperlink::redirection("/error_log");
         }
 
         // --- Filters ---

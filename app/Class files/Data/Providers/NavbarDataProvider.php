@@ -16,11 +16,26 @@ class NavbarDataProvider implements DataProviderInterface {
     public function getData(): array {
         global $db, $dialect;
         $qb = new QueryBuilder($dialect);
-        return $qb->table('tblNavBar')->select(['nbPK', 'nbText', 'nbPath', 'nbOrder', 'nbParentFK'])->orderBy('nbOrder', 'ASC')->getFetchAll($db);
+        $data = $qb->table('tblNavBar')->select(['nbPK', 'nbText', 'nbPath', 'nbOrder', 'nbParentFK'])->orderBy('nbOrder', 'ASC')->getFetchAll($db);
+        $tree = [];
+        $lookup = [];
+        foreach ($data as $item) {
+            $item['children'] = [];
+            $lookup[$item['nbPK']] = $item;
+        }
+
+        foreach ($lookup as $id => &$item) {
+            if ($item['nbParentFK'] && isset($lookup[$item['nbParentFK']])) {
+                $lookup[$item['nbParentFK']]['children'][] = &$item;
+            } else {
+                $tree[] = &$item;
+            }
+        }
+        return $tree;
     }
 
     public function getNestedKey(): ?string {
-        return 'nbParentFK';
+        return 'children';
     }
 
     public function getDataSourceName(): string {

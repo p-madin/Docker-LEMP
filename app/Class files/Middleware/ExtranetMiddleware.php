@@ -14,8 +14,7 @@ class ExtranetMiddleware implements MiddlewareInterface {
                     exit;
                 }
 
-                header("Location: /");
-                exit;
+                Hyperlink::redirection("/");
             }
         }
 

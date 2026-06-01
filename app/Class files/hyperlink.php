@@ -32,7 +32,8 @@ class Hyperlink {
         
         // If it's an action, we POST directly to it. 
         // If it's a page, we POST to self for PRG handling in config.php.
-        $target = $isAction ? $url : "";
+        $relativeTarget = self::tenantURL($url);
+        $target = $isAction ? $relativeTarget : "";
         $form->prep($target, $method, true); 
         $form->setCompact(true);
         $formClass = "form_hyperlink";
@@ -42,7 +43,7 @@ class Hyperlink {
         $form->formWrapper->setAttribute("class", $formClass);
 
         if (!$isAction) {
-            $form->addField('nav_target', '', 'hidden', $url);
+            $form->addField('nav_target', '', 'hidden', $relativeTarget);
         }
 
         foreach ($post_params as $key => $value) {
@@ -86,8 +87,7 @@ class Hyperlink {
                 $target = $security->process($_POST['nav_target'] ?? '/');
                 
                 if (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) {
-                    echo json_encode(['redirect' => $target]);
-                    exit;
+                    self::clientSideRedirection($target);
                 }
                 $sessionController->completeTransaction();
 
@@ -117,5 +117,33 @@ class Hyperlink {
                 exit;
             }
         }
+    }
+    /**
+     * Generates a tenant-scoped URL.
+     *
+    * @param string $path The target path (e.g., '/dashboard' or 'dashboard').
+    * @return string The fully qualified tenant relative URL.
+    */
+    public static function tenantURL(string $path): string 
+    {
+        // Fetch the tenant name, default to empty if not set
+        $tenant = $_SERVER['TENANT_NAME'] ?? '';
+
+        // Clean up slashes to prevent duplicates
+        $tenant = trim($tenant, '/');
+        $path = ltrim($path, '/');
+
+        // Return the formatted URL
+        return '/' . ($tenant !== '' ? $tenant . '/' : '') . $path;
+    }
+    public static function redirection(string $url){
+        $relativeTarget = self::tenantURL($url);
+        header("Location: " . $relativeTarget);
+        exit;
+    }
+    public static function clientSideRedirection(string $url){
+        $relativeTarget = self::tenantURL($url);
+        echo json_encode(['redirect' => $relativeTarget]);
+        exit;
     }
 }

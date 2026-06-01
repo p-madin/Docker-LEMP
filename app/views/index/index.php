@@ -32,6 +32,14 @@ if ($isLoggedIn) {
     $target->append($login_form->render());
 }
 
+//if super host?
+//boot child link
+$boot_child_container = $dom->dom->createElement('div');
+$hyperlink = new Hyperlink();
+$hyperlink->appendHyperlinkForm($dom, $boot_child_container, "Boot child", "/bootChild");
+$target->appendChild($boot_child_container);
+
+
 // 3. Register Section
 $dom->fabricateChild($target, "h1", [], "Register form");
 $register_form = new xmlForm("register", $dom);

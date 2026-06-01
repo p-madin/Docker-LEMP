@@ -32,8 +32,7 @@ class RegisterAction implements ControllerInterface {
             ]);
             exit;
         }
-        header("location:/");
-        exit;
+        Hyperlink::redirection("/");
     }
 
     public static function getEventHandlers(): array {

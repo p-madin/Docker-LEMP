@@ -54,8 +54,8 @@ class UndoRedoController implements ControllerInterface {
             echo json_encode(['success' => true, 'message' => $msg ?? 'Done']);
             exit;
         }
-
-        header("Location: " . ($request->server['HTTP_REFERER'] ?? '/dashboard'));
+        //To-do: Dont use HTTP_REFERER here
+        Hyperlink::redirection(($request->server['HTTP_REFERER'] ?? '/dashboard'));
         exit;
     }
 

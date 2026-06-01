@@ -1,0 +1,48 @@
+services:
+  app:
+    #build: 
+    #  context: .
+    #  dockerfile: /home/ubuntu/Workspace/Dockerfile
+    image: philmadin/dockerlempapp:latest
+    expose:
+      - "80"
+    environment:
+      DB_HOST: db
+      TENANT_DB_NAME: stackDB
+      TENANT_DB_USER: ${TENANT_DB_USER}
+      TENANT_DB_PASS: ${TENANT_DB_PASS}
+      TENANT_NAME: ${TENANT_NAME}
+    networks:
+      - tenant-network
+      - superhost-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+  db:
+    #build:
+    #  context: .
+    #  dockerfile: /home/ubuntu/Workspace/Dockerfile.db
+    image: philmadin/dockerlempdb:latest
+    expose:
+      - "3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${TENANT_DB_ROOT}
+      MYSQL_DATABASE: stackDB
+      MYSQL_USER: ${TENANT_DB_USER}
+      MYSQL_PASSWORD: ${TENANT_DB_PASS}
+    volumes:
+      - C:\\Workspace\\Docker Workspace\\Docker-LEMP\\conf\\common\\01_db_ddl.sql:/docker-entrypoint-initdb.d/01_db_ddl.sql
+      - C:\\Workspace\\Docker Workspace\\Docker-LEMP\\conf\\common\\02_db_dml.sql:/docker-entrypoint-initdb.d/02_db_dml.sql
+      - C:\\Workspace\\Docker Workspace\\Docker-LEMP\\conf\\${TARGET_ENV}\\03_db_dml.sql:/docker-entrypoint-initdb.d/03_db_dml.sql:ro
+    networks:
+      - tenant-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+networks:
+  tenant-network:
+  superhost-network:
+    external: true
