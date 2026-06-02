@@ -21,10 +21,38 @@ class BootChildAction implements ControllerInterface {
         // 2 — write the tenant env file
         $env = $this->generateEnvFile($tenant);
         file_put_contents("{$tenantDir}/.env", $env);
-        shell_exec("docker network create superhost-network 2>/dev/null || true");
+
+        // Determine how to communicate with Docker dynamically
+        $dockerHost = getenv('DOCKER_HOST');
+        $cmdPrefix = "";
+
+        if ($dockerHost && strpos($dockerHost, 'tcp://') === 0) {
+            // It's a TCP host. Verify if we can connect to it.
+            $parsed = parse_url($dockerHost);
+            $host = isset($parsed['host']) ? $parsed['host'] : '';
+            $port = isset($parsed['port']) ? $parsed['port'] : 2375;
+            
+            $connection = @fsockopen($host, $port, $errno, $errstr, 0.5);
+            if ($connection) {
+                fclose($connection);
+            } else {
+                // Connection failed (typical on Linux). Fall back to socket if available.
+                $dockerHost = null;
+            }
+        }
+
+        if (!$dockerHost && file_exists('/var/run/docker.sock')) {
+            if (!is_writable('/var/run/docker.sock')) {
+                $cmdPrefix = "sudo ";
+            }
+        } elseif ($dockerHost) {
+            $cmdPrefix = "DOCKER_HOST=" . escapeshellarg($dockerHost) . " ";
+        }
+
+        shell_exec("{$cmdPrefix}docker network create superhost-network 2>/dev/null || true");
         // 3 — bring the stack up
         $output = shell_exec(
-            "DOCKER_HOST=tcp://host.docker.internal:2375 docker-compose -f {$tenantDir}/compose.yaml --env-file {$tenantDir}/.env up -d 2>&1"
+            "{$cmdPrefix}docker-compose -f {$tenantDir}/compose.yaml --env-file {$tenantDir}/.env up -d 2>&1"
         );
         //wait for the compose to complete...
         sleep(3);

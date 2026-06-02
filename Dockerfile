@@ -3,10 +3,16 @@ FROM ubuntu:latest
 RUN apt-get update && apt-get install -y \
     build-essential \
     pkg-config \
-    wget tar \
+    curl wget tar \
     git \
     tzdata \
     sudo
+
+RUN echo "retry = 5" >> /root/.curlrc && \
+    echo "retry-delay = 3" >> /root/.curlrc && \
+    echo "retry-all-errors" >> /root/.curlrc && \
+    echo "connect-timeout = 10" >> /root/.curlrc && \
+    echo "location" >> /root/.curlrc
 
 ENV TZ=Australia/Sydney
 
@@ -25,7 +31,7 @@ RUN apt install libicu-dev -y
 
 
 RUN mkdir -p /usr/src/php && \
-    wget -O php.tar.gz https://www.php.net/distributions/php-8.4.13.tar.gz && \
+    curl -o php.tar.gz https://www.php.net/distributions/php-8.4.13.tar.gz && \
     tar -xf php.tar.gz -C /usr/src/php --strip-components=1 && \
     rm php.tar.gz && \
     cd /usr/src/php && \
@@ -56,7 +62,7 @@ RUN mkdir -p /usr/src/php && \
 
 RUN mkdir -p /usr/src/nginx && \
     git clone https://github.com/openresty/echo-nginx-module.git /usr/src/echo-nginx-module && \
-    wget -O nginx.tar.gz https://nginx.org/download/nginx-1.29.2.tar.gz && \
+    curl -o nginx.tar.gz https://nginx.org/download/nginx-1.29.2.tar.gz && \
     tar -xf nginx.tar.gz -C /usr/src/nginx --strip-components=1 && \
     rm nginx.tar.gz && \
     cd /usr/src/nginx && \
@@ -71,13 +77,13 @@ RUN mkdir -p /usr/src/nginx && \
     make install
 
 #Get the docker-cli
-RUN wget https://download.docker.com/linux/static/stable/x86_64/docker-27.3.1.tgz && \
+RUN curl -o docker-27.3.1.tgz https://download.docker.com/linux/static/stable/x86_64/docker-27.3.1.tgz && \
     tar -xzvf docker-27.3.1.tgz && \
     mv docker/* /usr/local/bin/ && \
     rm -rf docker docker-27.3.1.tgz
 
 
-RUN wget https://github.com/docker/compose/releases/download/v2.33.1/docker-compose-linux-x86_64 -O /usr/local/bin/docker-compose && \
+RUN curl -o /usr/local/bin/docker-compose https://github.com/docker/compose/releases/download/v2.33.1/docker-compose-linux-x86_64 && \
     chmod +x /usr/local/bin/docker-compose
 
 #RUN mkdir /home/ubunut/Workspace
@@ -104,7 +110,7 @@ RUN chmod 755 /usr/local/nginx/logs && \
     chown www-data:www-data /usr/local/nginx/logs/error.log
 #RUN groupadd -r www-data && useradd -r -g www-data www-data
 
-RUN echo "www-data ALL=(root) NOPASSWD: /usr/local/nginx/nginx" >> /etc/sudoers
+RUN echo "www-data ALL=(root) NOPASSWD: /usr/local/nginx/nginx, /usr/local/bin/docker, /usr/local/bin/docker-compose" >> /etc/sudoers
 
 RUN cp /usr/src/php/php.ini-production /usr/local/etc/php.ini
 #RUN cp /usr/local/etc/php-fpm.conf.default /usr/local/etc/php-fpm.conf
