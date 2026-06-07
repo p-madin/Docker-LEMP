@@ -1,0 +1,85 @@
+<?php
+class ChildServiceAction implements ControllerInterface {
+    public static string $path = '/childServiceAction';
+    public bool $isAction = true;
+
+    public function execute(Request $request) {
+        global $db, $dialect;
+
+        $action = $request->post['action'];
+        $csPK = $request->post['csPK'];
+
+        if (!$action || !$csPK) {
+            $this->redirectError('Missing parameters');
+            return;
+        }
+
+        $qb = new QueryBuilder($dialect);
+        $service = $qb->table('absChildServices')
+            ->select(['csPK', 'csName', 'csStatus'])
+            ->where('csPK', '=', $csPK)
+            ->getFetch($db);
+
+        if (!$service) {
+            $this->redirectError('Child service not found');
+            return;
+        }
+
+        $tenant = $service['csName'];
+        $manager = new ChildServiceManager();
+
+        try {
+            switch ($action) {
+                case 'start':
+                    $manager->start($tenant);
+                    $qb = new QueryBuilder($dialect);
+                    $sql = $qb->table('absChildServices')->where('csPK', '=', $csPK)->update(['csStatus' => 'a']);
+                    $qb->doExecute($db, $sql);
+                    break;
+                case 'stop':
+                    $manager->stop($tenant);
+                    $qb = new QueryBuilder($dialect);
+                    $sql = $qb->table('absChildServices')->where('csPK', '=', $csPK)->update(['csStatus' => 'p']);
+                    $qb->doExecute($db, $sql);
+                    break;
+                case 'delete':
+                    $manager->delete($tenant);
+                    $qb = new QueryBuilder($dialect);
+                    $sql = $qb->table('absChildServices')->where('csPK', '=', $csPK)->delete();
+                    $qb->doExecute($db, $sql);
+                    break;
+                case 'sync':
+                    $result = $manager->sync($tenant);
+                    $status = $result['is_active'] ? 'a' : ($result['docker_status'] === 'exited' ? 'p' : 'u');
+                    
+                    $updateData = ['csStatus' => $status, 'csCheckDate' => date('Y-m-d H:i:s')];
+                    if ($status === 'a') {
+                        $updateData['csUptimeDate'] = date('Y-m-d H:i:s');
+                    }
+                    
+                    $qb = new QueryBuilder($dialect);
+                    $sql = $qb->table('absChildServices')->where('csPK', '=', $csPK)->update($updateData);
+                    $qb->doExecute($db, $sql);
+                    break;
+                default:
+                    $this->redirectError('Invalid action');
+                    return;
+            }
+            
+            // Redirect back to referring page or child services list
+            header("Location: /child_management");
+            exit;
+        } catch (Exception $e) {
+            error_log("ChildServiceAction error: " . $e->getMessage());
+            $this->redirectError('An error occurred while processing the action');
+        }
+    }
+
+    private function redirectError(string $message) {
+        // Assume redirect with error in session or similar.
+        // For now, redirect to the management page.
+        header("Location: /child_management?error=" . urlencode($message));
+        exit;
+    }
+}
+?>

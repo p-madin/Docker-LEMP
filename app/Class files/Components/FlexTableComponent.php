@@ -160,14 +160,30 @@ class FlexTableComponent extends Component {
                 $badge = $this->fabricateChild($cell, 'span', ['style' => "color:$color; font-weight:bold"], $label);
                 return true;
 
+            case 'discriminator_badge':
+                $val = $rowData[$colKey] ?? '';
+                if (is_scalar($val) && isset($config[$val])) {
+                    $label = $config[$val];
+                    $color = $config[$val . 'Color'] ?? 'black';
+                } else {
+                    $label = $config['default'] ?? (string)$val;
+                    $color = $config['defaultColor'] ?? 'black';
+                }
+                $badge = $this->fabricateChild($cell, 'span', ['style' => "color:$color; font-weight:bold"], $label);
+                return true;
+
             case 'link':
                 $baseUrl = $config['url'] ?? '#';
                 $paramKey = $config['param'] ?? $colKey;
                 $val = $rowData[$paramKey] ?? '';
-                $this->fabricateChild($cell, 'a', [
+                $attrs = [
                     'href' => $baseUrl . $val,
                     'class' => 'table-link'
-                ], $config['label'] ?? ($rowData[$colKey] ?? 'View'));
+                ];
+                if (isset($config['target'])) {
+                    $attrs['target'] = $config['target'];
+                }
+                $this->fabricateChild($cell, 'a', $attrs, $config['label'] ?? ($rowData[$colKey] ?? 'View'));
                 return true;
 
             case 'button_form':

@@ -113,7 +113,7 @@ class Validator {
             rules.push('match:password');
         }
 
-        const knownRules = ['required', 'min', 'max', 'numeric', 'email', 'match', 'unique'];
+        const knownRules = ['required', 'min', 'max', 'numeric', 'email', 'match', 'unique', 'alpha_dash'];
 
         for (let rule of rules) {
             let [ruleName, param] = rule.split(':');
@@ -142,6 +142,10 @@ class Validator {
                 }
                 if (ruleName === 'email' && !/^\S+@\S+\.\S+$/.test(value)) {
                     this.showError(input, 'Invalid email address.');
+                    return false;
+                }
+                if (ruleName === 'alpha_dash' && !/^[a-zA-Z0-9_-]+$/.test(value)) {
+                    this.showError(input, 'Only letters, numbers, dashes, and underscores are allowed.');
                     return false;
                 }
                 if (ruleName === 'match') {

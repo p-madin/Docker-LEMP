@@ -170,7 +170,7 @@ CREATE TABLE event_store(
     PRIMARY KEY(id)
 );
 
-
+/* sample data for Block - Graph */
 
 CREATE TABLE tblAnalytics (
     anaPK INT NOT NULL AUTO_INCREMENT,
@@ -180,3 +180,22 @@ CREATE TABLE tblAnalytics (
     anaDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY(anaPK)
 );
+
+/* END sample data for Block - Graph */
+
+CREATE TABLE absChildServices (
+    csPK INT NOT NULL AUTO_INCREMENT,
+    csCreatedDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    csCreatedByFK INT NOT NULL,
+    csUpdatedDate DATETIME NULL,
+    csAdminFK INT NOT NULL,
+    csUptimeDate DATETIME NULL,
+    csCheckDate DATETIME NULL,
+    csName VARCHAR(32) NOT NULL,
+    csStatus CHAR(1) NOT NULL,
+    csDockerID VARCHAR(64) NULL,
+    csSubdomain VARCHAR(64) NULL,
+    csFailureCount INT NOT NULL DEFAULT 0,
+    PRIMARY KEY(csPK)
+);
+

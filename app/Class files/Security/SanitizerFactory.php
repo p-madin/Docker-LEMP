@@ -56,6 +56,12 @@ class SanitizerFactory {
                     )
                 )
             ),
+            // Alpha-dash: letters, numbers, hyphens, and underscores only
+            'alpha_dash' => new AlphaDashDecorator(
+                new StripTagsDecorator(
+                    new CleanSanitizer()
+                )
+            ),
             // Skipped fields — sanitized separately or not at all
             'password', 'hidden' => null,
             // Falls back to global default strategy

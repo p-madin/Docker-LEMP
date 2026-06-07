@@ -1,13 +1,15 @@
 services:
   app:
     build: .
+    image: local-dockerlempapp:latest
     ports:
       - "8080:80"
-      - "8443:443"
+      - "8443:8443"
     volumes:
       - ./app:/var/www/html
       - /var/run/docker.sock:/var/run/docker.sock
       - ./tenants:/tenants
+      - ./compose.tenant.yaml:/home/ubuntu/Workspace/compose.tenant.yaml:ro
       #- ./conf/docker.remote.json:/etc/docker/daemon.json:ro
     environment:
       DOCKER_HOST: tcp://host.docker.internal:2375
@@ -15,6 +17,10 @@ services:
       TZ: Australia/Sydney
       DB_VENDOR: mysql
       DB_HOST: db
+      HOST_PROJECT_ROOT: ${HOST_PROJECT_ROOT}
+      TENANT_APP_IMAGE: ${TENANT_APP_IMAGE:-local-dockerlempapp:latest}
+      TENANT_DB_IMAGE: ${TENANT_DB_IMAGE:-local-dockerlempdb:latest}
+      TENANT_APP_VOLUME: ${TENANT_APP_VOLUME:-}
     networks:
       - stack-network
       - superhost-network
@@ -26,6 +32,7 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile.db
+    image: local-dockerlempdb:latest
     environment:
       MYSQL_ROOT_PASSWORD: docker_lemp
       MYSQL_DATABASE: stackDB

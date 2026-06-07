@@ -35,6 +35,9 @@ function renderElement($el, $dom, $target, $formSchemas) {
                 $formName = $fData['tfName'];
                 $formComp = new FormComponent($dom, $formName);
                 $formComp->buildFromSchema($formName, $formSchemas);
+                if (!(bool)$fData['tfReadOnly']) {
+                    $formComp->addSubmit('Submit');
+                }
                 $node->appendChild($formComp->render());
             }
         }

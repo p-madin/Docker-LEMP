@@ -8,6 +8,7 @@ include_once(__DIR__ . "/XssSanitizer.php");
 
 //decorations
 include_once(__DIR__ . "/AlphanumericDecorator.php");
+include_once(__DIR__ . "/AlphaDashDecorator.php");
 include_once(__DIR__ . "/AttributeWhitelistDecorator.php");
 include_once(__DIR__ . "/CleanSanitizer.php");
 include_once(__DIR__ . "/HtmlEscapeDecorator.php");

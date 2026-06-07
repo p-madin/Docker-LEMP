@@ -3,15 +3,16 @@ services:
     #build: 
     #  context: .
     #  dockerfile: /home/ubuntu/Workspace/Dockerfile
-    image: philmadin/dockerlempapp:latest
+    image: ${TENANT_APP_IMAGE}
     expose:
-      - "80"
+      - "8443"
     environment:
       DB_HOST: db
       TENANT_DB_NAME: stackDB
       TENANT_DB_USER: ${TENANT_DB_USER}
       TENANT_DB_PASS: ${TENANT_DB_PASS}
       TENANT_NAME: ${TENANT_NAME}
+#TENANT_APP_VOLUME_PLACEHOLDER#
     networks:
       - tenant-network
       - superhost-network
@@ -23,7 +24,7 @@ services:
     #build:
     #  context: .
     #  dockerfile: /home/ubuntu/Workspace/Dockerfile.db
-    image: philmadin/dockerlempdb:latest
+    image: ${TENANT_DB_IMAGE}
     expose:
       - "3306"
     environment:
@@ -32,9 +33,10 @@ services:
       MYSQL_USER: ${TENANT_DB_USER}
       MYSQL_PASSWORD: ${TENANT_DB_PASS}
     volumes:
-      - C:\\Workspace\\Docker Workspace\\Docker-LEMP\\conf\\common\\01_db_ddl.sql:/docker-entrypoint-initdb.d/01_db_ddl.sql
-      - C:\\Workspace\\Docker Workspace\\Docker-LEMP\\conf\\common\\02_db_dml.sql:/docker-entrypoint-initdb.d/02_db_dml.sql
-      - C:\\Workspace\\Docker Workspace\\Docker-LEMP\\conf\\${TARGET_ENV}\\03_db_dml.sql:/docker-entrypoint-initdb.d/03_db_dml.sql:ro
+      - ${HOST_PROJECT_ROOT}/conf/common/01_db_ddl.sql:/docker-entrypoint-initdb.d/01_db_ddl.sql
+      - ${HOST_PROJECT_ROOT}/conf/common/02_db_dml.sql:/docker-entrypoint-initdb.d/02_db_dml.sql
+      - ${HOST_PROJECT_ROOT}/conf/${TARGET_ENV}/03_db_dml.sql:/docker-entrypoint-initdb.d/03_db_dml.sql:ro
+      - ${HOST_PROJECT_ROOT}/tenants/${TENANT_NAME}/99_tenant_admin.sql:/docker-entrypoint-initdb.d/99_tenant_admin.sql:ro
     networks:
       - tenant-network
     deploy:

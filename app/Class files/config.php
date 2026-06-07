@@ -9,6 +9,7 @@ include_once(__DIR__ . "/Component.php");
 include_once(__DIR__ . "/Components/FlexTableComponent.php");
 include_once(__DIR__ . "/Components/FormComponent.php");
 include_once(__DIR__ . "/Services/GenericDataMapper.php");
+include_once(__DIR__ . "/Services/ChildServiceManager.php");
 include_once(__DIR__ . "/dataGraph.php");
 include_once(__DIR__ . "/Router/Request.php");
 include_once(__DIR__ . "/Router/MiddlewareInterface.php");

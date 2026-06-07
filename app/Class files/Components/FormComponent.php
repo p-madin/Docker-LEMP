@@ -218,15 +218,30 @@ class FormComponent extends Component {
             $value = $this->flashData[$name] ?? null;
         }
 
-        $inputAttrs = array_merge(['name' => $name, 'type' => $type], $attributes);
-        if ($type === 'checkbox') {
-            $inputAttrs['value'] = '1';
-            if ((int)$value === 1) $inputAttrs['checked'] = 'checked';
-        } elseif (!is_null($value)) {
-            $inputAttrs['value'] = (string)$value;
-        }
+        $inputAttrs = array_merge(['name' => $name], $attributes);
 
-        $this->fabricateChild($inputCell, 'input', $inputAttrs);
+        if ($type === 'user_select') {
+            $select = $this->fabricateChild($inputCell, 'select', $inputAttrs);
+            global $db, $dialect;
+            $qb = new \QueryBuilder($dialect);
+            $users = $qb->table('appUsers')->select(['auPK', 'username'])->getFetchAll($db);
+            foreach ($users as $user) {
+                $optAttrs = ['value' => (string)$user['auPK']];
+                if ((string)$value === (string)$user['auPK']) {
+                    $optAttrs['selected'] = 'selected';
+                }
+                $this->fabricateChild($select, 'option', $optAttrs, $user['username']);
+            }
+        } else {
+            $inputAttrs['type'] = $type;
+            if ($type === 'checkbox') {
+                $inputAttrs['value'] = '1';
+                if ((int)$value === 1) $inputAttrs['checked'] = 'checked';
+            } elseif (!is_null($value)) {
+                $inputAttrs['value'] = (string)$value;
+            }
+            $this->fabricateChild($inputCell, 'input', $inputAttrs);
+        }
     }
 
     protected function renderSubmit(array $field) {

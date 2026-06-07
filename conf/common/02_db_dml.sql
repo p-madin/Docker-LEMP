@@ -15,6 +15,7 @@ INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle, pagSlug) VALUES (4, 1, 'Form
 INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle, pagSlug) VALUES (5, 1, 'Page Management', 'page_management');
 INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle, pagSlug) VALUES (6, 1, 'Banned IP Management', 'banned_ips');
 INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle, pagSlug) VALUES (7, 1, 'Platform Recovery', 'platform_recovery');
+INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle, pagSlug) VALUES (8, 1, 'Child Services', 'child_management');
 
 -- Create Table Elements for these pages
 INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (1, 'heading', 'Account Management');
@@ -31,6 +32,8 @@ INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (11, 'heading', 'Ban
 INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (12, 'table', '{"dataProvider":"BannedIpDataProvider"}');
 INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (13, 'heading', 'Platform Recovery');
 INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (14, 'table', '{"dataProvider":"PlatformRecoveryDataProvider"}');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (15, 'heading', 'Child Services');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (16, 'table', '{"dataProvider":"ChildServiceDataProvider"}');
 
 -- Link Elements to Pages
 INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (1, 1, 1);
@@ -47,6 +50,8 @@ INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (6, 11, 1
 INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (6, 12, 1);
 INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (7, 13, 1);
 INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (7, 14, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (8, 15, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (8, 16, 1);
 
 -- Root Items
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Home', 'c', NULL, '/', 'IndexController', false, 1, NULL);
@@ -58,12 +63,13 @@ INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerCl
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Error Log', 'p', 2, '/error_log', NULL, true, 2, 3);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Banned IPs', 'p', 6, '/banned_ips', NULL, true, 3, 3);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Platform Recovery', 'p', 7, '/platform_recovery', NULL, true, 5, 3);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Child Services', 'p', 8, '/child_management', NULL, true, 6, 3);
 
 -- CMS Menu
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('CMS', 'p', NULL, NULL, NULL, true, 4, NULL);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Navbars', 'p', 3, '/navbar_management', NULL, true, 1, 8);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Forms', 'p', 4, '/form_management', NULL, true, 2, 8);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Pages', 'p', 5, '/page_management', NULL, true, 3, 8);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Navbars', 'p', 3, '/navbar_management', NULL, true, 1, 9);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Forms', 'p', 4, '/form_management', NULL, true, 2, 9);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Pages', 'p', 5, '/page_management', NULL, true, 3, 9);
 
 -- Logout
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Logout', 'c', NULL, '/logout', 'LogoutAction', true, 5, NULL);
@@ -145,6 +151,12 @@ INSERT INTO tblColumns (tcFormFK, tcName, tcLabel, tcType, tcRules, tcOrder) VAL
 (10, 'eleCSSClasses', 'CSS Classes', 'css_class', '{"regex":"/^[a-zA-Z0-9\\\\-_ ]*$/"}', 40),
 (10, 'eleParentFK', 'Parent ID', 'number', '{}', 50);
 
+-- SaaS Children
+-- -- chiStatus = [u = {unknown - to be discovered by HTTP}, a = {active}, d = {deleted}, p = {paused}, i = {inactive}]
+--insert INTO absChildServices(csCreatedByFK, csAdminFK, csName, csStatus) values (1, 1, 'customer-a', 'u');
+--insert INTO absChildServices(csCreatedByFK, csAdminFK, csName, csStatus) values (1, 1, 'customer-b', 'u');
+--insert INTO absChildServices(csCreatedByFK, csAdminFK, csName, csStatus) values (1, 1, 'customer-c', 'u');
+
 
 #--$Local_array = ['user' => ['name' => 'John', 'roles' => ['admin', 'editor'], 'pages' => [[1 => 'home', 2 => 'contact us']]], 
 
@@ -194,10 +206,33 @@ VALUES (1, 'l', '2', 4);
 INSERT INTO tblSessionAttValue (sattvAttFK, sattvValue) 
 VALUES (6, 'contact us');
 
--- Sample Analytics Data
+
+
+/* sample data for Block - Graph */
 INSERT INTO tblAnalytics (anaLabel, anaValue, anaCategory) VALUES ('Jan', 100, 'Sales');
 INSERT INTO tblAnalytics (anaLabel, anaValue, anaCategory) VALUES ('Feb', 150, 'Sales');
 INSERT INTO tblAnalytics (anaLabel, anaValue, anaCategory) VALUES ('Mar', 200, 'Sales');
 INSERT INTO tblAnalytics (anaLabel, anaValue, anaCategory) VALUES ('Apr', 180, 'Sales');
 INSERT INTO tblAnalytics (anaLabel, anaValue, anaCategory) VALUES ('May', 250, 'Sales');
 INSERT INTO tblAnalytics (anaLabel, anaValue, anaCategory) VALUES ('Jun', 300, 'Sales');
+
+/* END sample data for Block - Graph */
+
+-- Form to create a new child service
+INSERT INTO tblForm (tfName, tfAction, tfReadOnly) VALUES ('createChildService', 'createChildService', 0);
+INSERT INTO tblColumns (tcFormFK, tcName, tcLabel, tcType, tcRules, tcOrder) 
+VALUES ((SELECT tfPK FROM tblForm WHERE tfName = 'createChildService'), 'csName', 'Service Name', 'alpha_dash', '{"required":true,"alpha_dash":true}', 1);
+INSERT INTO tblColumns (tcFormFK, tcName, tcLabel, tcType, tcRules, tcOrder) 
+VALUES ((SELECT tfPK FROM tblForm WHERE tfName = 'createChildService'), 'csAdminFK', 'Tenant Administrator', 'user_select', '{"required":true,"numeric":true}', 2);
+
+-- Route in tblNavBar for this new form action
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) 
+VALUES ('Create Child Service Action', 'a', NULL, '/createChildService', 'CreateChildServiceAction', 1, 0);
+
+-- Route in tblNavBar for childServiceAction
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) 
+VALUES ('Child Service Action', 'a', NULL, '/childServiceAction', 'ChildServiceAction', 1, 0);
+
+-- Render the form on the child management page
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (17, 'form', (SELECT CAST(tfPK AS CHAR) FROM tblForm WHERE tfName = 'createChildService'));
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (8, 17, 2);

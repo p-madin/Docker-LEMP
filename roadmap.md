@@ -199,7 +199,7 @@ $container->appendChild($flexTable->getRoot());
 
 ---
 
-## Phase 7: Page Builder & Block Editor
+## Phase 7: Page Builder & Block Editor [COMPLETED]
 ### Description
 A page builder is introduced with a vanilla javascript client-side (only) block editor.
 
@@ -245,7 +245,7 @@ Pages are recorded to `tblPages` and blocks are recorded to `tblElements`. A man
 
 Container elements (e.g. flexbox) may have children. The parent-child hierarchy is defined by `tblElements.eleParentFK`, which is a self-referential foreign key back to `tblElements.elePK`. This allows arbitrarily nested block structures within a single page.
 
-## Phase 8: Persistence & C(-r)UD Controller
+## Phase 8: Persistence & C(-r)UD Controller [DEFFERED]
 ### Description
 Introduce a server-side controller to manage the persistence of pages and their associated elements using the established Event Sourcing architecture. This ensures all changes to the site structure are auditable and reversible.
 
@@ -268,12 +268,11 @@ Introduce a server-side controller to manage the persistence of pages and their 
    Implement soft-deletion for pages using the `pagDeleted` timestamp, consistent with existing system patterns.
 
 
-## Phase 9: DBMS Vendor Support
-### Description
+## Phase 9: DBMS Vendor Support [DEFFERED]
 SQLite - AUTOINCREMENT or INTEGER PRIMARY KEY, Boolean = INTEGER (0/1), strftime('%H', haDate)
 MS SQL - auPK INT NOT NULL IDENTITY(1,1), Boolean = BIT, SELECT TOP(), IDENTITY(1,1), DATEPART(datepart, date)
 
-## Phase 10: Infrastructure & Advanced Blocks
+## Phase 10: Infrastructure & Advanced Blocks [DEFFERED]
 ### Description
 This phase is dedicated to building the necessary data abstraction and reusable presentation components that power advanced blocks like Forms, Tables, and Charts, ensuring these blocks are data-aware rather than just display-aware.
 
@@ -299,3 +298,59 @@ This phase is dedicated to building the necessary data abstraction and reusable 
 - **Estimated Time**: 2-3 Days
 - **Number of Files**: ~3 (Mapper Service, Component Updates)
 - **Lines of Code**: ~400 LOC
+
+---
+
+## Phase 11: SaaS enabled platform - CRUD independant tennant manager
+### Description
+Implement the core management functionalities for the SaaS platform, isolating tenant-specific resources and handling their lifecycle.
+
+### Implemented Components
+1. **`ChildServiceManager`** (`./app/Class files/Services/ChildServiceManager.php`):
+   - Encapsulates complex Docker orchestration and filesystem operations to adhere to SOLID principles.
+   - Responsible for generating tenant-specific `compose.yaml` and `.env` files.
+   - Generates Nginx routing configurations dynamically and automatically reloads the host Nginx daemon to route `/<tenant-name>` to the specific container.
+   - Provides wrappers for `docker-compose up/down` and container status synchronization (`sync`).
+
+2. **`ChildServiceAction`** (`./app/Class files/Controllers/ChildServiceAction.php`):
+   - Acts as the unified controller handling row-level management requests (`start`, `stop`, `delete`, `sync`).
+   - Translates the database ID (`csPK`) into the correct tenant name and orchestrates state changes via the `ChildServiceManager`, before updating the `absChildServices` database table.
+
+3. **`CreateChildServiceAction`** (`./app/Class files/Controllers/CreateChildServiceAction.php`):
+   - Handles form submissions for provisioning new SaaS tenants.
+   - Enforces strict security through the `AlphaDashDecorator` to sanitize inputs and uses `Validator` to ensure the tenant name strictly follows `alpha_dash` formatting requirements.
+
+4. **User Interface** (`./app/Class files/Data/Providers/ChildServiceDataProvider.php`):
+   - Provides a Data Provider mapped to the `absChildServices` table.
+   - Incorporates a rich multi-action column, enabling administrators to easily `View`, `Sync`, `Start`, `Stop`, and `Delete` tenant containers directly from the Flex Table.
+   - The provisioning form is dynamically injected into the management page view via structural DML records in `02_db_dml.sql`.
+
+### Outstanding Items
+- **Create client form required fields**: Ensure the form explicitly requires fields for `admin`, `admin username`, and `password` to properly initialize new tenants with an administrative account.
+- **SaaS Feature Testing**: Build comprehensive test coverage for all SaaS functionalities within `./app/Test/main.php`, validating tenant creation, isolation, and teardown.
+
+---
+
+## Phase 12: Enhance testing functionality
+### Description
+The current application and testing framework (in `./app/Test/main.php`) does not yet have functionality to record functional (database) dependencies for storing created objects (users, forms, pages). The main concern this addresses is **simple test definition**.
+
+Currently, in `./app/Test/Test Suite/Test Contract/test-suite.xml`, tests rely on complex CSS selectors targeting strings (e.g., `.form_hyperlink[id^="edit-user-LifecycleUser"]`) to interact with newly created rows. The testing framework needs to support capturing the auto-increment ID of registered resources and storing them as runtime **test suite variables**.
+
+### Proposed Solution
+Implement a **Test Variable State Manager** within the testing framework:
+1. **Variable Extraction**: Enhance the test engine to capture IDs of newly created records upon successful form submissions or specific assertions, saving them into a runtime variable dictionary (e.g., `registered_user_id = 42`).
+2. **Variable Interpolation**: Allow subsequent steps in the XML test definition to reference these variables using a specific syntax (like `${registered_user_id}`).
+3. **Simplified Selectors**: Update the test contracts to use these IDs for direct navigation or specific button targeting, drastically simplifying the test logic and making the XML contracts cleaner and more robust against UI changes.
+4. **Automated Teardown (Bonus)**: This variable registry can also be used at the end of the test execution to easily clean up and delete the created dependencies, preventing state pollution between runs.
+
+---
+
+## Phase 13: Update ./conf/*.sql scripts
+### Description
+The SQL scripts (`./conf/*.sql`) currently define the base schema and initial state for a tenant and the running database statically.
+
+### Implementation Goals
+Refactor these scripts to be dynamically generated and maintained:
+1. **Event Architecture Integration**: Derive the database state definitions directly from the established event sourcing architecture, ensuring the schema and seed data remain synchronized with the core domain events.
+2. **Automated Execution Task**: Create an automated execution task (e.g., a build script or CLI command) that compiles the latest event-derived states into the final `.sql` scripts, preventing manual drift and ensuring new tenants are always provisioned with the latest schema baseline.
