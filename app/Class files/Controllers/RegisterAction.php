@@ -1,6 +1,8 @@
 <?php
 class RegisterAction implements ControllerInterface {
     public static string $path = '/register';
+    public static string $manage_URI = '/';
+    public static string $object_URI = '/';
     public bool $isAction = true;
 
     public function execute(Request $request) {
@@ -26,8 +28,11 @@ class RegisterAction implements ControllerInterface {
         $eventStore->waitUntilProcessed($eventId);
 
         if (isset($request->server['HTTP_ACCEPT']) && strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false) {
+            $newId = $eventStore->getAggregateId($eventId);
+            
             echo json_encode([
                 'success' => true,
+                'dependency' => $newId ? (int)$newId : null,
                 'html' => '<div class="success-message"><h1>Registration Successful!</h1><p>Welcome, ' . htmlspecialchars($cleanData['name']) . '. You can now sign in.</p><a href="/">Go to Home</a></div>'
             ]);
             exit;

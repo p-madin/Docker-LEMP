@@ -11,40 +11,57 @@ class EventStore {
     public function append(string $eventType, array $payload, ?int $aggregateId = null, ?int $userId = null, ?array $previousPayload = null, bool $isReversal = false, bool $preserveRedo = false): int {
         global $sessionController;
 
-        $predecessorId = isset($sessionController) ? $sessionController->getPrimary('current_event_id') : null;
-
-        $qb = new QueryBuilder($this->dialect);
-        $sql = $qb->table('event_store')->insert([
-            'aggregate_id'     => $aggregateId,
-            'event_type'       => $eventType,
-            'payload'          => json_encode($payload),
-            'previous_payload' => $previousPayload ? json_encode($previousPayload) : null,
-            'status'           => 'pending',
-            'user_id'          => $userId,
-            'is_reversal'      => $isReversal ? 1 : 0,
-            'predecessor_id'   => $predecessorId
-        ]);
-
-        $stmt = $this->db->prepare($sql);
-        $qb->bindTo($stmt);
-        $stmt->execute();
-        
-        $eventId = (int)$this->db->lastInsertId();
-
-        // Track this event in the session
-        if (isset($sessionController)) {
-            $sessionController->setPrimary('pending_event_id', $eventId);
-            
-            // Only update the logical playhead and clear the redo stack if this is a fresh action
-            if (!$isReversal) {
-                $sessionController->setPrimary('current_event_id', $eventId);
-                if (!$preserveRedo) {
-                    $this->clearRedoStack($sessionController);
-                }
-            }
+        $ownsTransaction = false;
+        if (!$this->db->inTransaction()) {
+            $this->db->beginTransaction();
+            $ownsTransaction = true;
         }
 
-        return $eventId;
+        try {
+            $predecessorId = isset($sessionController) ? $sessionController->getPrimary('current_event_id') : null;
+
+            $qb = new QueryBuilder($this->dialect);
+            $sql = $qb->table('event_store')->insert([
+                'aggregate_id'     => $aggregateId,
+                'event_type'       => $eventType,
+                'payload'          => json_encode($payload),
+                'previous_payload' => $previousPayload ? json_encode($previousPayload) : null,
+                'status'           => 'pending',
+                'user_id'          => $userId,
+                'is_reversal'      => $isReversal ? 1 : 0,
+                'predecessor_id'   => $predecessorId
+            ]);
+
+            $stmt = $this->db->prepare($sql);
+            $qb->bindTo($stmt);
+            $stmt->execute();
+            
+            $eventId = (int)$this->db->lastInsertId();
+
+            // Track this event in the session
+            if (isset($sessionController)) {
+                $sessionController->setPrimary('pending_event_id', $eventId);
+                
+                // Only update the logical playhead and clear the redo stack if this is a fresh action
+                if (!$isReversal) {
+                    $sessionController->setPrimary('current_event_id', $eventId);
+                    if (!$preserveRedo) {
+                        $this->clearRedoStack($sessionController);
+                    }
+                }
+            }
+
+            if ($ownsTransaction) {
+                $this->db->commit();
+            }
+
+            return $eventId;
+        } catch (Exception $e) {
+            if ($ownsTransaction) {
+                $this->db->rollBack();
+            }
+            throw $e;
+        }
     }
 
     public function pushToRedoStack($sessionController, int $eventId): void {

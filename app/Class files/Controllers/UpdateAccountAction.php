@@ -1,6 +1,8 @@
 <?php
 class UpdateAccountAction implements ControllerInterface {
     public static string $path = '/editAccount';
+    public static string $manage_URI = '/account_management';
+    public static string $object_URI = '/edit_account';
     public bool $isAction = true;
 
     public function execute(Request $request) {
@@ -11,7 +13,7 @@ class UpdateAccountAction implements ControllerInterface {
         if($request->getMethod() === 'POST'){
 
             $cleanData = FormValidation::processAndValidate('editUser', $request->post, $formSchemas, $sessionController, function($clean) {
-                return "/edit_account.php?id=" . $clean['auPK'];
+                return self::$object_URI . "?id=" . $clean['auPK'];
             });
 
             $userId = (int)($cleanData['auPK'] ?? 0);
@@ -19,7 +21,7 @@ class UpdateAccountAction implements ControllerInterface {
 
             if ($userId <= 0) {
                 error_log("UpdateAccountAction: Invalid auPK provided in cleanData.");
-                Hyperlink::redirection("/account_management");
+                Hyperlink::redirection(self::$manage_URI);
             }
 
             // Fetch current state for Memento support
@@ -41,15 +43,10 @@ class UpdateAccountAction implements ControllerInterface {
             $eventId = $eventStore->append('AccountUpdated', array_merge(['auPK' => $userId], $updateData), $userId, $authorId, $previousPayload);
             $eventStore->waitUntilProcessed($eventId);
 
-            $redirectUrl = "/account_management";
-            if (isset($request->server['HTTP_ACCEPT']) && strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false) {
-                Hyperlink::clientSideRedirection($redirectUrl);
-            }
-
-            Hyperlink::redirection($redirectUrl);
+            Hyperlink::redirection(self::$object_URI . '?id=' . $userId, $userId);
         }
 
-        Hyperlink::redirection("/account_management");
+        Hyperlink::redirection(self::$manage_URI);
     }
 
     public static function getEventHandlers(): array {

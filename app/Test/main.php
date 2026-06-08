@@ -10,7 +10,13 @@ $test_suite = [];
 // Include all tests in the "Test Suite" directory
 foreach (glob(__DIR__ . "/Test Suite/*.php") as $filename) {
     # cherry pick a test
+    #if($filename !== __DIR__ . "/Test Suite/CSRFTest.php"){
+    #    continue;
+    #}
     #if($filename !== __DIR__ . "/Test Suite/xmlDomTest.php"){
+    #    continue;
+    #}
+    #if($filename !== __DIR__ . "/Test Suite/SaaSTest.php"){
     #    continue;
     #}
     #if($filename !== __DIR__ . "/Test Suite/QueryBuilderTest.php"){

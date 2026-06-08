@@ -1,6 +1,8 @@
 <?php
 class PageAction implements ControllerInterface {
     public static string $path = '/pageAction';
+    public static string $manage_URI = '/';
+    public static string $object_URI = '/page_editor';
     public bool $isAction = true;
 
     public function execute(Request $request) {
@@ -20,15 +22,12 @@ class PageAction implements ControllerInterface {
                         $eventStore->waitUntilProcessed($eventId);
                     }
                 }
-                if (isset($request->server['HTTP_ACCEPT']) && strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false) {
-                    echo json_encode(['success' => true]);
-                    exit;
-                }
-                Hyperlink::redirection("/");
+                
+                Hyperlink::redirection(self::$manage_URI);
             }
 
             $cleanData = FormValidation::processAndValidate('page', $request->post, $formSchemas, $sessionController, function($clean) {
-                return "/";
+                return self::$manage_URI;
             });
 
             $data = [
@@ -48,13 +47,10 @@ class PageAction implements ControllerInterface {
             }
 
             $eventStore->waitUntilProcessed($eventId);
+            $newId = $eventStore->getAggregateId($eventId);
+            $dependency = $newId ? (int)$newId : $pk;
 
-            if (isset($request->server['HTTP_ACCEPT']) && strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false) {
-                echo json_encode(['success' => true, 'eventId' => $eventId]);
-                exit;
-            }
-
-            Hyperlink::redirection("/");
+            Hyperlink::redirection(self::$object_URI . "?id=" . $dependency, $dependency);
         }
     }
 

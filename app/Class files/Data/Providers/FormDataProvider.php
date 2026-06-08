@@ -9,7 +9,7 @@ class FormDataProvider implements DataProviderInterface {
             ['key' => 'actions', 'label' => 'Actions', 'action' => 'multi', 'actions' => [
                 [
                     'type' => 'button_form', 
-                    'config' => ['url' => '/edit_form?id=', 'param' => 'tfPK', 'buttonLabel' => 'Edit']
+                    'config' => ['url' => '/edit_form?id=', 'param' => 'tfPK', 'buttonLabel' => 'Edit', 'idPrefix' => 'edit-form-', 'idSuffixKey' => 'tfPK']
                 ],
                 [
                     'type' => 'button_form', 
@@ -18,7 +18,9 @@ class FormDataProvider implements DataProviderInterface {
                         'buttonLabel' => 'Delete', 
                         'params' => ['action' => 'delete', 'tfPK' => 'tfPK'], 
                         'cssClasses' => ['delete'],
-                        'disableIf' => ['key' => 'tfReadOnly', 'value' => 1]
+                        'disableIf' => ['key' => 'tfReadOnly', 'value' => 1],
+                        'idPrefix' => 'delete-form-',
+                        'idSuffixKey' => 'tfPK'
                     ]
                 ]
             ]]

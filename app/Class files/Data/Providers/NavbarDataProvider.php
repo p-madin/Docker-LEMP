@@ -7,8 +7,8 @@ class NavbarDataProvider implements DataProviderInterface {
             ['key' => 'nbPath', 'label' => 'Path'],
             ['key' => 'nbOrder', 'label' => 'Order'],
             ['key' => 'actions', 'label' => 'Actions', 'action' => 'multi', 'actions' => [
-                ['type' => 'button_form', 'config' => ['url' => '/edit_navbar?id=', 'param' => 'nbPK', 'buttonLabel' => 'Edit']],
-                ['type' => 'button_form', 'config' => ['url' => '/editNavbar', 'buttonLabel' => 'Delete', 'params' => ['action' => 'delete', 'nbPK' => 'nbPK'], 'cssClasses' => ['delete']]]
+                ['type' => 'button_form', 'config' => ['url' => '/edit_navbar?id=', 'param' => 'nbPK', 'buttonLabel' => 'Edit', 'idPrefix' => 'edit-navbar-', 'idSuffixKey' => 'nbPK']],
+                ['type' => 'button_form', 'config' => ['url' => '/editNavbar', 'buttonLabel' => 'Delete', 'params' => ['action' => 'delete', 'nbPK' => 'nbPK'], 'cssClasses' => ['delete'], 'idPrefix' => 'delete-navbar-', 'idSuffixKey' => 'nbPK']]
             ]]
         ];
     }

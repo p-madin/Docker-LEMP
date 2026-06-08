@@ -1,55 +1,53 @@
 <?php
 class CreateChildServiceAction implements ControllerInterface {
     public static string $path = '/createChildService';
+    public static string $manage_URI = '/child_management';
+    public static string $object_URI = '/child_management';
     public bool $isAction = true;
 
     public function execute(Request $request) {
         global $db, $dialect, $sessionController;
 
-        $rawName = $request->post['csName'] ?? '';
-        $csAdminFK = $request->post['csAdminFK'] ?? '';
-
-        // Sanitize: strip everything that isn't alphanumeric, dash, or underscore
-        $sanitizer = new \App\Security\AlphaDashDecorator(
-            new \App\Security\StripTagsDecorator(
-                new \App\Security\CleanSanitizer()
-            )
-        );
-        $csName = $sanitizer->sanitize($rawName);
-
-        if (!$csName) {
-            $this->redirectError('Service Name is required');
+        if ($request->getMethod() !== 'POST') {
+            Hyperlink::redirection(self::$manage_URI);
             return;
         }
 
-        // Server-side validation
-        $validator = new \App\Security\Validator(['csName' => $csName, 'csAdminFK' => $csAdminFK]);
-        $validator->rule('csName', 'required|alpha_dash');
-        $validator->rule('csAdminFK', 'required|numeric');
-        if ($validator->fails()) {
-            $errors = array_values($validator->errors())[0] ?? ['Invalid form data.'];
-            $this->redirectError($errors[0]);
+        $serviceName = trim($request->post['service_name'] ?? '');
+        $serviceTheme = $request->post['service_theme'] ?? 'light';
+        $adminUserId = (int)($request->post['csAdminFK'] ?? 0);
+
+        if (empty($serviceName)) {
+            $this->redirectError('Service name is required');
             return;
         }
 
+        if (!preg_match('/^[a-z0-9_-]+$/i', $serviceName)) {
+            $this->redirectError('Invalid service name format');
+            return;
+        }
+        
+        if ($adminUserId <= 0) {
+            $this->redirectError('An administrator user must be selected for the new tenant');
+            return;
+        }
+
+        $manager = new ChildServiceManager();
+        
         try {
-            $userId = 1; // Fallback
-            $sessionUser = $sessionController->getSystemUserId();
-            if ($sessionUser) {
-                $userId = $sessionUser;
-            }
-
+            $manager->create($serviceName);
+            
             $qb = new QueryBuilder($dialect);
             $sql = $qb->table('absChildServices')->insert([
-                'csCreatedByFK' => $userId,
-                'csAdminFK' => (int)$csAdminFK,
-                'csName' => $csName,
+                'csName' => $serviceName,
+                'csTheme' => $serviceTheme,
+                'csAdminFK' => $adminUserId,
                 'csStatus' => 'u'
             ]);
             $qb->doExecute($db, $sql);
+            $newId = $db->lastInsertId();
             
-            header("Location: /child_management");
-            exit;
+            Hyperlink::redirection(self::$object_URI . "?id=" . $newId, (int)$newId);
         } catch (Exception $e) {
             error_log("CreateChildServiceAction error: " . $e->getMessage());
             $this->redirectError('An error occurred while creating child service');
@@ -57,8 +55,13 @@ class CreateChildServiceAction implements ControllerInterface {
     }
 
     private function redirectError(string $message) {
-        header("Location: /child_management?error=" . urlencode($message));
-        exit;
+        if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+            header('Content-Type: application/json');
+            http_response_code(400);
+            echo json_encode(['success' => false, 'errors' => ['_general' => $message]]);
+            exit;
+        }
+        Hyperlink::redirection(self::$manage_URI . "?error=" . urlencode($message));
     }
 }
 ?>

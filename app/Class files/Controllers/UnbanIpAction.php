@@ -1,13 +1,15 @@
 <?php
 class UnbanIpAction implements ControllerInterface {
     public static string $path = '/unban_ip';
+    public static string $manage_URI = '/banned_ips';
+    public static string $object_URI = '/banned_ips';
     public bool $isAction = true;
 
     public function execute(Request $request) {
         global $db, $dialect, $sessionController;
 
         if ($request->getMethod() !== 'POST') {
-            Hyperlink::redirection("/banned_ips");
+            Hyperlink::redirection(self::$manage_URI);
         }
 
         $pk = $request->post['biPK'] ?? null;
@@ -22,20 +24,14 @@ class UnbanIpAction implements ControllerInterface {
             $banData = $qb_data->table('banned_ips')->where('biPK', '=', (int)$pk)->getFetch($db);
             
             if ($banData) {
-                $eventStore->append('IpUnbanned', $banData, (int)$pk, $authorId);
+                $eventId = $eventStore->append('IpUnbanned', $banData, (int)$pk, $authorId);
+                $eventStore->waitUntilProcessed($eventId);
             }
 
-            if (isset($request->server['HTTP_ACCEPT']) && strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false) {
-                echo json_encode(['success' => true]);
-                exit;
-            }
+            Hyperlink::redirection(self::$manage_URI);
         }
 
-        if (isset($request->server['HTTP_ACCEPT']) && strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false) {
-            echo json_encode(['success' => false, 'error' => 'Invalid request']);
-            exit;
-        }
-        Hyperlink::redirection("/banned_ips");
+        Hyperlink::redirection(self::$manage_URI);
     }
 
     public static function getEventHandlers(): array {

@@ -1,6 +1,8 @@
 <?php
 class EditColumnAction implements ControllerInterface {
     public static string $path = '/editColumn';
+    public static string $manage_URI = '/form_management';
+    public static string $object_URI = '/edit_column';
     public bool $isAction = true;
 
     public function execute(Request $request) {
@@ -22,7 +24,7 @@ class EditColumnAction implements ControllerInterface {
                 $checkQb = new QueryBuilder($dialect);
                 $formStatus = $checkQb->table('tblForm')->select(['tfReadOnly'])->where('tfPK', '=', $targetFormPk)->getFetch($db);
                 if($formStatus['tfReadOnly']) {
-                    Hyperlink::redirection("/form_management");
+                    Hyperlink::redirection(self::$manage_URI);
                 }
             }
 
@@ -38,7 +40,10 @@ class EditColumnAction implements ControllerInterface {
                     $columnData = $qb_data->table('tblColumns')->where('tcPK', '=', $pk)->getFetch($db);
                     
                     if ($columnData) {
-                        $eventStore->append('ColumnDeleted', $columnData, $targetFormPk, $authorId);
+                        $eventId = $eventStore->append('ColumnDeleted', $columnData, $targetFormPk, $authorId);
+                        if ($eventId) {
+                            $eventStore->waitUntilProcessed($eventId);
+                        }
                     }
                 }
                 Hyperlink::redirection("/edit_form?id=" . $form_id);
@@ -47,7 +52,7 @@ class EditColumnAction implements ControllerInterface {
             $cleanData = FormValidation::processAndValidate('editColumn', $request->post, $formSchemas, $sessionController, function($clean) {
                 $id = $clean['tcPK'] ?? 0;
                 $form_id = $clean['tcFormFK'] ?? 0;
-                return "/edit_column.php" . ($id ? "?id=".$id : "?form_id=".$form_id);
+                return self::$object_URI . ($id ? "?id=".$id : "?form_id=".$form_id);
             });
 
             $data = [
@@ -66,7 +71,6 @@ class EditColumnAction implements ControllerInterface {
 
             $pk = (int)$cleanData['tcPK'];
             $form_fk = (int)$cleanData['tcFormFK'];
-            $redirectUrl = "/edit_form?id=" . $form_fk;
 
             if ($pk > 0) {
                 // Fetch current state for Memento support
@@ -79,15 +83,13 @@ class EditColumnAction implements ControllerInterface {
             }
 
             $eventStore->waitUntilProcessed($eventId);
+            $newId = $eventStore->getAggregateId($eventId);
+            $dependency = $newId ? (int)$newId : $pk;
 
-            if (isset($request->server['HTTP_ACCEPT']) && strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false) {
-                Hyperlink::clientSideRedirection($redirectUrl);
-            }
-
-            Hyperlink::redirection($redirectUrl);
+            Hyperlink::redirection(self::$object_URI . "?id=" . $dependency, $dependency);
         }
 
-        Hyperlink::redirection("/form_management");
+        Hyperlink::redirection(self::$manage_URI);
         exit;
     }
 

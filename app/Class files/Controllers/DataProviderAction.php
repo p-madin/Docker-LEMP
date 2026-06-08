@@ -2,6 +2,8 @@
 
 class DataProviderAction implements ControllerInterface {
     public static string $path = '/dataProviders';
+    public static string $manage_URI = '/';
+    public static string $object_URI = '/';
     public bool $isAction = true;
 
     public function execute(Request $request) {

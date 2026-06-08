@@ -55,7 +55,9 @@ class UndoRedoController implements ControllerInterface {
             exit;
         }
         //To-do: Dont use HTTP_REFERER here
-        Hyperlink::redirection(($request->server['HTTP_REFERER'] ?? '/dashboard'));
+        $referer = $request->server['HTTP_REFERER'] ?? '/dashboard';
+        $path = parse_url($referer, PHP_URL_PATH) ?: '/dashboard';
+        Hyperlink::redirection($path);
         exit;
     }
 

@@ -8,8 +8,8 @@ class CSRFTest extends TestSuiteBase {
     public function test() {
         $GLOBALS['returnable'] .= "Running Advanced CSRF Cross-Session Test...\n";
         
-        $homeUrl = "https://localhost/index.php";
-        $actionUrl = "https://localhost/login";
+        $homeUrl = "https://localhost:8443/index.php";
+        $actionUrl = "https://localhost:8443/login";
         
         $cookieA = "/tmp/cookie_user_a.txt";
         $cookieB = "/tmp/cookie_user_b.txt";
@@ -24,7 +24,9 @@ class CSRFTest extends TestSuiteBase {
         // 1. User A: Get Session A and Token A
         $GLOBALS['returnable'] .= " - User A: Retrieving session and token...\n";
         $chA = $this->prepare_curl($homeUrl, $cookieA);
-        $resA = curl_exec($chA);
+        $fullA = curl_exec($chA);
+        $headerSizeA = curl_getinfo($chA, CURLINFO_HEADER_SIZE);
+        $resA = substr($fullA, $headerSizeA);
         curl_close($chA);
         
         $docA = \Dom\HTMLDocument::createFromString($resA, LIBXML_NOERROR);
@@ -39,7 +41,9 @@ class CSRFTest extends TestSuiteBase {
         // 2. User B: Get Session B and Token B
         $GLOBALS['returnable'] .= " - User B: Retrieving session and token...\n";
         $chB = $this->prepare_curl($homeUrl, $cookieB);
-        $resB = curl_exec($chB);
+        $fullB = curl_exec($chB);
+        $headerSizeB = curl_getinfo($chB, CURLINFO_HEADER_SIZE);
+        $resB = substr($fullB, $headerSizeB);
         curl_close($chB);
         
         $docB = \Dom\HTMLDocument::createFromString($resB, LIBXML_NOERROR);

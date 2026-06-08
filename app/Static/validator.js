@@ -219,6 +219,11 @@ class Validator {
         });
 
         try {
+            const actionName = new URL(url, window.location.origin).pathname;
+            if (window.actionTracker) {
+                window.actionTracker.setStatus('in_progress', actionName);
+            }
+
             const response = await fetch(url, {
                 method: 'POST',
                 body: formData,
@@ -231,19 +236,41 @@ class Validator {
             const result = await response.json();
 
             if (response.ok) {
-                if (result.redirect) {
-                    window.location.href = result.redirect;
-                } else if (result.success) {
+                if (result.success && result.dependency) {
+                    if (window.actionTracker) {
+                        window.actionTracker.appendDependency(result.dependency, result.url);
+                        window.actionTracker.setStatus('done', actionName, result);
+                    } else if (result.redirect || result.url) {
+                        window.location.href = result.redirect || result.url;
+                    } else {
+                        this.handleSuccess(form, result);
+                    }
+                } else if (result.redirect) {
+                    if (window.actionTracker) {
+                        window.actionTracker.setStatus('done', actionName, result);
+                    } else {
+                        window.location.href = result.redirect;
+                    }
+                } else if (result.success || result.html) {
+                    if (window.actionTracker) {
+                        window.actionTracker.setStatus('done', actionName, result);
+                    }
                     this.handleSuccess(form, result);
                 }
             } else {
-                if (result.errors) {
+                if (window.actionTracker) {
+                    window.actionTracker.setStatus('error', actionName);
+                }
+                if (result && result.errors) {
                     this.displayServerErrors(form, result.errors);
                 } else {
-                    console.error('Server error:', result.message || 'Unknown error');
+                    console.error('Server error:', result?.message || 'Unknown error');
                 }
             }
         } catch (error) {
+            if (window.actionTracker) {
+                window.actionTracker.setStatus('error', 'Network Error');
+            }
             console.error('Submission failed:', error);
         } finally {
             if (submitBtn) {
@@ -267,8 +294,6 @@ class Validator {
         if (result.html) {
             const container = form.closest('.container') || form.parentNode;
             container.innerHTML = result.html;
-        } else {
-            alert('Success!');
         }
     }
 }

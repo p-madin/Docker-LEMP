@@ -2,9 +2,9 @@
 
 class ComprehensiveSecurityValidationTest extends TestSuiteBase {
     private $cookieFile = "/tmp/integration_test_cookie.txt";
-    private $homeUrl = "https://localhost/index.php";
-    private $loginAction = "https://localhost/login";
-    private $registerAction = "https://localhost/register";
+    private $homeUrl = "https://localhost:8443/index.php";
+    private $loginAction = "https://localhost:8443/login";
+    private $registerAction = "https://localhost:8443/register";
 
     public function __construct() {
         parent::__construct("Comprehensive Security & Validation Integration Suite");
@@ -211,7 +211,9 @@ class ComprehensiveSecurityValidationTest extends TestSuiteBase {
 
     private function getCsrfToken() {
         $ch = $this->prepare_curl($homeUrl = $this->homeUrl, $this->cookieFile);
-        $res = curl_exec($ch);
+        $full = curl_exec($ch);
+        $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+        $res = substr($full, $headerSize);
         curl_close($ch);
 
         $doc = \Dom\HTMLDocument::createFromString($res, LIBXML_NOERROR);

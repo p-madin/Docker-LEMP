@@ -6,7 +6,7 @@ class AccountDataProvider implements DataProviderInterface {
             ['key' => 'username', 'label' => 'Username'],
             ['key' => 'name', 'label' => 'Full Name'],
             ['key' => 'verified', 'label' => 'Status', 'action' => 'status_badge', 'actionConfig' => ['true' => 'Verified', 'false' => 'Pending']],
-            ['key' => 'actions', 'label' => 'Actions', 'action' => 'button_form', 'actionConfig' => ['url' => '/edit_account?id=', 'param' => 'auPK', 'buttonLabel' => 'Edit']]
+            ['key' => 'actions', 'label' => 'Actions', 'action' => 'button_form', 'actionConfig' => ['url' => '/edit_account?id=', 'param' => 'auPK', 'buttonLabel' => 'Edit', 'idPrefix' => 'edit-user-', 'idSuffixKey' => 'auPK']]
         ];
     }
 

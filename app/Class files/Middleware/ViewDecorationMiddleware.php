@@ -13,6 +13,7 @@ class ViewDecorationMiddleware implements MiddlewareInterface {
         // 3. Register Assets
         $assetManager->registerJs('/Static/exceptions.js');
         $assetManager->registerJs('/Static/validator.js');
+        $assetManager->registerJs('/Static/action-tracker.js');
         $assetManager->registerCss('/Static/styles.css');
         $assetManager->registerCss('/Static/dataGraphStyles.css');
 

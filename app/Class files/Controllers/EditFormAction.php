@@ -1,6 +1,8 @@
 <?php
 class EditFormAction implements ControllerInterface {
     public static string $path = '/editForm';
+    public static string $manage_URI = '/form_management';
+    public static string $object_URI = '/edit_form';
     public bool $isAction = true;
 
     public function execute(Request $request) {
@@ -19,7 +21,7 @@ class EditFormAction implements ControllerInterface {
             $checkQb = new QueryBuilder($dialect);
             $formStatus = $checkQb->table('tblForm')->select(['tfReadOnly'])->where('tfPK', '=', $targetPk)->getFetch($db);
             if($formStatus['tfReadOnly']) {
-                Hyperlink::redirection("/form_management");
+                Hyperlink::redirection(self::$manage_URI);
             }
         }
 
@@ -34,15 +36,18 @@ class EditFormAction implements ControllerInterface {
                 $formData = $qb_data->table('tblForm')->where('tfPK', '=', $pk)->getFetch($db);
                 
                 if ($formData) {
-                    $eventStore->append('FormDeleted', $formData, $pk, $authorId);
+                    $eventId = $eventStore->append('FormDeleted', $formData, $pk, $authorId);
+                    if ($eventId) {
+                        $eventStore->waitUntilProcessed($eventId);
+                    }
                 }
             }
-            Hyperlink::redirection("/form_management");
+            Hyperlink::redirection(self::$manage_URI);
         }
 
         $cleanData = FormValidation::processAndValidate('editForm', $request->post, $formSchemas, $sessionController, function($clean) {
             $id = $clean['tfPK'] ?? 0;
-            return "/edit_form" . ($id ? "?id=".$id : "");
+            return self::$object_URI . ($id ? "?id=".$id : "");
         });
 
         $data = ['tfName' => $cleanData['tfName']];
@@ -54,20 +59,15 @@ class EditFormAction implements ControllerInterface {
             $oldData = $qb_old->table('tblForm')->where('tfPK', '=', $pk)->getFetch($db);
             $previousPayload = is_array($oldData) ? $oldData : null;
             $eventId = $eventStore->append('FormUpdated', array_merge(['tfPK' => $pk], $data), $pk, $authorId, $previousPayload);
-            $redirectUrl = "/edit_form?id=" . $pk;
         } else {
             $eventId = $eventStore->append('FormCreated', $data, null, $authorId);
-            $redirectUrl = "/form_management";
         }
 
         $eventStore->waitUntilProcessed($eventId);
+        $newId = $eventStore->getAggregateId($eventId);
+        $dependency = $newId ? (int)$newId : $pk;
 
-        if (isset($request->server['HTTP_ACCEPT']) && strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false) {
-            echo json_encode(['redirect' => $redirectUrl]);
-            exit;
-        }
-
-        Hyperlink::redirection($redirectUrl);
+        Hyperlink::redirection(self::$object_URI . "?id=" . $dependency, $dependency);
     }
 
     public static function getEventHandlers(): array {

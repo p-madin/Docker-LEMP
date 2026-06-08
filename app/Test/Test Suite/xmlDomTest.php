@@ -4,13 +4,22 @@ require_once(__DIR__ . '/../TestBase.php');
 
 class xmlDomTest extends TestSuiteBase {
     protected $cookieFile;
-    protected $baseUrl = 'https://localhost/';
+    protected $baseUrl = 'https://localhost:8443/';
     protected $lastResponse = '';
     protected $lastUrl = '';
+
+    protected $suiteVariables = [];
 
     public function __construct() {
         parent::__construct("Contract-Based Browser Automation Test");
         $this->cookieFile = tempnam(sys_get_temp_dir(), 'test_cookie_');
+    }
+
+    protected function substituteVariables(string $input): string {
+        foreach ($this->suiteVariables as $key => $value) {
+            $input = str_replace('{{' . $key . '}}', $value, $input);
+        }
+        return $input;
     }
 
     public function __destruct() {
@@ -40,11 +49,13 @@ class xmlDomTest extends TestSuiteBase {
                 unlink($this->cookieFile);
                 $this->cookieFile = sys_get_temp_dir() . '/test_cookie_' . uniqid() . '.txt';
                 $GLOBALS['returnable'] .= " - Test: " . $test->name . "\n";
+                #echo " - Test: " . $test->name . "\n";
                 $step_number = 1;
                 foreach ($test->stepList->step as $step) {
                     $rawAction = (string)$step->action;
                     $action = str_replace(' ', '', $rawAction);
                     $GLOBALS['returnable'] .= "   - Step: $step_number ($rawAction)\n";
+                    #echo "   - Step: $step_number ($rawAction)\n";
 
                     $step_number++;
 
@@ -121,6 +132,7 @@ XML;
     }
 
     protected function handleNavigate($url, $expected = null) {
+        $url = $this->substituteVariables((string)$url);
         if (strpos($url, 'http') !== 0) {
             $url = $this->baseUrl . ltrim($url, '/');
         }
@@ -169,7 +181,7 @@ XML;
     }
 
     protected function handleFillForm($step) {
-        $selector = (string)$step->selector; 
+        $selector = $this->substituteVariables((string)$step->selector);
         $id = ltrim($selector, '#');
         $csrfMode = (isset($step->csrfMode)) ? (string)$step->csrfMode : 'auto';
         
@@ -233,7 +245,7 @@ XML;
         // Apply overrides from XML parameters
         foreach ($step->parameters->parameter as $param) {
             $name = (string)$param->name;
-            $value = (string)$param->value;
+            $value = $this->substituteVariables((string)$param->value);
             
             if ($value === 'checked') {
                 $postData[$name] = '1'; 
@@ -248,6 +260,15 @@ XML;
         if (!empty($this->lastUrl)) {
             curl_setopt($ch, CURLOPT_REFERER, $this->lastUrl);
         }
+
+        $saveSuiteVariable = isset($step->expected->saveSuiteVariable) ? (string)$step->expected->saveSuiteVariable : null;
+        if ($saveSuiteVariable) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'X-Requested-With: XMLHttpRequest',
+                'Accept: application/json'
+            ]);
+        }
+
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
@@ -258,6 +279,13 @@ XML;
         $info = curl_getinfo($ch);
         $this->lastUrl = $info['url'];
         curl_close($ch);
+
+        if ($saveSuiteVariable) {
+            $json = json_decode($this->lastResponse, true);
+            if ($json && isset($json['dependency'])) {
+                $this->suiteVariables[$saveSuiteVariable] = $json['dependency'];
+            }
+        }
 
         $expectedStatus = (isset($step->expected->statusCode)) ? (int)$step->expected->statusCode : null;
         
@@ -280,7 +308,7 @@ XML;
 
         if (isset($step->expected->contains)) {
             foreach ($step->expected->contains as $expectedContains) {
-                $expectedContains = (string)$expectedContains;
+                $expectedContains = $this->substituteVariables((string)$expectedContains);
                 if (strpos($response, $expectedContains) === false) {
                     $GLOBALS['returnable'] .= "     [FAIL] Expected '$expectedContains' not found in response from {$this->lastUrl}.\n";
                     $snippet = trim(substr(strip_tags($response), 0, 200));
@@ -292,9 +320,9 @@ XML;
 
         if (isset($step->expected->not_contains)) {
             foreach ($step->expected->not_contains as $expectedNotContains) {
-                $expectedNotContains = (string)$expectedNotContains;
+                $expectedNotContains = $this->substituteVariables((string)$expectedNotContains);
                 if (strpos($response, $expectedNotContains) !== false) {
-                    $GLOBALS['returnable'] .= "     [FAIL] Forbidden text '$expectedNotContains' found in response.\n";
+                    $GLOBALS['returnable'] .= "     [FAIL] Expected '$expectedNotContains' TO NOT BE FOUND, but it was found in response from {$this->lastUrl}.\n";
                     $success = false;
                 }
             }
@@ -314,7 +342,7 @@ XML;
      * Once resolved, the target is submitted (form) or navigated (a).
      */
     protected function handleClick($step) {
-        $selector = (string)$step->selector; 
+        $selector = $this->substituteVariables((string)$step->selector);
         
         $response = $this->lastResponse;
         if (empty($response)) {

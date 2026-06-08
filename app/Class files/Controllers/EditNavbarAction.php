@@ -1,6 +1,8 @@
 <?php
 class EditNavbarAction implements ControllerInterface {
     public static string $path = '/editNavbar';
+    public static string $manage_URI = '/navbar_management';
+    public static string $object_URI = '/edit_navbar';
     public bool $isAction = true;
 
     public function execute(Request $request) {
@@ -20,15 +22,18 @@ class EditNavbarAction implements ControllerInterface {
                     $itemData = $qb_data->table('tblNavBar')->where('nbPK', '=', $pk)->getFetch($db);
                     
                     if ($itemData) {
-                        $eventStore->append('NavbarItemDeleted', $itemData, $pk, $authorId);
+                        $eventId = $eventStore->append('NavbarItemDeleted', $itemData, $pk, $authorId);
+                        if ($eventId) {
+                            $eventStore->waitUntilProcessed($eventId);
+                        }
                     }
                 }
-                Hyperlink::redirection("/navbar_management");
+                Hyperlink::redirection(self::$manage_URI);
             }
 
             $cleanData = FormValidation::processAndValidate('navbar', $request->post, $formSchemas, $sessionController, function($clean) {
                 $id = $clean['nbPK'] ?? 0;
-                return "/edit_navbar" . ($id ? "?id=".$id : "");
+                return self::$object_URI . ($id ? "?id=".$id : "");
             });
 
             $isProtected = (isset($request->post['nbProtected']) && $request->post['nbProtected'] === '1') ? 1 : 0;
@@ -56,17 +61,13 @@ class EditNavbarAction implements ControllerInterface {
             }
 
             $eventStore->waitUntilProcessed($eventId);
+            $newId = $eventStore->getAggregateId($eventId);
+            $dependency = $newId ? (int)$newId : $pk;
 
-            $redirectUrl = "/navbar_management";
-            if (isset($request->server['HTTP_ACCEPT']) && strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false) {
-                Hyperlink::clientSideRedirection($redirectUrl);
-            }
-
-            
-            Hyperlink::redirection($redirectUrl);
+            Hyperlink::redirection(self::$object_URI . "?id=" . $dependency, $dependency);
         }
 
-        Hyperlink::redirection("/navbar_management");
+        Hyperlink::redirection(self::$manage_URI);
     }
 
     public static function getEventHandlers(): array {

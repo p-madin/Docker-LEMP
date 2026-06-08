@@ -34,24 +34,30 @@ INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (13, 'heading', 'Pla
 INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (14, 'table', '{"dataProvider":"PlatformRecoveryDataProvider"}');
 INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (15, 'heading', 'Child Services');
 INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (16, 'table', '{"dataProvider":"ChildServiceDataProvider"}');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (21, 'hyperlink', '{"label":"Create New Navbar Item", "url":"/edit_navbar"}');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (22, 'hyperlink', '{"label":"Create New Form", "url":"/edit_form"}');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (23, 'hyperlink', '{"label":"Create New Page", "url":"/page_editor"}');
 
 -- Link Elements to Pages
 INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (1, 1, 1);
-INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (1, 2, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (1, 2, 2);
 INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (2, 3, 1);
-INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (2, 4, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (2, 4, 2);
 INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (3, 5, 1);
-INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (3, 6, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (3, 6, 2);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (3, 21, 3);
 INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (4, 7, 1);
-INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (4, 8, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (4, 8, 2);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (4, 22, 3);
 INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (5, 9, 1);
-INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (5, 10, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (5, 10, 2);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (5, 23, 3);
 INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (6, 11, 1);
-INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (6, 12, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (6, 12, 2);
 INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (7, 13, 1);
-INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (7, 14, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (7, 14, 2);
 INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (8, 15, 1);
-INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (8, 16, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (8, 16, 2);
 
 -- Root Items
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Home', 'c', NULL, '/', 'IndexController', false, 1, NULL);
@@ -60,9 +66,9 @@ INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerCl
 -- Settings Menu
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Settings', 'p', NULL, NULL, NULL, true, 3, NULL);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Accounts', 'p', 1, '/account_management', NULL, true, 1, 3);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Error Log', 'p', 2, '/error_log', NULL, true, 2, 3);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Error Log', 'c', NULL, '/error_log', 'ErrorLogController', true, 2, 3);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Banned IPs', 'p', 6, '/banned_ips', NULL, true, 3, 3);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Platform Recovery', 'p', 7, '/platform_recovery', NULL, true, 5, 3);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Platform Recovery', 'c', NULL, '/platform_recovery', 'PlatformRecoveryController', true, 5, 3);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Child Services', 'p', 8, '/child_management', NULL, true, 6, 3);
 
 -- CMS Menu
@@ -153,9 +159,9 @@ INSERT INTO tblColumns (tcFormFK, tcName, tcLabel, tcType, tcRules, tcOrder) VAL
 
 -- SaaS Children
 -- -- chiStatus = [u = {unknown - to be discovered by HTTP}, a = {active}, d = {deleted}, p = {paused}, i = {inactive}]
---insert INTO absChildServices(csCreatedByFK, csAdminFK, csName, csStatus) values (1, 1, 'customer-a', 'u');
---insert INTO absChildServices(csCreatedByFK, csAdminFK, csName, csStatus) values (1, 1, 'customer-b', 'u');
---insert INTO absChildServices(csCreatedByFK, csAdminFK, csName, csStatus) values (1, 1, 'customer-c', 'u');
+-- insert INTO absChildServices(csCreatedByFK, csAdminFK, csName, csStatus) values (1, 1, 'customer-a', 'u');
+-- insert INTO absChildServices(csCreatedByFK, csAdminFK, csName, csStatus) values (1, 1, 'customer-b', 'u');
+-- insert INTO absChildServices(csCreatedByFK, csAdminFK, csName, csStatus) values (1, 1, 'customer-c', 'u');
 
 
 #--$Local_array = ['user' => ['name' => 'John', 'roles' => ['admin', 'editor'], 'pages' => [[1 => 'home', 2 => 'contact us']]], 

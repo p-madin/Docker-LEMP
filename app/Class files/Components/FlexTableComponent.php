@@ -208,7 +208,12 @@ class FlexTableComponent extends Component {
                 }
 
                 $hlink = new Hyperlink();
-                $hlink->appendHyperlinkForm($this->xmlDom, $cell, $config['buttonLabel'] ?? 'Submit', $url . $val, $params, $cssClasses);
+                $form = $hlink->appendHyperlinkForm($this->xmlDom, $cell, $config['buttonLabel'] ?? 'Submit', $url . $val, $params, $cssClasses);
+                
+                if (isset($config['idPrefix']) && isset($config['idSuffixKey']) && isset($rowData[$config['idSuffixKey']])) {
+                    $form->setAttribute('id', $config['idPrefix'] . $rowData[$config['idSuffixKey']]);
+                }
+                
                 return true;
         }
         return false;

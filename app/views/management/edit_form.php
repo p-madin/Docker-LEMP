@@ -63,10 +63,10 @@ if ($id > 0 && isset($cols)) {
             if ($readOnly === 1) { $editStyle[] = 'disabled'; $delStyle[] = 'disabled'; }
 
             $editFieldForm = $hlink->appendHyperlinkForm($dom, $cell, "Edit", "/edit_column?id=" . $row['tcPK'], [], $editStyle);
-            $editFieldForm->setAttribute('id', 'edit-field-' . $row['tcName']);
+            $editFieldForm->setAttribute('id', 'edit-field-' . $row['tcPK']);
             $deleteFieldForm = $hlink->appendHyperlinkForm($dom, $cell, "Delete", "/editColumn", 
                                         ['action' => 'delete', 'tcPK' => $row['tcPK'], 'form_id' => $id], $delStyle);
-            $deleteFieldForm->setAttribute('id', 'delete-field-' . $row['tcName']);
+            $deleteFieldForm->setAttribute('id', 'delete-field-' . $row['tcPK']);
         }]
     ]);
     $table->setData($cols);

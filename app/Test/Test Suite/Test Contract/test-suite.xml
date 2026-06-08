@@ -51,6 +51,7 @@
           <submit>true</submit>
           <expected>
             <statusCode>200</statusCode>
+            <saveSuiteVariable>testUserID</saveSuiteVariable>
           </expected>
         </step>
 
@@ -66,7 +67,7 @@
         </step>
         <step>
           <action>Click</action>
-          <selector>.form_hyperlink[id^="edit-user-LifecycleUser"]</selector>
+          <selector>#edit-user-{{testUserID}}</selector>
         </step>
         <step>
           <action>FillForm</action>
@@ -117,20 +118,18 @@
         <step>
           <action>NavigateTo</action>
           <url>/account_management</url>
-        </step>=
-        <step>
-          <action>Click</action>
-          <selector>.form_hyperlink[id^="edit-user-Stack_Two"]</selector>
         </step>
         <step>
-          <action>AssertText</action>
+          <action>Click</action>
+          <selector>#edit-user-2</selector>
           <expected>
+            <statusCode>200</statusCode>
             <contains>Editing User: Stack_Two</contains>
             <contains>value="Stack_Two"</contains>
           </expected>
         </step>
 
-        <!-- 3. Verify Checkbox Uncheck Logic — submit with verified_status unchecked -->
+        <!-- 3. De-verify User -> Save -> Verify redirect and visual update -->
         <step>
           <action>FillForm</action>
           <selector>#editUserFormComponent</selector>
@@ -139,22 +138,21 @@
           </parameters>
           <submit>true</submit>
         </step>
-        <!-- Confirm the status is now shown as unverified in the list -->
+        
         <step>
           <action>NavigateTo</action>
           <url>/account_management</url>
-        </step>
-        <step>
-          <action>AssertText</action>
           <expected>
+            <statusCode>200</statusCode>
             <contains>Pending</contains>
+            <not_contains>style="color:green; font-weight:bold;"&gt;Verified</not_contains>
           </expected>
         </step>
 
         <!-- 4. Restore Status (Clean up) — re-check verified for Stack_Two -->
         <step>
           <action>Click</action>
-          <selector>.form_hyperlink[id^="edit-user-Stack_Two"]</selector>
+          <selector>#edit-user-2</selector>
         </step>
         <step>
           <action>FillForm</action>
@@ -189,7 +187,7 @@
         </step>
         <step>
           <action>Click</action>
-          <selector>.form_hyperlink[id^="edit-navbar-/dashboard"]</selector>
+          <selector>.form_hyperlink[id^="edit-navbar-2"]</selector>
         </step>
         <step>
           <action>FillForm</action>
@@ -206,8 +204,12 @@
           </expected>
         </step>
         <step>
+          <action>NavigateTo</action>
+          <url>/navbar_management</url>
+        </step>
+        <step>
           <action>Click</action>
-          <selector>.form_hyperlink[id^="edit-navbar-/dashboard"]</selector>
+          <selector>.form_hyperlink[id^="edit-navbar-2"]</selector>
         </step>
         <step>
           <action>FillForm</action>
@@ -219,6 +221,10 @@
         </step>
         
         <!-- 2. Create a temporary navbar item & delete it -->
+        <step>
+          <action>NavigateTo</action>
+          <url>/navbar_management</url>
+        </step>
         <step>
           <action>Click</action>
           <selector>#nav_Create_New_Navbar_Item</selector>
@@ -233,6 +239,13 @@
             <parameter><name>nbOrder</name><value>99</value></parameter>
           </parameters>
           <submit>true</submit>
+          <expected>
+            <saveSuiteVariable>testNavbarID</saveSuiteVariable>
+          </expected>
+        </step>
+        <step>
+          <action>NavigateTo</action>
+          <url>/navbar_management</url>
         </step>
         <step>
           <action>AssertText</action>
@@ -242,7 +255,7 @@
         </step>
         <step>
           <action>Click</action>
-          <selector>.form_hyperlink[id^="delete-navbar-/test_path"]</selector>
+          <selector>.form_hyperlink[id^="delete-navbar-{{testNavbarID}}"]</selector>
         </step>
         <step>
           <action>AssertText</action>
@@ -286,7 +299,7 @@
         <!-- 4. Final Tear Down (Manual Delete to ensure environment is clean) -->
         <step>
           <action>Click</action>
-          <selector>.form_hyperlink[id^="delete-navbar-/test_path"]</selector>
+          <selector>.form_hyperlink[id^="delete-navbar-{{testNavbarID}}"]</selector>
         </step>
         <step>
           <action>AssertText</action>
@@ -331,6 +344,13 @@
             </parameter>
           </parameters>
           <submit>true</submit>
+          <expected>
+            <saveSuiteVariable>testFormID</saveSuiteVariable>
+          </expected>
+        </step>
+        <step>
+          <action>NavigateTo</action>
+          <url>/form_management</url>
         </step>
         <step>
           <action>AssertText</action>
@@ -339,12 +359,8 @@
           </expected>
         </step>
         <step>
-          <action>NavigateTo</action>
-          <url>/form_management</url>
-        </step>
-        <step>
           <action>Click</action>
-          <selector>.form_hyperlink[id^="edit-form-Temporary Test Form"]</selector>
+          <selector>.form_hyperlink[id^="edit-form-{{testFormID}}"]</selector>
         </step>
         <step>
           <action>Click</action>
@@ -360,17 +376,24 @@
             <parameter><name>tcOrder</name><value>10</value></parameter>
           </parameters>
           <submit>true</submit>
+          <expected>
+            <saveSuiteVariable>testFieldID</saveSuiteVariable>
+          </expected>
+        </step>
+        <step>
+          <action>NavigateTo</action>
+          <url>/edit_form?id={{testFormID}}</url>
         </step>
         <step>
           <action>AssertText</action>
           <expected>
-            <contains></contains>
+            <contains>Test Field Label</contains>
           </expected>
         </step>
 
         <step>
           <action>Click</action>
-          <selector>.form_hyperlink[id^="delete-field-test_field"]</selector>
+          <selector>.form_hyperlink[id^="delete-field-{{testFieldID}}"]</selector>
         </step>
         <step>
           <action>AssertText</action>
@@ -385,7 +408,7 @@
         </step>
         <step>
           <action>Click</action>
-          <selector>.form_hyperlink[id^="delete-form-Temporary Test Form"]</selector>
+          <selector>.form_hyperlink[id^="delete-form-{{testFormID}}"]</selector>
         </step>
         <step>
           <action>AssertText</action>

@@ -136,14 +136,30 @@ class Hyperlink {
         // Return the formatted URL
         return '/' . ($tenant !== '' ? $tenant . '/' : '') . $path;
     }
-    public static function redirection(string $url){
+    public static function redirection(string $url, ?int $dependency = null){
         $relativeTarget = self::tenantURL($url);
+        
+        if ((isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) || 
+            (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')) {
+            self::clientSideRedirection($url, $dependency);
+        }
+
         header("Location: " . $relativeTarget);
         exit;
     }
-    public static function clientSideRedirection(string $url){
+    public static function clientSideRedirection(string $url, ?int $dependency = null){
         $relativeTarget = self::tenantURL($url);
-        echo json_encode(['redirect' => $relativeTarget]);
+        
+        $payload = ['redirect' => $relativeTarget];
+        if ($dependency !== null) {
+            $payload['success'] = true;
+            $payload['dependency'] = $dependency;
+            $payload['url'] = $relativeTarget;
+            $payload['redirect'] = null; // Use delayed redirect instead of immediate
+        }
+        
+        header('Content-Type: application/json');
+        echo json_encode($payload);
         exit;
     }
 }

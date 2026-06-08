@@ -1,6 +1,8 @@
 <?php
 class ElementAction implements ControllerInterface {
     public static string $path = '/elementAction';
+    public static string $manage_URI = '/';
+    public static string $object_URI = '/';
     public bool $isAction = true;
 
     public function execute(Request $request) {
@@ -19,15 +21,12 @@ class ElementAction implements ControllerInterface {
                         $eventStore->waitUntilProcessed($eventId);
                     }
                 }
-                if (isset($request->server['HTTP_ACCEPT']) && strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false) {
-                    echo json_encode(['success' => true]);
-                    exit;
-                }
-                exit;
+                
+                Hyperlink::redirection(self::$manage_URI);
             }
 
             $cleanData = FormValidation::processAndValidate('element', $request->post, $formSchemas, $sessionController, function($clean) {
-                return "/";
+                return self::$manage_URI;
             });
 
             $data = [
@@ -50,13 +49,10 @@ class ElementAction implements ControllerInterface {
             }
 
             $eventStore->waitUntilProcessed($eventId);
+            $newId = $eventStore->getAggregateId($eventId);
+            $dependency = $newId ? (int)$newId : $pk;
 
-            if (isset($request->server['HTTP_ACCEPT']) && strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false) {
-                echo json_encode(['success' => true, 'eventId' => $eventId, 'elePK' => $pk ?: $eventStore->getAggregateId($eventId)]);
-                exit;
-            }
-
-            Hyperlink::redirection("/");
+            Hyperlink::redirection(self::$object_URI . "?id=" . $dependency, $dependency);
         }
     }
 

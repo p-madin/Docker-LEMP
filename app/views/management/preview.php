@@ -64,6 +64,13 @@ function renderElement($el, $dom, $target, $formSchemas) {
             $chart->setDataConfig(json_decode($config['config'] ?? '{}', true) ?: []);
             $node->appendChild($chart->render());
         }
+    } else if ($el['eleType'] === 'hyperlink') {
+        $rawContent = htmlspecialchars_decode($el['eleContent'], ENT_QUOTES);
+        $config = json_decode($rawContent, true);
+        if ($config) {
+            $hlink = new Hyperlink();
+            $hlink->appendHyperlinkForm($dom, $node, $config['label'], $config['url'], $config['params'] ?? [], $config['cssClasses'] ?? []);
+        }
     } else if (!in_array($el['eleType'], ['container', 'divider'])) {
         // Text content
         $node->textContent = $el['eleContent'];

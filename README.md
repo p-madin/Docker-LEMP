@@ -1,6 +1,6 @@
 # Docker-LEMP Extranet Application
 
-This repository provides a high-security, robust LEMP stack (Linux, Nginx, MySQL, PHP) boilerplate, featuring a custom extranet with advanced form handling and data protection.
+This repository provides a high-security, event-sourced LEMP stack (Linux, Nginx, MySQL, PHP) SaaS platform, featuring automated multi-tenant provisioning, a custom CMS block editor, and advanced data protection.
 
 ## Key Features
 
@@ -21,6 +21,21 @@ This repository provides a high-security, robust LEMP stack (Linux, Nginx, MySQL
 - **Clean URLs**: Modern, extension-less routing (e.g., `/dashboard` instead of `/dashboard.php`).
 - **Real-Time Validation**: Custom `validator.js` provides instant feedback as you type.
 - **Modern Navigation**: Implementation of the PRG (Post-Redirect-Get) pattern for seamless form submissions.
+
+### 🏢 SaaS & Multi-Tenancy
+- **Automated Provisioning**: Programmatically spin up isolated Docker containers, databases, and Nginx configurations for independent tenants.
+- **Strict Isolation**: Each "Child Service" (tenant) runs in a completely segregated environment, preventing data leakage and "noisy neighbor" impacts.
+- **Host-to-Tenant Mapping**: Securely delegates administrative access by injecting host users directly into isolated tenant instances without requiring plain-text credentials.
+
+### 📜 Immutable Event Sourcing
+- **Auditability**: All state-mutating actions (Creates, Updates, Deletes) are recorded chronologically in an immutable `event_store` rather than directly overwriting database rows.
+- **Asynchronous Processing**: Background workers handle the heavy lifting of materializing events into standard relational tables using `FOR UPDATE SKIP LOCKED` concurrency controls.
+- **Undo/Redo (Memento)**: Point-and-click reversal of destructive actions through automatically generated compensating events.
+- **Platform Recovery**: Built-in point-in-time recovery, allowing administrators to seamlessly rebuild the database state up to a specific timestamp.
+
+### 🧱 Page Builder & CMS
+- **Visual Block Editor**: A vanilla Javascript interface supporting drag-and-drop mechanics, nested containers, and in-place content editing.
+- **Deep Nesting**: The robust relational data model supports infinitely nested layouts, serializing complex element hierarchies securely through the Event Store.
 
 ### 📊 Data Visualization
 - **Dynamic Graphs**: Built-in SVG-based data graphing component (`dataGraph.php`) for visualizing application metrics.
@@ -71,7 +86,7 @@ push db to github: docker push philmadin/dockerlempdb:latest
 - **Account Management**: [https://localhost/account_management](https://localhost/account_management)
 
 ## Technical Architecture
-- **Pattern**: Front Controller with Middleware Pipeline (Onion Architecture)
+- **Pattern**: Front Controller with Middleware Pipeline (Onion Architecture) & Event Sourcing
 - **Language**: PHP 8.x
 - **Infrastructure**: Dockerized Nginx (Hardened) & MySQL
 - **UI Logic**: Vanilla Javascript & Semantic HTML

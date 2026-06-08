@@ -12,7 +12,7 @@ services:
       - ./compose.tenant.yaml:/home/ubuntu/Workspace/compose.tenant.yaml:ro
       #- ./conf/docker.remote.json:/etc/docker/daemon.json:ro
     environment:
-      DOCKER_HOST: tcp://host.docker.internal:2375
+      #DOCKER_HOST: tcp://host.docker.internal:2375
       DOCKER_CONFIG: /tmp/.docker
       TZ: Australia/Sydney
       DB_VENDOR: mysql
