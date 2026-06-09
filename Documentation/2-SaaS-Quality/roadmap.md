@@ -35,7 +35,7 @@ exit;
 
 ## Phase 2: Review WAF Middleware for Nested Arrays [COMPLETED]
 ### Description
-Audit the `WafMiddleware.php` to ensure its recursive sanitization logic gracefully handles deeply nested `$_POST` arrays without flattening them or triggering false-positive security blocks.
+Audit the `WafMiddleware.php` to ensure its recursive sanitisation logic gracefully handles deeply nested `$_POST` arrays without flattening them or triggering false-positive security blocks.
 > [!IMPORTANT]
 > **Ground Running**: Recent UI updates introduced nested data structures (like the recursive Navbar components). The middleware must iterate over nested arrays natively.
 
@@ -253,13 +253,13 @@ Introduce a server-side controller to manage the persistence of pages and their 
 
 1 - **PageController & ElementController**:
    Implement controllers following the `EditColumnAction` pattern:
-   - Utilize `QueryBuilder` for database interactions with `tblPages` and `tblElements`.
+   - Utilise `QueryBuilder` for database interactions with `tblPages` and `tblElements`.
    - Use `FormValidation` for server-side integrity checks.
    - Integrate with `EventStore` to record `PageCreated`, `PageUpdated`, `PageDeleted`, and element-level events (`ElementCreated`, `ElementUpdated`, `ElementDeleted`).
-   - Define event handlers in `getEventHandlers()` to materialize the state into the relational tables (`tblPages`, `tblElements`, `brgPageElements`).
+   - Define event handlers in `getEventHandlers()` to materialise the state into the relational tables (`tblPages`, `tblElements`, `brgPageElements`).
 
 2 - **Bridge Management**:
-   Automate the management of the `brgPageElements` table to maintain the ordering and association of elements within pages during the event materialization phase.
+   Automate the management of the `brgPageElements` table to maintain the ordering and association of elements within pages during the event materialisation phase.
 
 3 - **Persistence API**:
    Expose JSON endpoints to allow the Javascript Block Editor to "Save" the current workspace state by dispatching events to the server.
@@ -276,7 +276,7 @@ Implement the core management functionalities for the SaaS platform, isolating t
    - Encapsulates complex Docker orchestration and filesystem operations to adhere to SOLID principles.
    - Responsible for generating tenant-specific `compose.yaml` and `.env` files.
    - Generates Nginx routing configurations dynamically and automatically reloads the host Nginx daemon to route `/<tenant-name>` to the specific container.
-   - Provides wrappers for `docker-compose up/down` and container status synchronization (`sync`).
+   - Provides wrappers for `docker-compose up/down` and container status synchronisation (`sync`).
 
 2. **`ChildServiceAction`** (`./app/Class files/Controllers/ChildServiceAction.php`):
    - Acts as the unified controller handling row-level management requests (`start`, `stop`, `delete`, `sync`).
@@ -292,7 +292,7 @@ Implement the core management functionalities for the SaaS platform, isolating t
    - The provisioning form is dynamically injected into the management page view via structural DML records in `02_db_dml.sql`.
 
 ### Outstanding Items
-- **Create client form required fields**: Ensure the form explicitly requires fields for `admin`, `admin username`, and `password` to properly initialize new tenants with an administrative account.
+- **Create client form required fields**: Ensure the form explicitly requires fields for `admin`, `admin username`, and `password` to properly initialise new tenants with an administrative account.
 - **SaaS Feature Testing**: Build comprehensive test coverage for all SaaS functionalities within `./app/Test/main.php`, validating tenant creation, isolation, and teardown.
 
 ---

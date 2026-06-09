@@ -8,10 +8,6 @@ class UnbanIpAction implements ControllerInterface {
     public function execute(Request $request) {
         global $db, $dialect, $sessionController;
 
-        if ($request->getMethod() !== 'POST') {
-            Hyperlink::redirection(self::$manage_URI);
-        }
-
         $pk = $request->post['biPK'] ?? null;
         $action = $request->post['action'] ?? '';
 

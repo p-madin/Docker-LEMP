@@ -9,7 +9,7 @@ class HyperSessionTest extends TestSuiteBase {
     public function test() {
         $GLOBALS['returnable'] .= "Running Hyper Session Stress Test (Multi-Cookie)...\n";
         
-        $url = "https://localhost:8443/Test/session_hyper_action.php";
+        $url = "https://localhost/Test/session_hyper_action.php";
         $concurrency = 100; // Launch 100 concurrent requests with different cookies
         
         $mh = curl_multi_init();

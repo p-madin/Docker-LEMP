@@ -1,4 +1,4 @@
-# Phase 9: SaaS enabled platform - CRUD independent tenant manager (Source Code Draft)
+# Phase 9: SaaS enabled platform - CRUD independent tenant manager
 
 This document describes the orchestration layer responsible for provisioning and isolating multi-tenant instances on the underlying Docker host.
 
@@ -14,7 +14,7 @@ The `ChildServiceManager.php` acts as the engine for all tenant lifecycle events
 - **Routing**: Automatically drops a reverse proxy `.conf` file into the host Nginx configurations and triggers a graceful `nginx -s reload`, routing `/<tenant-name>` directly to the newly spun container.
 - **Sync**: Compares the expected database state (`absChildServices.csStatus`) against the real-world Docker container running state.
 
-### Automated Admin Initialization
+### Automated Admin Initialisation
 To prevent exposing raw database credentials or requiring plain-text passwords during the provisioning process, the `ChildServiceManager` maps a selected administrator from the *host* platform (`auPK`) directly into the new tenant.
 When `start()` is invoked, it writes a `99_tenant_admin.sql` file containing the precise `INSERT` statement needed to establish the selected user as the root administrator of the isolated database upon first boot.
 

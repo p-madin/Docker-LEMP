@@ -10,8 +10,6 @@ class UpdateAccountAction implements ControllerInterface {
 
         Hyperlink::handleAction($sessionController);
 
-        if($request->getMethod() === 'POST'){
-
             $cleanData = FormValidation::processAndValidate('editUser', $request->post, $formSchemas, $sessionController, function($clean) {
                 return self::$object_URI . "?id=" . $clean['auPK'];
             });
@@ -44,9 +42,6 @@ class UpdateAccountAction implements ControllerInterface {
             $eventStore->waitUntilProcessed($eventId);
 
             Hyperlink::redirection(self::$object_URI . '?id=' . $userId, $userId);
-        }
-
-        Hyperlink::redirection(self::$manage_URI);
     }
 
     public static function getEventHandlers(): array {

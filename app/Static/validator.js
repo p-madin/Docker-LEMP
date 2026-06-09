@@ -236,6 +236,11 @@ class Validator {
             const result = await response.json();
 
             if (response.ok) {
+                if (result.immediate_redirect) {
+                    window.location.href = result.redirect || result.url;
+                    return;
+                }
+
                 if (result.success && result.dependency) {
                     if (window.actionTracker) {
                         window.actionTracker.appendDependency(result.dependency, result.url);

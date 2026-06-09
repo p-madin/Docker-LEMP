@@ -8,14 +8,9 @@ class CreateChildServiceAction implements ControllerInterface {
     public function execute(Request $request) {
         global $db, $dialect, $sessionController;
 
-        if ($request->getMethod() !== 'POST') {
-            Hyperlink::redirection(self::$manage_URI);
-            return;
-        }
-
-        $serviceName = trim($request->post['service_name'] ?? '');
-        $serviceTheme = $request->post['service_theme'] ?? 'light';
+        $serviceName = trim($request->post['csName'] ?? '');
         $adminUserId = (int)($request->post['csAdminFK'] ?? 0);
+        $authorId = $sessionController->getSystemUserId();
 
         if (empty($serviceName)) {
             $this->redirectError('Service name is required');
@@ -35,17 +30,17 @@ class CreateChildServiceAction implements ControllerInterface {
         $manager = new ChildServiceManager();
         
         try {
-            $manager->create($serviceName);
-            
             $qb = new QueryBuilder($dialect);
             $sql = $qb->table('absChildServices')->insert([
                 'csName' => $serviceName,
-                'csTheme' => $serviceTheme,
                 'csAdminFK' => $adminUserId,
+                'csCreatedByFK' => $authorId,
                 'csStatus' => 'u'
             ]);
             $qb->doExecute($db, $sql);
             $newId = $db->lastInsertId();
+
+            $manager->start($serviceName);
             
             Hyperlink::redirection(self::$object_URI . "?id=" . $newId, (int)$newId);
         } catch (Exception $e) {

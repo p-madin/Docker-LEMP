@@ -8,8 +8,8 @@ class CSRFTest extends TestSuiteBase {
     public function test() {
         $GLOBALS['returnable'] .= "Running Advanced CSRF Cross-Session Test...\n";
         
-        $homeUrl = "https://localhost:8443/index.php";
-        $actionUrl = "https://localhost:8443/login";
+        $homeUrl = "https://localhost/index.php";
+        $actionUrl = "https://localhost/login";
         
         $cookieA = "/tmp/cookie_user_a.txt";
         $cookieB = "/tmp/cookie_user_b.txt";

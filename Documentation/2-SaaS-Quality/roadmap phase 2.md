@@ -1,4 +1,4 @@
-# Phase 2: Review WAF Middleware for Nested Arrays (Source Code Draft)
+# Phase 2: Review WAF Middleware for Nested Arrays
 
 This document provides a full source code description for the enhancement of the Web Application Firewall (WAF) Middleware to robustly support multi-dimensional array payloads.
 

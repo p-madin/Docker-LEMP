@@ -1,4 +1,4 @@
-# Phase 5: Event Sourcing Command & Memento Pattern (Source Code Draft)
+# Phase 5: Event Sourcing Command & Memento Pattern
 
 This document describes the implementation of the Undo/Redo architecture, leveraging the immutable Event Sourcing logs to seamlessly step back and forward through application state.
 

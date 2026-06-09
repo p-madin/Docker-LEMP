@@ -4,7 +4,7 @@ require_once(__DIR__ . '/../TestBase.php');
 
 class xmlDomTest extends TestSuiteBase {
     protected $cookieFile;
-    protected $baseUrl = 'https://localhost:8443/';
+    protected $baseUrl = 'https://localhost/';
     protected $lastResponse = '';
     protected $lastUrl = '';
 

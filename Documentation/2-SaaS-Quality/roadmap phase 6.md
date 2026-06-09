@@ -1,10 +1,10 @@
-# Phase 6: Platform Recovery User Interface (Source Code Draft)
+# Phase 6: Platform Recovery User Interface
 
 This document describes the administrative interface used to inspect the raw Event Sourcing logs and execute point-in-time database restorations.
 
 ## 1. Implementation Overview
 
-To capitalize on the auditability of the Event Sourcing architecture, a new management view was constructed using internal DOM components. This interface allows system administrators to monitor real-time event ingestion and safely trigger full platform replays.
+To capitalise on the auditability of the Event Sourcing architecture, a new management view was constructed using internal DOM components. This interface allows system administrators to monitor real-time event ingestion and safely trigger full platform replays.
 
 ## 2. Core Enhancements
 

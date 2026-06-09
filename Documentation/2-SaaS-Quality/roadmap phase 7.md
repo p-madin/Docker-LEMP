@@ -1,4 +1,4 @@
-# Phase 7: Page Builder & Block Editor (Source Code Draft)
+# Phase 7: Page Builder & Block Editor
 
 This document outlines the architecture for the dynamic Page Builder and its client-side Block Editor, enabling the construction of arbitrary CMS page structures.
 

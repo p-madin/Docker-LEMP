@@ -5,7 +5,7 @@ services:
     #  dockerfile: /home/ubuntu/Workspace/Dockerfile
     image: ${TENANT_APP_IMAGE}
     expose:
-      - "8443"
+      - "443"
     environment:
       DB_HOST: db
       TENANT_DB_NAME: stackDB

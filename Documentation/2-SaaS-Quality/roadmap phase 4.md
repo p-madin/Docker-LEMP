@@ -1,4 +1,4 @@
-# Phase 4: Implement worker.php (Source Code Draft)
+# Phase 4: Implement worker.php
 
 This document describes the background job processor responsible for materializing events from the Event Store into relational database tables.
 

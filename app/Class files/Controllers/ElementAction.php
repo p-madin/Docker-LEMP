@@ -8,52 +8,50 @@ class ElementAction implements ControllerInterface {
     public function execute(Request $request) {
         global $sessionController, $formSchemas, $dialect, $db, $eventStore;
 
-        if($request->getMethod() === 'POST') {
-            $authorId = $sessionController->getSystemUserId();
+        $authorId = $sessionController->getSystemUserId();
 
-            if (isset($request->post['action']) && $request->post['action'] === 'delete') {
-                $pk = (int)($request->post['elePK'] ?? 0);
-                if ($pk > 0) {
-                    $qb_data = new QueryBuilder($dialect);
-                    $elementData = $qb_data->table('tblElements')->where('elePK', '=', $pk)->getFetch($db);
-                    if ($elementData) {
-                        $eventId = $eventStore->append('ElementDeleted', $elementData, null, $authorId);
-                        $eventStore->waitUntilProcessed($eventId);
-                    }
-                }
-                
-                Hyperlink::redirection(self::$manage_URI);
-            }
-
-            $cleanData = FormValidation::processAndValidate('element', $request->post, $formSchemas, $sessionController, function($clean) {
-                return self::$manage_URI;
-            });
-
-            $data = [
-                'eleType'       => $cleanData['eleType'],
-                'eleContent'    => $cleanData['eleContent'],
-                'eleCSSClasses' => $cleanData['eleCSSClasses'],
-                'eleParentFK'   => !empty($cleanData['eleParentFK']) ? (int)$cleanData['eleParentFK'] : null
-            ];
-
-            $pk = (int)($cleanData['elePK'] ?? 0);
-            $pageId = (int)($request->post['pageId'] ?? 0);
-            $pelOrder = (int)($request->post['pelOrder'] ?? 0);
-
+        if (isset($request->post['action']) && $request->post['action'] === 'delete') {
+            $pk = (int)($request->post['elePK'] ?? 0);
             if ($pk > 0) {
-                $qb_old = new QueryBuilder($dialect);
-                $oldData = $qb_old->table('tblElements')->where('elePK', '=', $pk)->getFetch($db);
-                $eventId = $eventStore->append('ElementUpdated', array_merge(['elePK' => $pk, 'pageId' => $pageId, 'pelOrder' => $pelOrder], $data), null, $authorId, $oldData);
-            } else {
-                $eventId = $eventStore->append('ElementCreated', array_merge($data, ['pageId' => $pageId, 'pelOrder' => $pelOrder]), null, $authorId);
+                $qb_data = new QueryBuilder($dialect);
+                $elementData = $qb_data->table('tblElements')->where('elePK', '=', $pk)->getFetch($db);
+                if ($elementData) {
+                    $eventId = $eventStore->append('ElementDeleted', $elementData, null, $authorId);
+                    $eventStore->waitUntilProcessed($eventId);
+                }
             }
-
-            $eventStore->waitUntilProcessed($eventId);
-            $newId = $eventStore->getAggregateId($eventId);
-            $dependency = $newId ? (int)$newId : $pk;
-
-            Hyperlink::redirection(self::$object_URI . "?id=" . $dependency, $dependency);
+            
+            Hyperlink::redirection(self::$manage_URI);
         }
+
+        $cleanData = FormValidation::processAndValidate('element', $request->post, $formSchemas, $sessionController, function($clean) {
+            return self::$manage_URI;
+        });
+
+        $data = [
+            'eleType'       => $cleanData['eleType'],
+            'eleContent'    => $cleanData['eleContent'],
+            'eleCSSClasses' => $cleanData['eleCSSClasses'],
+            'eleParentFK'   => !empty($cleanData['eleParentFK']) ? (int)$cleanData['eleParentFK'] : null
+        ];
+
+        $pk = (int)($cleanData['elePK'] ?? 0);
+        $pageId = (int)($request->post['pageId'] ?? 0);
+        $pelOrder = (int)($request->post['pelOrder'] ?? 0);
+
+        if ($pk > 0) {
+            $qb_old = new QueryBuilder($dialect);
+            $oldData = $qb_old->table('tblElements')->where('elePK', '=', $pk)->getFetch($db);
+            $eventId = $eventStore->append('ElementUpdated', array_merge(['elePK' => $pk, 'pageId' => $pageId, 'pelOrder' => $pelOrder], $data), null, $authorId, $oldData);
+        } else {
+            $eventId = $eventStore->append('ElementCreated', array_merge($data, ['pageId' => $pageId, 'pelOrder' => $pelOrder]), null, $authorId);
+        }
+
+        $eventStore->waitUntilProcessed($eventId);
+        $newId = $eventStore->getAggregateId($eventId);
+        $dependency = $newId ? (int)$newId : $pk;
+
+        Hyperlink::redirection(self::$object_URI . "?id=" . $dependency, $dependency);
     }
 
     public static function getEventHandlers(): array {

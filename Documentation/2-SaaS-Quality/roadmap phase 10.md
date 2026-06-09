@@ -1,4 +1,4 @@
-# Phase 10: Enhance testing functionality (Source Code Draft)
+# Phase 10: Enhance testing functionality
 
 This document details improvements to the custom XML-based integration test framework, primarily introducing dynamic state extraction and substitution.
 
@@ -9,7 +9,7 @@ To test the full lifecycle of entities within the platform (e.g., creating a for
 ## 2. Core Enhancements
 
 ### Suite Variable Extraction
-In `xmlDomTest.php`, the test runner was enhanced to recognize `<saveSuiteVariable>` tags within a step's `<expected>` block.
+In `xmlDomTest.php`, the test runner was enhanced to recognise `<saveSuiteVariable>` tags within a step's `<expected>` block.
 When this tag is present, the runner submits the form via an AJAX request (`X-Requested-With: XMLHttpRequest`). Action Controllers respond with JSON, containing a `dependency` field (the newly generated PK). The runner intercepts this JSON and stores the PK in the `$this->suiteVariables` registry.
 
 ```xml
@@ -39,7 +39,7 @@ Before executing actions like `NavigateTo`, `Click`, or `AssertText`, the runner
 </step>
 ```
 
-### Data Provider Standardization
+### Data Provider Standardisation
 To support these tests, all Data Providers (`FormDataProvider.php`, `NavbarDataProvider.php`, etc.) were refactored. The `idSuffixKey` for their interactive buttons (like Edit/Delete) was updated to use the true Primary Key (e.g., `tfPK`) rather than potentially non-unique strings (e.g., `tfName`).
 
 ## 3. Benefits & Outcomes

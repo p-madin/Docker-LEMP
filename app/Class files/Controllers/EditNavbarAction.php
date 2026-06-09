@@ -10,7 +10,6 @@ class EditNavbarAction implements ControllerInterface {
 
         Hyperlink::handleAction($sessionController);
 
-        if($request->getMethod() === 'POST') {
             $authorId = $sessionController->getSystemUserId();
 
             // Handle pure delete request
@@ -65,9 +64,6 @@ class EditNavbarAction implements ControllerInterface {
             $dependency = $newId ? (int)$newId : $pk;
 
             Hyperlink::redirection(self::$object_URI . "?id=" . $dependency, $dependency);
-        }
-
-        Hyperlink::redirection(self::$manage_URI);
     }
 
     public static function getEventHandlers(): array {

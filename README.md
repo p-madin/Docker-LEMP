@@ -81,9 +81,9 @@ build db to github: docker build -t philmadin/dockerlempdb:latest -f Dockerfile.
 push db to github: docker push philmadin/dockerlempdb:latest
 
 ### Accessing the Application
-- **Home/Login**: [https://localhost/](https://localhost/)
-- **Dashboard**: [https://localhost/dashboard](https://localhost/dashboard)
-- **Account Management**: [https://localhost/account_management](https://localhost/account_management)
+- **Home/Login**: [https://localhost:8443/](https://localhost:8443/)
+- **Dashboard**: [https://localhost:8443/dashboard](https://localhost:8443/dashboard)
+- **Account Management**: [https://localhost:8443/account_management](https://localhost:8443/account_management)
 
 ## Technical Architecture
 - **Pattern**: Front Controller with Middleware Pipeline (Onion Architecture) & Event Sourcing

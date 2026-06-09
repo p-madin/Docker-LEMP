@@ -147,7 +147,7 @@ class Hyperlink {
         header("Location: " . $relativeTarget);
         exit;
     }
-    public static function clientSideRedirection(string $url, ?int $dependency = null){
+    public static function clientSideRedirection(string $url, ?int $dependency = null, bool $immediate_redirect = false){
         $relativeTarget = self::tenantURL($url);
         
         $payload = ['redirect' => $relativeTarget];
@@ -156,6 +156,10 @@ class Hyperlink {
             $payload['dependency'] = $dependency;
             $payload['url'] = $relativeTarget;
             $payload['redirect'] = null; // Use delayed redirect instead of immediate
+        }
+        
+        if ($immediate_redirect) {
+            $payload['immediate_redirect'] = true;
         }
         
         header('Content-Type: application/json');

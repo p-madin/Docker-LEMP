@@ -41,7 +41,7 @@ class LoginAction implements ControllerInterface {
         }
         
         if (isset($request->server['HTTP_ACCEPT']) && strpos($request->server['HTTP_ACCEPT'], 'application/json') !== false) {
-            Hyperlink::clientSideRedirection("/");
+            Hyperlink::clientSideRedirection("/", null, true);
         }
         Hyperlink::redirection("/");
     }

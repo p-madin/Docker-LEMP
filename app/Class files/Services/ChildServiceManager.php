@@ -137,7 +137,7 @@ class ChildServiceManager {
         $curlOutput = "";
         $httpCode = 0;
         if ($status === 'running') {
-            $ch = curl_init("https://localhost:8443/{$tenant}/");
+            $ch = curl_init("https://localhost/{$tenant}/");
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
@@ -156,10 +156,12 @@ class ChildServiceManager {
     }
 
     private function generateComposeFile(string $tenant): string {
+        global $scvRows;
+
         $templatePath = '/home/ubuntu/Workspace/compose.tenant.yaml';
         $template = file_exists($templatePath) ? file_get_contents($templatePath) : '';
 
-        $tenantAppVolume = getenv('TENANT_APP_VOLUME');
+        $tenantAppVolume = $scvRows['TENANT_APP_VOLUME'];
         $volumeSection = "";
         if ($tenantAppVolume) {
             $volumeSection = "    volumes:\n      - \"{$tenantAppVolume}\"";
@@ -170,6 +172,7 @@ class ChildServiceManager {
     }
 
     private function generateEnvFile(string $tenant): string {
+        global $scvRows;
         $dbUser = 'user_' . preg_replace('/[^a-z0-9]/', '_', $tenant);
         $dbPass = bin2hex(random_bytes(16));
         $dbRoot = bin2hex(random_bytes(16));
@@ -180,14 +183,16 @@ class ChildServiceManager {
             "TENANT_DB_PASS={$dbPass}",
             "TENANT_DB_ROOT={$dbRoot}",
             "TARGET_ENV=" . (getenv('TARGET_ENV') ?: 'dev'),
-            "HOST_PROJECT_ROOT=" . (getenv('HOST_PROJECT_ROOT') ?: ''),
-            "TENANT_APP_IMAGE=" . (getenv('TENANT_APP_IMAGE') ?: 'local-dockerlempapp:latest'),
-            "TENANT_DB_IMAGE=" . (getenv('TENANT_DB_IMAGE') ?: 'local-dockerlempdb:latest'),
-            "TENANT_APP_VOLUME=" . (getenv('TENANT_APP_VOLUME') ?: ''),
+            "HOST_PROJECT_ROOT=" . ($scvRows['HOST_PROJECT_ROOT'] ?: ''),
+            "TENANT_APP_IMAGE=" . ($scvRows['TENANT_APP_IMAGE'] ?: 'local-dockerlempapp:latest'),
+            "TENANT_DB_IMAGE=" . ($scvRows['TENANT_DB_IMAGE'] ?: 'local-dockerlempdb:latest'),
+            "TENANT_APP_VOLUME=" . ($scvRows['TENANT_APP_VOLUME'] ?: ''),
         ]);
     }
 
     private function generateNginxConf(string $tenant): string {
+        global $systemConfigController;
+        $externalPort = $systemConfigController->getSysConfig('EXTERNAL_PORT') ?: '443';
         $containerName = "{$tenant}-app-1";
         return <<<NGINX
 location = /{$tenant} {
@@ -197,7 +202,7 @@ location = /{$tenant} {
 location /{$tenant}/ {
     resolver 127.0.0.11 valid=30s;
     
-    set \$upstream_endpoint "https://{$tenant}-app-1:8443";
+    set \$upstream_endpoint "https://{$tenant}-app-1:443";
     rewrite ^/{$tenant}/(.*)$ /\$1 break;
     
     proxy_pass \$upstream_endpoint;
@@ -207,7 +212,7 @@ location /{$tenant}/ {
     proxy_set_header    Host \$http_host; 
     proxy_set_header    X-Forwarded-Host \$http_host;
     proxy_set_header    X-Forwarded-Proto \$scheme; 
-    proxy_set_header    X-Forwarded-Port 8443;
+    proxy_set_header    X-Forwarded-Port {$externalPort};
     
     proxy_set_header    X-Real-IP \$remote_addr;
     proxy_set_header    X-Forwarded-For \$proxy_add_x_forwarded_for;

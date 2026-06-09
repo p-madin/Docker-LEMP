@@ -18,7 +18,7 @@ class ChildServiceDataProvider implements DataProviderInterface {
                 'i' => 'Inactive', 'iColor' => 'gray'
             ]],
             ['key' => 'actions', 'label' => 'Actions', 'action' => 'multi', 'actions' => [
-                ['type' => 'link', 'config' => ['url' => 'https://localhost:8443/', 'param' => 'csName', 'label' => 'View', 'target' => '_blank']],
+                ['type' => 'link', 'config' => ['url' => 'https://' . $_SERVER['HTTP_HOST'] . '/', 'param' => 'csName', 'label' => 'View', 'target' => '_blank']],
                 ['type' => 'button_form', 'config' => ['url' => '/childServiceAction', 'buttonLabel' => 'Sync', 'params' => ['action' => 'sync', 'csPK' => 'csPK']]],
                 ['type' => 'button_form', 'config' => ['url' => '/childServiceAction', 'buttonLabel' => 'Start', 'params' => ['action' => 'start', 'csPK' => 'csPK']]],
                 ['type' => 'button_form', 'config' => ['url' => '/childServiceAction', 'buttonLabel' => 'Stop', 'params' => ['action' => 'stop', 'csPK' => 'csPK']]],

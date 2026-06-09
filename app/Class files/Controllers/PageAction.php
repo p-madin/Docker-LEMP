@@ -8,7 +8,7 @@ class PageAction implements ControllerInterface {
     public function execute(Request $request) {
         global $sessionController, $formSchemas, $dialect, $db, $eventStore;
         
-        if($request->getMethod() === 'POST') {
+
             $authorId = $sessionController->getSystemUserId();
 
             // Handle delete request
@@ -51,7 +51,6 @@ class PageAction implements ControllerInterface {
             $dependency = $newId ? (int)$newId : $pk;
 
             Hyperlink::redirection(self::$object_URI . "?id=" . $dependency, $dependency);
-        }
     }
 
     public static function getEventHandlers(): array {
