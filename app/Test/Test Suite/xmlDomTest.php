@@ -16,6 +16,19 @@ class xmlDomTest extends TestSuiteBase {
     }
 
     protected function substituteVariables(string $input): string {
+        if (strpos($input, '{{RANDOM_STR}}') !== false) {
+            $input = str_replace('{{RANDOM_STR}}', bin2hex(random_bytes(4)), $input);
+        }
+        if (strpos($input, '{{UUID}}') !== false) {
+            $uuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+                mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+                mt_rand(0, 0xffff),
+                mt_rand(0, 0x0fff) | 0x4000,
+                mt_rand(0, 0x3fff) | 0x8000,
+                mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+            );
+            $input = str_replace('{{UUID}}', $uuid, $input);
+        }
         foreach ($this->suiteVariables as $key => $value) {
             $input = str_replace('{{' . $key . '}}', $value, $input);
         }
@@ -96,7 +109,11 @@ class xmlDomTest extends TestSuiteBase {
             }
         }
 
-        $db->exec("DELETE FROM appUsers WHERE username = 'LifecycleUser'");
+        if (isset($this->suiteVariables['testUserID_username'])) {
+            $db->exec("DELETE FROM appUsers WHERE username = '" . $this->suiteVariables['testUserID_username'] . "'");
+        } else {
+            $db->exec("DELETE FROM appUsers WHERE username = 'LifecycleUser'");
+        }
         $driver = $db->getAttribute(PDO::ATTR_DRIVER_NAME);
         if ($driver === 'pgsql') {
             $db->exec("ALTER TABLE appUsers ALTER COLUMN auPK RESTART WITH 3");
@@ -216,6 +233,15 @@ XML;
         }
 
         $postData = [];
+        $overrides = [];
+        if (isset($step->parameters->parameter)) {
+            foreach ($step->parameters->parameter as $param) {
+                $name = (string)$param->name;
+                $value = $this->substituteVariables((string)$param->value);
+                $overrides[$name] = $value;
+            }
+        }
+
         if ($csrfMode !== 'invalid') {
             // Use querySelectorAll for inputs within the form
             $inputs = $form->querySelectorAll('input, select, textarea');
@@ -223,16 +249,66 @@ XML;
                 $name = $input->getAttribute('name');
                 if (empty($name)) continue;
 
-                $type = strtolower($input->getAttribute('type'));
-                
-                if ($type === 'checkbox' || $type === 'radio') {
-                    if ($input->hasAttribute('checked')) {
+                if (isset($overrides[$name])) {
+                    if ($overrides[$name] === 'unchecked') {
+                        // skip
+                    } else if ($overrides[$name] === 'checked') {
                         $postData[$name] = $input->getAttribute('value') ?: '1';
+                    } else {
+                        $postData[$name] = $overrides[$name];
                     }
+                    continue;
+                }
+
+                $type = strtolower($input->getAttribute('type'));
+                $nodeName = strtolower($input->nodeName);
+                
+                $val = $input->getAttribute('value');
+
+                if ($nodeName === 'select') {
+                    $options = $input->querySelectorAll('option');
+                    $selected = false;
+                    foreach ($options as $opt) {
+                        if ($opt->hasAttribute('selected')) {
+                            $postData[$name] = $opt->getAttribute('value');
+                            $selected = true;
+                            break;
+                        }
+                    }
+                    if (!$selected) {
+                        foreach ($options as $opt) {
+                            if (!$opt->hasAttribute('disabled')) {
+                                $postData[$name] = $opt->getAttribute('value');
+                                break;
+                            }
+                        }
+                    }
+                } elseif ($nodeName === 'textarea') {
+                    $postData[$name] = trim($input->nodeValue) ?: 'Auto text ' . bin2hex(random_bytes(2));
+                } elseif ($type === 'checkbox' || $type === 'radio') {
+                    if ($input->hasAttribute('checked')) {
+                        $postData[$name] = $val ?: '1';
+                    }
+                } elseif ($type === 'hidden') {
+                    $postData[$name] = $val;
                 } else {
-                    $postData[$name] = $input->getAttribute('value');
-                    if ($input->nodeName === 'textarea') {
-                        $postData[$name] = $input->nodeValue;
+                    if ($val === '' || $val === null) {
+                        if (!$input->hasAttribute('required')) {
+                            $postData[$name] = '';
+                        } else {
+                            if ($type === 'email') {
+                                $postData[$name] = 'test_' . bin2hex(random_bytes(3)) . '@example.com';
+                            } elseif ($type === 'password') {
+                                $postData[$name] = 'Password123!';
+                            } elseif ($type === 'number') {
+                                $postData[$name] = '42';
+                            } else {
+                                $cleanName = preg_replace('/[^a-zA-Z0-9]/', '', $name);
+                                $postData[$name] = 'Mock' . ucfirst($cleanName) . bin2hex(random_bytes(2));
+                            }
+                        }
+                    } else {
+                        $postData[$name] = $val;
                     }
                 }
             }
@@ -242,18 +318,16 @@ XML;
             $postData['csrf_token'] = 'invalid_token_value';
         }
 
-        // Apply overrides from XML parameters
-        foreach ($step->parameters->parameter as $param) {
-            $name = (string)$param->name;
-            $value = $this->substituteVariables((string)$param->value);
-            
-            if ($value === 'checked') {
-                $postData[$name] = '1'; 
-            } elseif ($value === 'unchecked') {
-                unset($postData[$name]);
-            } else {
+        // Add any overrides that were NOT in the DOM
+        foreach ($overrides as $name => $value) {
+            if (!isset($postData[$name]) && $value !== 'unchecked' && $value !== 'checked') {
                 $postData[$name] = $value;
             }
+        }
+        
+        if ($id === 'registerFormComponent' || $id === 'editNavbarFormComponent') {
+            $GLOBALS['returnable'] .= "     [DEBUG] $id POST payload: " . json_encode($postData) . "\n";
+            $GLOBALS['returnable'] .= "     [DEBUG] $id POST OVERRIDES: " . json_encode($overrides) . "\n";
         }
 
         $ch = $this->prepare_curl($actionUrl, $this->cookieFile);
@@ -284,6 +358,14 @@ XML;
             $json = json_decode($this->lastResponse, true);
             if ($json && isset($json['dependency'])) {
                 $this->suiteVariables[$saveSuiteVariable] = $json['dependency'];
+            }
+            // Save the POST payload back to suite variables so tests can reference generated values
+            foreach ($postData as $key => $val) {
+                if ($key !== 'password' && $key !== 'confirm_password') { // Don't bleed raw passwords to tests unless needed, though strictly optional. Actually we might need them.
+                    $this->suiteVariables[$saveSuiteVariable . '_' . $key] = $val;
+                } else {
+                    $this->suiteVariables[$saveSuiteVariable . '_' . $key] = $val;
+                }
             }
         }
 

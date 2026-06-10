@@ -39,15 +39,7 @@
         <step>
           <action>FillForm</action>
           <selector>#registerFormComponent</selector>
-          <parameters>
-            <parameter><name>username</name><value>LifecycleUser</value></parameter>
-            <parameter><name>password</name><value>Pass123!</value></parameter>
-            <parameter><name>confirm_password</name><value>Pass123!</value></parameter>
-            <parameter><name>name</name><value>LC User</value></parameter>
-            <parameter><name>age</name><value>25</value></parameter>
-            <parameter><name>city</name><value>Test City</value></parameter>
-            <parameter><name>email</name><value>lc@example.com</value></parameter>
-          </parameters>
+
           <submit>true</submit>
           <expected>
             <statusCode>200</statusCode>
@@ -87,8 +79,8 @@
           <action>FillForm</action>
           <selector>#loginFormComponent</selector>
           <parameters>
-            <parameter><name>username</name><value>LifecycleUser</value></parameter>
-            <parameter><name>password</name><value>Pass123!</value></parameter>
+            <parameter><name>username</name><value>{{testUserID_username}}</value></parameter>
+            <parameter><name>password</name><value>{{testUserID_password}}</value></parameter>
           </parameters>
           <submit>true</submit>
         </step>
@@ -187,7 +179,7 @@
         </step>
         <step>
           <action>Click</action>
-          <selector>.form_hyperlink[id^="edit-navbar-2"]</selector>
+          <selector>#edit-navbar-2</selector>
         </step>
         <step>
           <action>FillForm</action>
@@ -209,7 +201,7 @@
         </step>
         <step>
           <action>Click</action>
-          <selector>.form_hyperlink[id^="edit-navbar-2"]</selector>
+          <selector>#edit-navbar-2</selector>
         </step>
         <step>
           <action>FillForm</action>

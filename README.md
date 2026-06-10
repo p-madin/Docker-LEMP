@@ -75,11 +75,6 @@ docker compose --env-file .env.dev up --build
 docker compose --env-file .env.live up --build
 ```
 
-build app to github: docker build -t philmadin/dockerlempapp:latest .
-push app to github: docker push philmadin/dockerlempapp:latest
-build db to github: docker build -t philmadin/dockerlempdb:latest -f Dockerfile.db .
-push db to github: docker push philmadin/dockerlempdb:latest
-
 ### Accessing the Application
 - **Home/Login**: [https://localhost:8443/](https://localhost:8443/)
 - **Dashboard**: [https://localhost:8443/dashboard](https://localhost:8443/dashboard)

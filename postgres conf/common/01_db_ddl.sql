@@ -14,6 +14,37 @@ CREATE TABLE appUsers(
     PRIMARY KEY(auPK)
 );
 
+CREATE TABLE tblPages (
+    pagPK INT NOT NULL GENERATED ALWAYS AS IDENTITY,
+    pagCreated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    pagUpdated TIMESTAMP NULL,
+    pagDeleted TIMESTAMP NULL,
+    pagAuthorFK INT NOT NULL,
+    pagTitle VARCHAR(128) NOT NULL,
+    pagSlug VARCHAR(128) NULL,
+    PRIMARY KEY(pagPK)
+);
+
+CREATE TABLE tblElements (
+    elePK INT NOT NULL GENERATED ALWAYS AS IDENTITY,
+    eleType VARCHAR(32) NOT NULL,
+    eleContent TEXT NULL,
+    eleCSSClasses VARCHAR(255) NULL,
+    eleParentFK INT NULL DEFAULT NULL,
+    eleCreated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY(elePK),
+    FOREIGN KEY(eleParentFK) REFERENCES tblElements(elePK) ON DELETE CASCADE
+);
+
+CREATE TABLE brgPageElements (
+    pelPK INT NOT NULL GENERATED ALWAYS AS IDENTITY,
+    pelPageFK INT NOT NULL,
+    pelElementFK INT NOT NULL,
+    pelOrder INT NOT NULL,
+    PRIMARY KEY(pelPK),
+    FOREIGN KEY(pelPageFK) REFERENCES tblPages(pagPK) ON DELETE CASCADE,
+    FOREIGN KEY(pelElementFK) REFERENCES tblElements(elePK) ON DELETE CASCADE
+);
 CREATE TABLE tblSession(
     sessPK INT NOT NULL GENERATED ALWAYS AS IDENTITY,
     sessCreated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -53,13 +84,15 @@ CREATE TABLE tblNavBar(
     nbPK INT NOT NULL GENERATED ALWAYS AS IDENTITY,
     nbText VARCHAR(32) NOT NULL,
     nbDiscriminator CHAR(1) NOT NULL,
+    nbPageFK INT NULL,
     nbPath VARCHAR(64) NULL,
     nbControllerClass VARCHAR(64) NULL,
     nbProtected BOOLEAN NOT NULL,
     nbOrder INT NOT NULL,
     nbParentFK INT NULL DEFAULT NULL,
     PRIMARY KEY(nbPK),
-    FOREIGN KEY(nbParentFK) REFERENCES tblNavBar(nbPK) ON DELETE SET NULL
+    FOREIGN KEY(nbParentFK) REFERENCES tblNavBar(nbPK) ON DELETE SET NULL,
+    FOREIGN KEY(nbPageFK) REFERENCES tblPages(pagPK) ON DELETE SET NULL
 );
 
 CREATE UNIQUE INDEX idx_session_chars ON tblSession(sessChars);
@@ -95,6 +128,7 @@ CREATE TABLE phpErrorLog (
 CREATE TABLE tblForm(
     tfPK INT NOT NULL GENERATED ALWAYS AS IDENTITY,
     tfName VARCHAR(32) NOT NULL,
+    tfAction VARCHAR(255) NULL,
     tfReadOnly BOOLEAN NOT NULL DEFAULT false,
     PRIMARY KEY(tfPK)
 );
@@ -133,3 +167,33 @@ CREATE TABLE event_store(
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY(id)
 );
+
+/* sample data for Block - Graph */
+
+CREATE TABLE tblAnalytics (
+    anaPK INT NOT NULL GENERATED ALWAYS AS IDENTITY,
+    anaLabel VARCHAR(32) NOT NULL,
+    anaValue INT NOT NULL,
+    anaCategory VARCHAR(32) NOT NULL,
+    anaDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY(anaPK)
+);
+
+/* END sample data for Block - Graph */
+
+CREATE TABLE absChildServices (
+    csPK INT NOT NULL GENERATED ALWAYS AS IDENTITY,
+    csCreatedDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    csCreatedByFK INT NOT NULL,
+    csUpdatedDate TIMESTAMP NULL,
+    csAdminFK INT NOT NULL,
+    csUptimeDate TIMESTAMP NULL,
+    csCheckDate TIMESTAMP NULL,
+    csName VARCHAR(32) NOT NULL,
+    csStatus CHAR(1) NOT NULL,
+    csDockerID VARCHAR(64) NULL,
+    csSubdomain VARCHAR(64) NULL,
+    csFailureCount INT NOT NULL DEFAULT 0,
+    PRIMARY KEY(csPK)
+);
+

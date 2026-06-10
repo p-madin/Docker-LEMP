@@ -57,6 +57,7 @@ class FlexTableComponent extends Component {
                     $this->columns = $provider->getColumns();
                     $this->data = $provider->getData();
                     $this->nestedKey = $provider->getNestedKey();
+                    $this->root->setAttribute('data-provider', $this->dataProviderClass);
                 }
             }
         } else if ($this->dataSource) {

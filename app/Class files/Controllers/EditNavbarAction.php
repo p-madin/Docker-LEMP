@@ -10,60 +10,60 @@ class EditNavbarAction implements ControllerInterface {
 
         Hyperlink::handleAction($sessionController);
 
-            $authorId = $sessionController->getSystemUserId();
+        $authorId = $sessionController->getSystemUserId();
 
-            // Handle pure delete request
-            if (isset($request->post['action']) && $request->post['action'] === 'delete') {
-                $pk = (int)($request->post['nbPK'] ?? 0);
-                if ($pk > 0) {
-                    // Fetch current data for undo support
-                    $qb_data = new QueryBuilder($dialect);
-                    $itemData = $qb_data->table('tblNavBar')->where('nbPK', '=', $pk)->getFetch($db);
-                    
-                    if ($itemData) {
-                        $eventId = $eventStore->append('NavbarItemDeleted', $itemData, $pk, $authorId);
-                        if ($eventId) {
-                            $eventStore->waitUntilProcessed($eventId);
-                        }
+        // Handle pure delete request
+        if (isset($request->post['action']) && $request->post['action'] === 'delete') {
+            $pk = (int)($request->post['nbPK'] ?? 0);
+            if ($pk > 0) {
+                // Fetch current data for undo support
+                $qb_data = new QueryBuilder($dialect);
+                $itemData = $qb_data->table('tblNavBar')->where('nbPK', '=', $pk)->getFetch($db);
+                
+                if ($itemData) {
+                    $eventId = $eventStore->append('NavbarItemDeleted', $itemData, $pk, $authorId);
+                    if ($eventId) {
+                        $eventStore->waitUntilProcessed($eventId);
                     }
                 }
-                Hyperlink::redirection(self::$manage_URI);
             }
+            Hyperlink::redirection(self::$manage_URI);
+        }
 
-            $cleanData = FormValidation::processAndValidate('navbar', $request->post, $formSchemas, $sessionController, function($clean) {
-                $id = $clean['nbPK'] ?? 0;
-                return self::$object_URI . ($id ? "?id=".$id : "");
-            });
+        $cleanData = FormValidation::processAndValidate('navbar', $request->post, $formSchemas, $sessionController, function($clean) {
+            $id = $clean['nbPK'] ?? 0;
+            return self::$object_URI . ($id ? "?id=".$id : "");
+        });
 
-            $isProtected = (isset($request->post['nbProtected']) && $request->post['nbProtected'] === '1') ? 1 : 0;
-            $parentFK = (!empty($cleanData['nbParentFK'])) ? (int)$cleanData['nbParentFK'] : null;
+        $isProtected = (isset($request->post['nbProtected']) && $request->post['nbProtected'] === '1') ? 1 : 0;
+        $parentFK = (!empty($cleanData['nbParentFK'])) ? (int)$cleanData['nbParentFK'] : null;
 
-            $data = [
-                'nbText'          => $cleanData['nbText'],
-                'nbDiscriminator' => $cleanData['nbDiscriminator'],
-                'nbPath'          => $cleanData['nbPath'],
-                'nbOrder'         => (int)$cleanData['nbOrder'],
-                'nbProtected'     => $isProtected,
-                'nbParentFK'      => $parentFK
-            ];
+        $data = [
+            'nbText'          => $cleanData['nbText'],
+            'nbDiscriminator' => $cleanData['nbDiscriminator'],
+            'nbPath'          => $cleanData['nbPath'],
+            'nbOrder'         => (int)$cleanData['nbOrder'],
+            'nbProtected'     => $isProtected,
+            'nbParentFK'      => $parentFK
+        ];
 
-            $pk = (int)$cleanData['nbPK'];
+        $pk = (int)$cleanData['nbPK'];
 
-            if ($pk > 0) {
-                // Fetch current state for Memento support
-                $qb_old = new QueryBuilder($dialect);
-                $oldData = $qb_old->table('tblNavBar')->where('nbPK', '=', $pk)->getFetch($db);
-                $previousPayload = is_array($oldData) ? $oldData : null;
-                $eventId = $eventStore->append('NavbarItemUpdated', array_merge(['nbPK' => $pk], $data), $pk, $authorId, $previousPayload);
-            } else {
-                $eventId = $eventStore->append('NavbarItemCreated', $data, null, $authorId);
-            }
+        if ($pk > 0) {
+            // Fetch current state for Memento support
+            $qb_old = new QueryBuilder($dialect);
+            $oldData = $qb_old->table('tblNavBar')->where('nbPK', '=', $pk)->getFetch($db);
+            $previousPayload = is_array($oldData) ? $oldData : null;
+            $eventId = $eventStore->append('NavbarItemUpdated', array_merge(['nbPK' => $pk], $data), $pk, $authorId, $previousPayload);
+        } else {
+            $eventId = $eventStore->append('NavbarItemCreated', $data, null, $authorId);
+        }
 
-            $eventStore->waitUntilProcessed($eventId);
-            $newId = $eventStore->getAggregateId($eventId);
-            $dependency = $newId ? (int)$newId : $pk;
+        $eventStore->waitUntilProcessed($eventId);
+        $newId = $eventStore->getAggregateId($eventId);
+        $dependency = $newId ? (int)$newId : $pk;
 
-            Hyperlink::redirection(self::$object_URI . "?id=" . $dependency, $dependency);
+        Hyperlink::redirection(self::$object_URI . "?id=" . $dependency, $dependency);
     }
 
     public static function getEventHandlers(): array {

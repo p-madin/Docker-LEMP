@@ -6,109 +6,22 @@
 class ActionTracker {
     constructor() {
         this.dbName = 'AppTestTracker';
-        this.dbVersion = 1;
+        this.dbVersion = 3;
         this.storeName = 'dependencies';
         this.db = null;
         this.timeoutId = null;
-        this.initUI();
+        
+        const userMeta = document.querySelector('meta[name="session-user-id"]');
+        this.isLoggedIn = userMeta && userMeta.content !== '';
+
         this.initDB();
+        
+        if (this.isLoggedIn) {
+            this.initUI();
+        }
     }
 
     initUI() {
-        // Create styles for the spinner and progress bar
-        if (!document.getElementById('action-tracker-styles')) {
-            const style = document.createElement('style');
-            style.id = 'action-tracker-styles';
-            style.textContent = `
-                @keyframes spinner {
-                    to { transform: rotate(360deg); }
-                }
-                .at-spinner {
-                    display: inline-block;
-                    width: 14px;
-                    height: 14px;
-                    border: 2px solid rgba(255,255,255,0.3);
-                    border-radius: 50%;
-                    border-top-color: #fff;
-                    animation: spinner 0.6s linear infinite;
-                    margin-left: 8px;
-                    vertical-align: middle;
-                }
-                #action-tracker-ui {
-                    position: fixed;
-                    bottom: 20px;
-                    right: 20px;
-                    width: 320px;
-                    background: rgba(30, 30, 35, 0.9);
-                    backdrop-filter: blur(10px);
-                    color: #fff;
-                    font-family: var(--font-family, Inter, sans-serif);
-                    font-size: 13px;
-                    border-radius: 8px;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-                    z-index: 9999;
-                    overflow: hidden;
-                    border: 1px solid rgba(255,255,255,0.1);
-                }
-                #action-tracker-ui summary {
-                    padding: 10px 15px;
-                    cursor: pointer;
-                    font-weight: 600;
-                    user-select: none;
-                    background: rgba(255,255,255,0.05);
-                    border-bottom: 1px solid rgba(255,255,255,0.1);
-                    outline: none;
-                }
-                #action-tracker-ui summary::marker {
-                    color: #888;
-                }
-                #action-history {
-                    max-height: 150px;
-                    overflow-y: auto;
-                    padding: 10px;
-                    margin: 0;
-                    list-style: none;
-                    border-bottom: 1px solid rgba(255,255,255,0.1);
-                }
-                #action-history li {
-                    padding: 4px 0;
-                    color: #ccc;
-                    border-bottom: 1px dashed rgba(255,255,255,0.1);
-                }
-                #action-history li a {
-                    color: #4da6ff;
-                    text-decoration: none;
-                }
-                #current-action-block {
-                    position: relative;
-                    padding: 12px 15px;
-                    background: rgba(40, 100, 200, 0.2);
-                }
-                #current-action-block.done {
-                    background: rgba(40, 180, 100, 0.2);
-                }
-                #current-action-block.error {
-                    background: rgba(200, 40, 40, 0.2);
-                }
-                #current-action-block a {
-                    color: #4da6ff;
-                    font-weight: bold;
-                    text-decoration: none;
-                    margin-left: 8px;
-                }
-                .at-progress-bar {
-                    position: absolute;
-                    bottom: 0;
-                    left: 0;
-                    height: 3px;
-                    background: #4da6ff;
-                    width: 0%;
-                    transition: width 3s linear;
-                }
-            `;
-            document.head.appendChild(style);
-        }
-
         this.container = document.createElement('details');
         this.container.id = 'action-tracker-ui';
         
@@ -134,6 +47,34 @@ class ActionTracker {
         this.container.appendChild(this.currentBlock);
         document.body.appendChild(this.container);
 
+        if (localStorage.getItem('actionTrackerOpen') === 'true') {
+            this.container.open = true;
+        }
+
+        this.container.addEventListener('toggle', () => {
+            localStorage.setItem('actionTrackerOpen', this.container.open);
+        });
+
+        // Sync state across multiple tabs natively without polling
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'actionTrackerOpen') {
+                this.container.open = (e.newValue === 'true');
+            }
+        });
+
+        this.dialog = document.createElement('dialog');
+        this.dialog.id = 'at-inspect-dialog';
+        this.dialog.innerHTML = `
+            <button class="at-inspect-close" id="at-inspect-close-btn">✖</button>
+            <h3 style="margin-top:0">Inspect Payload & Response</h3>
+            <pre id="at-inspect-content" style="white-space: pre-wrap; word-wrap: break-word;"></pre>
+        `;
+        document.body.appendChild(this.dialog);
+
+        document.getElementById('at-inspect-close-btn').addEventListener('click', () => {
+            this.dialog.close();
+        });
+
         // Cancel timeout on hover or click
         const cancelTimeout = () => {
             if (this.timeoutId) {
@@ -152,25 +93,51 @@ class ActionTracker {
     }
 
     initDB() {
+        this.dbVersion = 3; // Upgrade version to drop legacy schema
         const request = indexedDB.open(this.dbName, this.dbVersion);
         
         request.onupgradeneeded = (e) => {
             const db = e.target.result;
-            if (!db.objectStoreNames.contains(this.storeName)) {
-                const store = db.createObjectStore(this.storeName, { keyPath: 'id', autoIncrement: true });
-                store.createIndex('dependency', 'dependency', { unique: false });
-                store.createIndex('url', 'url', { unique: false });
-                store.createIndex('timestamp', 'timestamp', { unique: false });
+            if (db.objectStoreNames.contains(this.storeName)) {
+                db.deleteObjectStore(this.storeName);
             }
+            const store = db.createObjectStore(this.storeName, { keyPath: 'id', autoIncrement: true });
+            store.createIndex('dependency', 'dependency', { unique: false });
+            store.createIndex('url', 'url', { unique: false });
+            store.createIndex('timestamp', 'timestamp', { unique: false });
         };
 
         request.onsuccess = (e) => {
             this.db = e.target.result;
-            this.loadHistory();
+            
+            this.db.onversionchange = () => {
+                this.db.close();
+                this.db = null;
+                console.warn("Database is upgrading in another tab. Connection closed.");
+            };
+            
+            const userMeta = document.querySelector('meta[name="session-user-id"]');
+            const currentUserId = userMeta ? userMeta.content : '';
+            const lastUserId = localStorage.getItem('at_last_user_id');
+            
+            if (lastUserId !== null && currentUserId !== lastUserId) {
+                // Session changed (login, logout, or rotated)! Wipe the history.
+                this.clearHistory().then(() => {
+                    localStorage.setItem('at_last_user_id', currentUserId);
+                    if (this.isLoggedIn) this.loadHistory();
+                });
+            } else {
+                localStorage.setItem('at_last_user_id', currentUserId);
+                if (this.isLoggedIn) this.loadHistory();
+            }
         };
 
         request.onerror = (e) => {
             console.error('IndexedDB init error:', e);
+        };
+        
+        request.onblocked = (e) => {
+            console.warn('IndexedDB upgrade blocked. Please close other tabs of this application.');
         };
     }
 
@@ -192,13 +159,61 @@ class ActionTracker {
 
     addHistoryElement(record) {
         const li = document.createElement('li');
-        const date = new Date(record.timestamp).toLocaleTimeString();
-        li.innerHTML = `[${date}] ID: ${record.dependency} - <a href="${record.url}" target="_blank">View</a>`;
+        const dateStr = new Date(record.timestamp).toLocaleString();
+        
+        let urlLink = record.url ? `<a href="${record.url}" target="_blank">GoTo</a>` : '';
+        let inspectLink = `<a href="#" class="at-inspect-link">Inspect</a>`;
+        
+        li.innerHTML = `[${dateStr}] ${record.method}: ${record.path} ${record.status} ${urlLink} | ${inspectLink}`;
+        
+        const linkElem = li.querySelector('.at-inspect-link');
+        if (linkElem) {
+            linkElem.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.inspectRecord(record.id);
+            });
+        }
+        
         this.historyList.appendChild(li);
         this.historyList.scrollTop = this.historyList.scrollHeight;
     }
 
+    inspectRecord(id) {
+        if (!this.db) return;
+        const tx = this.db.transaction(this.storeName, 'readonly');
+        const store = tx.objectStore(this.storeName);
+        const req = store.get(id);
+        req.onsuccess = (e) => {
+            const rec = e.target.result;
+            if (rec) {
+                const content = {
+                    Payload: rec.payload,
+                    Response: rec.response
+                };
+                document.getElementById('at-inspect-content').textContent = JSON.stringify(content, null, 2);
+                this.dialog.showModal();
+            }
+        };
+    }
+    
+    clearHistory() {
+        return new Promise((resolve) => {
+            if (!this.db) return resolve();
+            const tx = this.db.transaction(this.storeName, 'readwrite');
+            const store = tx.objectStore(this.storeName);
+            store.clear();
+            tx.oncomplete = () => {
+                if (this.historyList) {
+                    this.historyList.innerHTML = '';
+                }
+                resolve();
+            };
+            tx.onerror = () => resolve();
+        });
+    }
+
     setStatus(status, actionName, result = null) {
+        if (!this.isLoggedIn) return;
         this.container.open = true;
         this.currentBlock.style.display = 'block';
         this.currentBlock.className = '';
@@ -238,15 +253,19 @@ class ActionTracker {
         }
     }
 
-    appendDependency(dependencyId, url) {
+    appendHistory(method, path, status, url, payload, responseData) {
         if (!this.db) {
             console.warn("IndexedDB not initialized yet.");
             return;
         }
         
         const record = {
-            dependency: dependencyId,
+            method: method,
+            path: path,
+            status: status,
             url: url,
+            payload: payload,
+            response: responseData,
             timestamp: Date.now()
         };
 
@@ -254,7 +273,8 @@ class ActionTracker {
         const store = tx.objectStore(this.storeName);
         const request = store.add(record);
         
-        request.onsuccess = () => {
+        request.onsuccess = (e) => {
+            record.id = e.target.result; // auto-incremented key
             this.addHistoryElement(record);
         };
     }

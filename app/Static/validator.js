@@ -224,6 +224,16 @@ class Validator {
                 window.actionTracker.setStatus('in_progress', actionName);
             }
 
+            const payloadObj = {};
+            formData.forEach((value, key) => {
+                // Don't log passwords into IndexedDB
+                if (key.toLowerCase().includes('password')) {
+                    payloadObj[key] = '********';
+                } else {
+                    payloadObj[key] = value;
+                }
+            });
+
             const response = await fetch(url, {
                 method: 'POST',
                 body: formData,
@@ -243,7 +253,7 @@ class Validator {
 
                 if (result.success && result.dependency) {
                     if (window.actionTracker) {
-                        window.actionTracker.appendDependency(result.dependency, result.url);
+                        window.actionTracker.appendHistory('POST', actionName, 'done', result.url, payloadObj, result);
                         window.actionTracker.setStatus('done', actionName, result);
                     } else if (result.redirect || result.url) {
                         window.location.href = result.redirect || result.url;
@@ -252,18 +262,21 @@ class Validator {
                     }
                 } else if (result.redirect) {
                     if (window.actionTracker) {
+                        window.actionTracker.appendHistory('POST', actionName, 'done', result.redirect, payloadObj, result);
                         window.actionTracker.setStatus('done', actionName, result);
                     } else {
                         window.location.href = result.redirect;
                     }
                 } else if (result.success || result.html) {
                     if (window.actionTracker) {
+                        window.actionTracker.appendHistory('POST', actionName, 'done', null, payloadObj, result);
                         window.actionTracker.setStatus('done', actionName, result);
                     }
                     this.handleSuccess(form, result);
                 }
             } else {
                 if (window.actionTracker) {
+                    window.actionTracker.appendHistory('POST', actionName, 'error', null, payloadObj, result);
                     window.actionTracker.setStatus('error', actionName);
                 }
                 if (result && result.errors) {

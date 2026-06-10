@@ -51,11 +51,14 @@ class ChildServiceAction implements ControllerInterface {
                     $qb->doExecute($db, $sql);
                     break;
                 case 'sync':
-                    $result = $manager->sync($tenant);
-                    $status = $result['is_active'] ? 'a' : ($result['docker_status'] === 'exited' ? 'p' : 'u');
+                    $statusArray = $manager->getChildStatus($tenant, $service['csStatus'] ?? 'u', (int)($service['csFailureCount'] ?? 0));
                     
-                    $updateData = ['csStatus' => $status, 'csCheckDate' => date('Y-m-d H:i:s')];
-                    if ($status === 'a') {
+                    $updateData = [
+                        'csStatus' => $statusArray['csStatus'], 
+                        'csFailureCount' => $statusArray['csFailureCount'],
+                        'csCheckDate' => date('Y-m-d H:i:s')
+                    ];
+                    if ($statusArray['csStatus'] === 'a') {
                         $updateData['csUptimeDate'] = date('Y-m-d H:i:s');
                     }
                     

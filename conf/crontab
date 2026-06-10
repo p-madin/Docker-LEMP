@@ -1,2 +1,3 @@
-* * * * * /usr/local/bin/php /var/www/html/Cron/worker.php >> /var/log/cron.log 2>&1
+* * * * * /usr/local/bin/php /var/www/html/Cron/worker.php >> /var/log/event.log 2>&1
+*/5 * * * * /usr/local/bin/php /var/www/html/Cron/health_check.php >> /var/log/health.log 2>&1
 # An empty line is required at the end of this file for a valid cron file.

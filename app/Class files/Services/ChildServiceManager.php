@@ -71,7 +71,7 @@ class ChildServiceManager {
         shell_exec("{$cmdPrefix}docker network create superhost-network 2>/dev/null || true");
         
         // 3 — bring the stack up
-        $output = shell_exec("{$cmdPrefix}docker-compose -f {$tenantDir}/compose.yaml --env-file {$tenantDir}/.env up -d 2>&1");
+        $output = shell_exec("{$cmdPrefix}docker-compose -p {$tenant} -f {$tenantDir}/compose.yaml --env-file {$tenantDir}/.env up -d 2>&1");
         
         // wait for the compose to complete...
         sleep(3);
@@ -88,6 +88,21 @@ class ChildServiceManager {
             error_log("Nginx config invalid for tenant {$tenant}: {$testOutput}");
         }
 
+        // 5 — Fetch Docker ID and update DB
+        $containerName = "{$tenant}-app-1";
+        $dockerId = trim(shell_exec("{$cmdPrefix}docker inspect --format='{{.Id}}' " . escapeshellarg($containerName) . " 2>/dev/null"));
+        
+        if (!empty($dockerId)) {
+            $qbUpdate = new \QueryBuilder($dialect);
+            $updateSql = $qbUpdate->table('absChildServices')->where('csName', '=', $tenant)->update([
+                'csDockerID' => $dockerId,
+                'csStatus' => 'a'
+            ]);
+            $stmt = $db->prepare($updateSql);
+            $qbUpdate->bindTo($stmt);
+            $stmt->execute();
+        }
+
         return ['status' => 'success', 'output' => $output];
     }
 
@@ -96,7 +111,7 @@ class ChildServiceManager {
         $cmdPrefix = $this->getDockerCmdPrefix();
 
         if (file_exists("{$tenantDir}/compose.yaml")) {
-            $output = shell_exec("{$cmdPrefix}docker-compose -f {$tenantDir}/compose.yaml --env-file {$tenantDir}/.env down 2>&1");
+            $output = shell_exec("{$cmdPrefix}docker-compose -p {$tenant} down 2>&1");
             return ['status' => 'success', 'output' => $output];
         }
         return ['status' => 'error', 'message' => 'Tenant configuration not found.'];
@@ -108,7 +123,7 @@ class ChildServiceManager {
 
         $output = "";
         if (file_exists("{$tenantDir}/compose.yaml")) {
-            $output = shell_exec("{$cmdPrefix}docker-compose -f {$tenantDir}/compose.yaml --env-file {$tenantDir}/.env down -v 2>&1");
+            $output = shell_exec("{$cmdPrefix}docker-compose -p {$tenant} down -v 2>&1");
         }
         
         // Remove nginx conf and reload
@@ -155,6 +170,34 @@ class ChildServiceManager {
         ];
     }
 
+    public function getChildStatus(string $tenant, string $currentStatus = 'u', int $currentFailures = 0): array {
+        $result = $this->sync($tenant);
+        $dockerStatus = $result['docker_status'];
+        $httpCode = $result['http_code'];
+        
+        $isHealthy = ($dockerStatus === 'running' && $httpCode >= 200 && $httpCode < 500);
+        
+        $newFailures = $currentFailures;
+        $newStatus = $currentStatus;
+        
+        if ($isHealthy) {
+            $newStatus = 'a';
+            $newFailures = 0;
+        } else {
+            $newFailures++;
+            if ($newFailures >= 3 || $dockerStatus === 'exited') {
+                $newStatus = 'p';
+            }
+        }
+        
+        return [
+            'csStatus' => $newStatus,
+            'csFailureCount' => $newFailures,
+            'is_healthy' => $isHealthy,
+            'raw_sync' => $result
+        ];
+    }
+
     private function generateComposeFile(string $tenant): string {
         global $scvRows;
 
@@ -191,8 +234,8 @@ class ChildServiceManager {
     }
 
     private function generateNginxConf(string $tenant): string {
-        global $systemConfigController;
-        $externalPort = $systemConfigController->getSysConfig('EXTERNAL_PORT') ?: '443';
+        global $scvRows;
+        $externalPort = $scvRows['EXTERNAL_PORT'] ?: '443';
         $containerName = "{$tenant}-app-1";
         return <<<NGINX
 location = /{$tenant} {

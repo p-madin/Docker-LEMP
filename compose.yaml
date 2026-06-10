@@ -1,20 +1,25 @@
 services:
   app:
     build: .
+    image: local-dockerlempapp:latest
     ports:
-      - "80:80"
+      - "8080:80"
       - "${EXTERNAL_PORT:-8443}:443"
     volumes:
       - ./app:/var/www/html
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./tenants:/tenants
+      - ./compose.tenant.yaml:/home/ubuntu/Workspace/compose.tenant.yaml
+    depends_on:
+      - db
     environment:
+      DOCKER_CONFIG: /tmp/.docker
       TZ: Australia/Sydney
       DB_VENDOR: mysql
       DB_HOST: db
-      DB_NAME: stackDB
-      DB_USER: docker_user_lemp
-      DB_PASS: docker_user_lemp
     networks:
       - stack-network
+      - superhost-network
     deploy:
       resources:
         limits:
@@ -23,6 +28,7 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile.db
+    image: local-dockerlempdb:latest
     environment:
       MYSQL_ROOT_PASSWORD: docker_lemp
       MYSQL_DATABASE: stackDB
@@ -47,3 +53,6 @@ volumes:
 networks:
   stack-network:
     driver: bridge
+  superhost-network:
+    external: true
+    name: superhost-network

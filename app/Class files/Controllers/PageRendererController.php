@@ -17,7 +17,10 @@ class PageRendererController implements ControllerInterface {
         }
 
         $qb_page = new QueryBuilder($dialect);
-        $pageData = $qb_page->table('tblPages')->where('pagPK', '=', $pageId)->getFetch($db);
+        $pageData = $qb_page->table('tblPages')
+            ->select(['pagPK', 'pagTitle'])
+            ->where('pagPK', '=', $pageId)
+            ->getFetch($db);
         
         if (!$pageData) {
             Hyperlink::redirection("/");
@@ -25,6 +28,7 @@ class PageRendererController implements ControllerInterface {
 
         $qb_elements = new QueryBuilder($dialect);
         $elements = $qb_elements->table('tblElements')
+            ->select(['elePK', 'eleParentFK', 'eleType', 'eleContent'])
             ->join('brgPageElements', 'tblElements.elePK', '=', 'brgPageElements.pelElementFK')
             ->where('brgPageElements.pelPageFK', '=', $pageId)
             ->orderBy('brgPageElements.pelOrder', 'ASC')

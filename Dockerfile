@@ -108,13 +108,10 @@ RUN openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
 RUN chmod 755 /usr/local/nginx/logs && \
     touch /usr/local/nginx/logs/error.log && \
     chown www-data:www-data /usr/local/nginx/logs/error.log
-#RUN groupadd -r www-data && useradd -r -g www-data www-data
 
 RUN echo "www-data ALL=(root) NOPASSWD: /usr/local/nginx/nginx, /usr/local/bin/docker, /usr/local/bin/docker-compose" >> /etc/sudoers
 
 RUN cp /usr/src/php/php.ini-production /usr/local/etc/php.ini
-#RUN cp /usr/local/etc/php-fpm.conf.default /usr/local/etc/php-fpm.conf
-#RUN cp /usr/local/etc/php-fpm.d/www.conf.default /usr/local/etc/php-fpm.d/www.conf
 
 COPY ./conf/nginx.conf /usr/local/nginx/nginx.conf
 COPY ./conf/php-fpm.conf /usr/local/etc/php-fpm.conf
@@ -126,9 +123,6 @@ COPY ./conf/crontab /etc/cron.d/worker-source
 
 RUN mkdir /usr/local/nginx/conf.d
 RUN chmod -R 777 /usr/local/nginx/conf.d
-
-#COPY --from=build_stage /usr/src/php/php.ini-production /usr/local/etc/php/php.ini
-#COPY --from=build_stage /usr/src/php/sapi/fpm/php-fpm.conf /usr/local/etc/php/php-fpm.conf
 
 EXPOSE 80
 

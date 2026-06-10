@@ -19,13 +19,20 @@ class db_connect_controller{
     }
 
     public function connect(){
-        $returnable = null;
-        try {
-            $returnable = new PDO($this->dsn, $this->username, $this->password, $this->options);
-        } catch (\PDOException $e) {
-            throw new \PDOException($e->getMessage(), (int)$e->getCode());
+        $maxRetries = 15;
+        $attempt = 0;
+        while (true) {
+            try {
+                return new PDO($this->dsn, $this->username, $this->password, $this->options);
+            } catch (\PDOException $e) {
+                $attempt++;
+                if ($attempt >= $maxRetries) {
+                    throw new \PDOException($e->getMessage() . " (Failed after {$maxRetries} attempts)", (int)$e->getCode());
+                }
+                error_log("Database connection failed: {$e->getMessage()}. Retrying in 2 seconds... (Attempt {$attempt}/{$maxRetries})");
+                sleep(2);
+            }
         }
-        return $returnable;
     }
 
     public function getDialect(): DatabaseDialect {

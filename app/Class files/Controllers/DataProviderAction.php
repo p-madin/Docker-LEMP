@@ -7,6 +7,27 @@ class DataProviderAction implements ControllerInterface {
     public bool $isAction = true;
 
     public function execute(Request $request) {
+        if (isset($request->get['fetch_html'])) {
+            $providerName = $request->get['fetch_html'];
+            $providerDir = __DIR__ . '/../Data/Providers';
+            $filePath = $providerDir . '/' . $providerName . '.php';
+            if (file_exists($filePath)) {
+                include_once($filePath);
+                if (class_exists($providerName)) {
+                    $dom = new \xmlDom();
+                    $table = new \FlexTableComponent($dom);
+                    $table->setDataProvider($providerName);
+                    // Just return the inner body if possible, or the whole table.
+                    // The client will use outerHTML or replaceWith.
+                    header('Content-Type: text/html');
+                    echo $dom->dom->saveHTML($table->render());
+                    exit;
+                }
+            }
+            http_response_code(404);
+            exit;
+        }
+
         $providers = [];
         
         // Scan for DataProvider classes in the dedicated Providers directory

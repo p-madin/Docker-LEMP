@@ -4,7 +4,7 @@ This document outlines the comprehensive roadmap for the next development milest
 
 ---
 
-## Phase 1: Review configuration variables
+## Phase 1: Review configuration variables [COMPLETED]
 ### Description
 Establish a single source of truth for all application configuration variables and standardize the application's external network footprint.
 
@@ -14,23 +14,24 @@ Establish a single source of truth for all application configuration variables a
 
 ---
 
-## Phase 2: Implement tenant health check configuration user interface and cron task
+## Phase 2: Implement tenant health check cron task [COMPLETED]
 ### Description
-Ensure high availability and visibility of provisioned SaaS tenants by actively monitoring their operational status and exposing these metrics to administrators.
+Ensure high availability and visibility of provisioned SaaS tenants by actively monitoring their operational status.
 
 ### Implementation Goals
 1. **Health Check Daemon**: Create a background cron task (e.g., `health_check.php`) that periodically iterates over active tenants in `absChildServices`, pings their endpoints or queries the Docker socket, and records their latency/status.
-2. **Configuration Interface**: Build a management UI (via the Page Builder/Forms engine) to allow administrators to define health check intervals, timeout thresholds, and alert policies.
-3. **Dashboard Integration**: Update the `ChildServiceDataProvider` to display real-time visual badges (Healthy/Degraded/Offline) based on the latest cron execution.
+2. **Dashboard Integration**: Update the `ChildServiceDataProvider` to display real-time visual badges (Healthy/Degraded/Offline) based on the latest cron execution.
 ---
 
-## Phase 3: Action tracker Labels and description
+## Phase 3: Action tracker Labels and description [COMPLETED]
 ### Description
-Enhance the user auditability of the Event Sourcing architecture by generating human-readable labels and descriptions for events in the UI.
+Enhance the user auditability of the Event Sourcing architecture by generating human-readable labels and descriptions for events in the UI, logging full HTTP requests and JSON payloads into IndexedDB.
 
 ### Implementation Goals
-1. **Event Dictionary**: Create a localized dictionary mapping raw `event_type`s (e.g., `FormCreated`) to user-friendly titles (e.g., "Created a Form").
-2. **Payload Parsing**: Dynamically parse the event JSON payload to generate contextual descriptions (e.g., "User 'john_doe' was banned").
+1. **Reset History**: Clear the IndexedDB automatically when a user logs in or out.
+2. **Label Enhancement**: Include the exact `[Date] <HTTP Method>: <HTTP path> <result>` in the history log, alongside the GoTo link.
+3. **Payload Inspector**: Add an 'Inspect' link that opens an HTML `<dialog>` displaying the raw JSON payload and HTTP response.
+4. **Anonymous Hidden**: Hide the action tracker component entirely for unauthenticated anonymous users.
 
 ---
 
