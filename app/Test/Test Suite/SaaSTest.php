@@ -30,15 +30,24 @@ class SaaSTest extends TestSuiteBase {
             return false;
         }
 
-        // Wait an extra moment to let the db and app fully initialize
-        $GLOBALS['returnable'] .= "  -> Waiting 20 seconds for containers to initialize...\n";
-        sleep(20); 
+        // Wait for the db and app to fully initialize (poll for up to 60 seconds)
+        $GLOBALS['returnable'] .= "  -> Waiting for containers to initialize (polling up to 60s)...\n";
+        
+        $syncResult = null;
+        for ($i = 0; $i < 12; $i++) {
+            sleep(5);
+            $syncResult = $manager->sync($tenantName);
+            if ($syncResult['is_active']) {
+                $GLOBALS['returnable'] .= "  -> Sync successful after " . (($i + 1) * 5) . " seconds\n";
+                break;
+            }
+        }
 
-        // 2. Sync the tenant status
-        $GLOBALS['returnable'] .= "  -> Syncing status\n";
-        $syncResult = $manager->sync($tenantName);
-        if (!$syncResult['is_active']) {
-            $GLOBALS['returnable'] .= "  [FAIL] Tenant sync reported inactive. Docker: {$syncResult['docker_status']}, HTTP: {$syncResult['http_code']}\n  Output: " . substr($syncResult['curl_output'], 0, 500) . "\n";
+        if (!$syncResult || !$syncResult['is_active']) {
+            $dockerStatus = $syncResult['docker_status'] ?? 'unknown';
+            $httpCode = $syncResult['http_code'] ?? 0;
+            $curlOut = isset($syncResult['curl_output']) ? substr($syncResult['curl_output'], 0, 500) : '';
+            $GLOBALS['returnable'] .= "  [FAIL] Tenant sync reported inactive. Docker: {$dockerStatus}, HTTP: {$httpCode}\n  Output: {$curlOut}\n";
             $this->cleanup($tenantName);
             return false;
         }
