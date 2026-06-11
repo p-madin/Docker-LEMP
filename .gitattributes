@@ -1,0 +1,6 @@
+# Set default behavior to automatically normalize line endings
+* text=auto
+
+# Force LF for shell scripts and crontab since they must run inside the Linux container
+*.sh text eol=lf
+conf/crontab text eol=lf

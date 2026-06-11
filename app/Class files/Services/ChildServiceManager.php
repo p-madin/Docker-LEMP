@@ -204,7 +204,7 @@ class ChildServiceManager {
         $templatePath = '/home/ubuntu/Workspace/compose.tenant.yaml';
         $template = file_exists($templatePath) ? file_get_contents($templatePath) : '';
 
-        $tenantAppVolume = $scvRows['TENANT_APP_VOLUME'];
+        $tenantAppVolume = $this->getTenantAppVolume();
         $volumeSection = "";
         if ($tenantAppVolume) {
             $volumeSection = "    volumes:\n      - \"{$tenantAppVolume}\"";
@@ -212,6 +212,38 @@ class ChildServiceManager {
         $template = str_replace('#TENANT_APP_VOLUME_PLACEHOLDER#', $volumeSection, $template);
 
         return "name: {$tenant}\n\n" . $template;
+    }
+
+    private function getHostProjectRoot(): string {
+        global $scvRows;
+        $cmdPrefix = $this->getDockerCmdPrefix();
+        $id = trim(shell_exec('cat /etc/hostname 2>/dev/null'));
+        if ($id) {
+            $mount = trim(shell_exec("{$cmdPrefix}docker inspect -f '{{ range .Mounts }}{{ if eq .Destination \"/var/www/html\" }}{{ .Source }}{{ end }}{{ end }}' " . escapeshellarg($id) . " 2>/dev/null"));
+            if ($mount) {
+                if (strpos($mount, '\\') !== false) {
+                    if (substr($mount, -4) === '\\app') {
+                        $mount = substr($mount, 0, -4);
+                    }
+                    return str_replace('\\', '/', $mount);
+                } else {
+                    if (substr($mount, -4) === '/app') {
+                        return substr($mount, 0, -4);
+                    }
+                    return dirname($mount);
+                }
+            }
+        }
+        return str_replace('\\', '/', $scvRows['HOST_PROJECT_ROOT'] ?: '');
+    }
+
+    private function getTenantAppVolume(): string {
+        global $scvRows;
+        $hostRoot = $this->getHostProjectRoot();
+        if ($hostRoot) {
+            return $hostRoot . '/app:/var/www/html';
+        }
+        return str_replace('\\', '/', $scvRows['TENANT_APP_VOLUME'] ?: '');
     }
 
     private function generateEnvFile(string $tenant): string {
@@ -226,10 +258,10 @@ class ChildServiceManager {
             "TENANT_DB_PASS={$dbPass}",
             "TENANT_DB_ROOT={$dbRoot}",
             "TARGET_ENV=" . (getenv('TARGET_ENV') ?: 'dev'),
-            "HOST_PROJECT_ROOT=" . ($scvRows['HOST_PROJECT_ROOT'] ?: ''),
+            "HOST_PROJECT_ROOT=" . $this->getHostProjectRoot(),
             "TENANT_APP_IMAGE=" . ($scvRows['TENANT_APP_IMAGE'] ?: 'local-dockerlempapp:latest'),
             "TENANT_DB_IMAGE=" . ($scvRows['TENANT_DB_IMAGE'] ?: 'local-dockerlempdb:latest'),
-            "TENANT_APP_VOLUME=" . ($scvRows['TENANT_APP_VOLUME'] ?: ''),
+            "TENANT_APP_VOLUME=" . $this->getTenantAppVolume(),
         ]);
     }
 
