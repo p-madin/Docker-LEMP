@@ -8,14 +8,14 @@ INSERT INTO appUsers (name, age, city, username, password, email, verified)
 VALUES ('Stack_Two', 2, 'Stack_Two', 'Stack_Two', '$2y$10$fkjGHwVncM0YQ9Jg0gHvku.E7TUTMvXeUbIdmUOwyoDaBcFUm432i', 'Stack_Two@stack.com', true);
 
 -- Create Management Pages
-INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle, pagSlug) VALUES (1, 1, 'Account Management', 'account_management');
-INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle, pagSlug) VALUES (2, 1, 'Error Log', 'error_log');
-INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle, pagSlug) VALUES (3, 1, 'Navbar Management', 'navbar_management');
-INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle, pagSlug) VALUES (4, 1, 'Form Management', 'form_management');
-INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle, pagSlug) VALUES (5, 1, 'Page Management', 'page_management');
-INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle, pagSlug) VALUES (6, 1, 'Banned IP Management', 'banned_ips');
-INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle, pagSlug) VALUES (7, 1, 'Platform Recovery', 'platform_recovery');
-INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle, pagSlug) VALUES (8, 1, 'Child Services', 'child_management');
+INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle) VALUES (1, 1, 'Account Management');
+INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle) VALUES (2, 1, 'Error Log');
+INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle) VALUES (3, 1, 'Navbar Management');
+INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle) VALUES (4, 1, 'Form Management');
+INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle) VALUES (5, 1, 'Page Management');
+INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle) VALUES (6, 1, 'Banned IP Management');
+INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle) VALUES (7, 1, 'Platform Recovery');
+INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle) VALUES (8, 1, 'Child Services');
 
 -- Create Table Elements for these pages
 INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (1, 'heading', 'Account Management');
@@ -132,10 +132,11 @@ INSERT INTO tblColumns (tcFormFK, tcName, tcLabel, tcType, tcRules, tcOrder) VAL
 (3, 'email', 'Email', 'email', '{"required":true,"email":true}', 6),
 (4, 'nbPK', '', 'hidden', '{}', 1),
 (4, 'nbText', 'Display Text', 'text', '{"required":true,"min":1}', 2),
-(4, 'nbDiscriminator', 'Discriminator (c/p)', 'text', '{"required":true,"min":1,"max":1}', 3),
+(4, 'nbDiscriminator', 'Discriminator (c/p/h)', 'text', '{"required":true,"min":1,"max":1}', 3),
 (4, 'nbPath', 'Route/Path', 'text', '{"required":true}', 4),
-(4, 'nbOrder', 'Display Order', 'number', '{"required":true,"numeric":true}', 5),
-(4, 'nbParentFK', 'Parent Item ID (Optional)', 'number', '{"numeric":true}', 6),
+(4, 'nbPageFK', 'Target Page ID (Optional)', 'number', '{"numeric":true}', 5),
+(4, 'nbOrder', 'Display Order', 'number', '{"required":true,"numeric":true}', 6),
+(4, 'nbParentFK', 'Parent Item ID (Optional)', 'number', '{"numeric":true}', 7),
 (5, 'tfPK', '', 'hidden', '{}', 1),
 (5, 'tfName', 'Form Name', 'text', '{"required":true,"min":1}', 2),
 (6, 'tcPK', '', 'hidden', '{}', 1),
@@ -150,7 +151,6 @@ INSERT INTO tblColumns (tcFormFK, tcName, tcLabel, tcType, tcRules, tcOrder) VAL
 (8, 'target_time', 'Recover to Timestamp', 'datetime-local', '{"required":true}', 3),
 (9, 'pagPK', 'ID', 'hidden', '{}', 10),
 (9, 'pagTitle', 'Title', 'text', '{"required":true}', 20),
-(9, 'pagSlug', 'Slug', 'slug', '{"required":true,"alpha_dash":true}', 30),
 (10, 'elePK', 'ID', 'hidden', '{}', 10),
 (10, 'eleType', 'Type', 'text', '{"required":true}', 20),
 (10, 'eleContent', 'Content', 'textarea', '{}', 30),

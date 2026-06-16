@@ -4,7 +4,7 @@ class PageDataProvider implements DataProviderInterface {
         return [
             ['key' => 'pagPK', 'label' => 'ID'],
             ['key' => 'pagTitle', 'label' => 'Title'],
-            ['key' => 'pagSlug', 'label' => 'Slug'],
+            ['key' => 'nbPath', 'label' => 'Primary URL'],
             ['key' => 'pagCreated', 'label' => 'Created'],
             ['key' => 'actions', 'label' => 'Actions', 'action' => 'multi', 'actions' => [
                 ['type' => 'button_form', 'config' => ['url' => '/page_editor?id=', 'param' => 'pagPK', 'buttonLabel' => 'Edit']],
@@ -15,9 +15,13 @@ class PageDataProvider implements DataProviderInterface {
     }
 
     public function getData(): array {
-        global $db, $dialect;
-        $qb = new QueryBuilder($dialect);
-        return $qb->table('tblPages')->select(['pagPK', 'pagTitle', 'pagSlug', 'pagCreated'])->getFetchAll($db);
+        global $db;
+        $sql = "SELECT p.pagPK, p.pagTitle, p.pagCreated, 
+                       (SELECT nbPath FROM tblNavBar WHERE nbPageFK = p.pagPK ORDER BY nbPK ASC LIMIT 1) as nbPath
+                FROM tblPages p ORDER BY p.pagPK ASC";
+        $stmt = $db->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getNestedKey(): ?string {

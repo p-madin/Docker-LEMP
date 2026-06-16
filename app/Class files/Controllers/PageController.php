@@ -23,6 +23,12 @@ class PageController implements ControllerInterface {
                     ->where('brgPageElements.pelPageFK', '=', $pageId)
                     ->orderBy('brgPageElements.pelOrder', 'ASC')
                     ->getFetchAll($db);
+
+                // Fetch primary Navbar path for this page
+                $qb_nav = new QueryBuilder($dialect);
+                $navData = $qb_nav->table('tblNavBar')->where('nbPageFK', '=', $pageId)->getFetch($db);
+                $pageData['nbPath'] = $navData ? $navData['nbPath'] : '';
+                $pageData['nbPK'] = $navData ? $navData['nbPK'] : 0;
             }
         }
 

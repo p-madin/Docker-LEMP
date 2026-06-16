@@ -32,7 +32,6 @@ class PageAction implements ControllerInterface {
 
             $data = [
                 'pagTitle' => $cleanData['pagTitle'],
-                'pagSlug'  => $cleanData['pagSlug'] ?? '',
                 'pagAuthorFK' => $authorId
             ];
 
@@ -47,8 +46,8 @@ class PageAction implements ControllerInterface {
             }
 
             $eventStore->waitUntilProcessed($eventId);
-            $newId = $eventStore->getAggregateId($eventId);
-            $dependency = $newId ? (int)$newId : $pk;
+            $newId = (int)$eventStore->getAggregateId($eventId);
+            $dependency = $newId ? $newId : $pk;
 
             Hyperlink::redirection(self::$object_URI . "?id=" . $dependency, $dependency);
     }

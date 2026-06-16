@@ -21,7 +21,6 @@ CREATE TABLE tblPages (
     pagDeleted TIMESTAMP NULL,
     pagAuthorFK INT NOT NULL,
     pagTitle VARCHAR(128) NOT NULL,
-    pagSlug VARCHAR(128) NULL,
     PRIMARY KEY(pagPK)
 );
 

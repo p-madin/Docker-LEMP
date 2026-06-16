@@ -37,6 +37,7 @@ class EditNavbarAction implements ControllerInterface {
 
         $isProtected = (isset($request->post['nbProtected']) && $request->post['nbProtected'] === '1') ? 1 : 0;
         $parentFK = (!empty($cleanData['nbParentFK'])) ? (int)$cleanData['nbParentFK'] : null;
+        $pageFK = (!empty($cleanData['nbPageFK'])) ? (int)$cleanData['nbPageFK'] : null;
 
         $data = [
             'nbText'          => $cleanData['nbText'],
@@ -44,7 +45,8 @@ class EditNavbarAction implements ControllerInterface {
             'nbPath'          => $cleanData['nbPath'],
             'nbOrder'         => (int)$cleanData['nbOrder'],
             'nbProtected'     => $isProtected,
-            'nbParentFK'      => $parentFK
+            'nbParentFK'      => $parentFK,
+            'nbPageFK'        => $pageFK
         ];
 
         $pk = (int)$cleanData['nbPK'];

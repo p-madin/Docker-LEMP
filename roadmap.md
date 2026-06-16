@@ -65,8 +65,14 @@ Standardize the naming convention of the event store's database table and field 
 1. **Table Renaming**: Update the `event_store` table name to follow the application's standard format (e.g. `tblEventStore`).
 2. **Column Renaming**: Update the field names inside the event store table to follow the application's column prefix convention (e.g. `evsPK`, `evsAggregateFK`, `evsEventType`, `evsPayload`, `evsStatus`).
 
+## Phase 7: Implement tblNavBar and tblPage configuration fluidity [COMPLETED]
+### Description
+The integration between the Nav Bar CMS and the page block editor has been fully established.
+- `pagSlug` was surgically removed from `tblPages` and the WYSIWYG block editor, embracing a solid OO approach.
+- `tblNavBar` acts as the undisputed central Route Registry. Pages are now strictly content payloads.
+- Routes are exclusively defined via the Navbar Management UI using the `nbPageFK` field to bind URLs to existing pages.
 
-## Phase 7: DBMS Vendor Support
+## Phase 8: DBMS Vendor Support
 ### Description
 Abstract database interactions to support multiple DBMS engines.
 - **SQLite** - AUTOINCREMENT or INTEGER PRIMARY KEY, Boolean = INTEGER (0/1), strftime('%H', haDate)
@@ -74,7 +80,7 @@ Abstract database interactions to support multiple DBMS engines.
 
 ---
 
-## Phase 8: Infrastructure & Advanced Blocks
+## Phase 9: Infrastructure & Advanced Blocks
 ### Description
 This phase is dedicated to building the necessary data abstraction and reusable presentation components that power advanced blocks like Forms, Tables, and Charts, ensuring these blocks are data-aware rather than just display-aware.
 
@@ -91,7 +97,7 @@ This phase is dedicated to building the necessary data abstraction and reusable 
 
 ---
 
-## Phase 9: Update ./conf/*.sql scripts
+## Phase 10: Update ./conf/*.sql scripts
 ### Description
 The SQL scripts (`./conf/*.sql`) currently define the base schema and initial state for a tenant and the running database statically.
 

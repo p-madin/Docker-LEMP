@@ -10,7 +10,7 @@ class BlockEditor {
         this.pageId = window.EDITOR_STATE?.pageId || 0;
         this.csrfToken = window.EDITOR_STATE?.csrfToken || '';
         this.pageTitle = window.EDITOR_STATE?.pageData?.pagTitle || 'Untitled Page';
-        this.pageSlug = window.EDITOR_STATE?.pageData?.pagSlug || '';
+
         this.activeBlock = null;
         this.toolbar = null;
         this.draggedBlockType = null;
@@ -210,10 +210,7 @@ class BlockEditor {
                     <label>Page Title</label>
                     <input type="text" id="page-title" class="prop-input" />
                 </div>
-                <div class="prop-group">
-                    <label>Page Slug</label>
-                    <input type="text" id="page-slug" class="prop-input" />
-                </div>
+
                 <div class="prop-group">
                     <label>Element Tree</label>
                     <div id="element-tree" class="tree-view"></div>
@@ -828,7 +825,6 @@ class BlockEditor {
 
             // Populate page settings
             document.getElementById('page-title').value = this.pageTitle;
-            document.getElementById('page-slug').value = this.pageSlug;
             this.renderTreeView();
         }
     }
@@ -966,7 +962,6 @@ class BlockEditor {
 
         // Update page title/slug from inputs
         this.pageTitle = document.getElementById('page-title').value;
-        this.pageSlug = document.getElementById('page-slug').value;
 
         try {
             if (this.pageId === 0) {
@@ -980,7 +975,6 @@ class BlockEditor {
                 this.saveBtn.innerText = 'Creating Page...';
                 const pData = new FormData();
                 pData.append('pagTitle', this.pageTitle);
-                pData.append('pagSlug', this.pageSlug || this.pageTitle.toLowerCase().replace(/ /g, '-'));
                 pData.append('csrf_token', this.csrfToken);
 
                 const pRes = await fetch('/pageAction', {
@@ -999,7 +993,6 @@ class BlockEditor {
                 const pData = new FormData();
                 pData.append('pagPK', this.pageId);
                 pData.append('pagTitle', this.pageTitle);
-                pData.append('pagSlug', this.pageSlug);
                 pData.append('csrf_token', this.csrfToken);
 
                 await fetch('/pageAction', {
