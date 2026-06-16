@@ -35,7 +35,7 @@ Enhance the user auditability of the Event Sourcing architecture by generating h
 
 ---
 
-## Phase 4: Enhance test suite - fill forms with random values
+## Phase 4: Enhance test suite - fill forms with random values [COMPLETED]
 ### Description
 Make integration testing more robust by generating non-colliding entity names.
 
@@ -45,17 +45,19 @@ Make integration testing more robust by generating non-colliding entity names.
 
 ---
 
-## Phase 5: Change UI media queries for mobile
+## Phase 5: Change UI media queries for mobile [COMPLETED]
 ### Description
 Improve the responsive layout of the management suite, specifically targeting flex-tables and block editor canvas constraints on smaller screens.
 
 ### Implementation Goals
-1. **Table Collapse**: Convert `FlexTableComponent` rendering to a stacked card layout on widths < 768px.
-2. **Sidebar Toggles**: Hide the Page Builder component sidebar behind a hamburger toggle on mobile devices.
+1. **Centralized Media Queries**: All responsive CSS rules must strictly reside in `app/Static/styles.css` between lines 458-479, ensuring a clean separation of concerns and single source of truth for breakpoints.
+2. **Sticky Hamburger Navigation**: At widths < 768px, the primary application menu (stage) should collapse behind a hamburger icon that remains fixed/sticky at the top of the viewport.
+3. **Responsive Action Tracker**: At widths < 768px, the Action Tracker component should transform into a full-width, sticky footer, replacing its standard desktop layout.
+4. **Sidebar Toggles**: Hide the Page Builder component sidebar behind a hamburger toggle on mobile devices.
 
 ---
 
-## Phase 6: Federate naming convention for event store
+## Phase 6: Federate naming convention for event store [COMPLETED]
 ### Description
 Standardize the naming convention of the event store's database table and field names across the application.
 

@@ -31,5 +31,6 @@ class LayoutComponent extends Component {
         }
 
         $this->contentTarget = $this->fabricateChild($this->xmlDom->body, "div", ["class" => "container", "id" => "content-root"]);
+        $this->fabricateChild($this->xmlDom->body, "div", ["id" => "footer-spacer"]);
     }
 }

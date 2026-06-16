@@ -38,17 +38,17 @@ $hyperlink->appendHyperlinkForm($dom, $undoTools, 'Redo Action', '/undo', ['mode
 
 // Shared Table Config
 $columns = [
-    ['key' => 'id',           'label' => 'ID',            'isAction' => false],
-    ['key' => 'aggregate_id', 'label' => 'Aggregate ID',  'isAction' => false],
-    ['key' => 'event_type',   'label' => 'Type',          'isAction' => false, 'cssClass' => 'flex-wide',],
-    ['key' => 'is_reversal',  'label' => 'Reversal',      'isAction' => false],
-    ['key' => 'status',       'label' => 'Status',        'isAction' => false, 'renderCallback' => function($xmlDom, $cell, $rowData) {
-        $status = $rowData['status'];
+    ['key' => 'evsPK',           'label' => 'ID',            'isAction' => false],
+    ['key' => 'evsAggregateFK', 'label' => 'Aggregate ID',  'isAction' => false],
+    ['key' => 'evsEventType',   'label' => 'Type',          'isAction' => false, 'cssClass' => 'flex-wide',],
+    ['key' => 'evsIsReversal',  'label' => 'Reversal',      'isAction' => false],
+    ['key' => 'evsStatus',       'label' => 'Status',        'isAction' => false, 'renderCallback' => function($xmlDom, $cell, $rowData) {
+        $status = $rowData['evsStatus'];
         $class = 'badge badge-' . ($status === 'processed' ? 'success' : ($status === 'failed' ? 'danger' : 'warning'));
         $xmlDom->fabricateChild($cell, 'span', ['class' => $class], $status);
     }],
-    ['key' => 'user_id',   'label' => 'User ID',    'isAction' => false],
-    ['key' => 'created_at','label' => 'Created At', 'isAction' => false, 'cssClass' => 'flex-wide',],
+    ['key' => 'evsUserFK',   'label' => 'User ID',    'isAction' => false],
+    ['key' => 'evsCreatedAt','label' => 'Created At', 'isAction' => false, 'cssClass' => 'flex-wide',],
 ];
 
 // 1. Undoable History (Current Path)

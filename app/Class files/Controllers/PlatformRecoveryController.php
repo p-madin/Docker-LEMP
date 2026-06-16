@@ -24,7 +24,7 @@ class PlatformRecoveryController implements ControllerInterface {
         }
 
         // 1. Fetch General Event Log
-        $sql = $qb->table('event_store')->orderBy('id', 'DESC')->limit(100)->toSQL();
+        $sql = $qb->table('tblEventStore')->orderBy('evsPK', 'DESC')->limit(100)->toSQL();
         $stmt = $db->prepare($sql);
         $qb->bindTo($stmt);
         $stmt->execute();
@@ -50,10 +50,10 @@ class PlatformRecoveryController implements ControllerInterface {
     public function listInfer($list){
         $result = [];
         foreach ($list as $event) {
-            $event['aggregate_id'] = $event['aggregate_id'] ?? 'N/A';
-            $event['user_id']      = $event['user_id'] ?? 'System';
+            $event['evsAggregateFK'] = $event['evsAggregateFK'] ?? 'N/A';
+            $event['evsUserFK']      = $event['evsUserFK'] ?? 'System';
             $event['_payload_details'] = [
-                ['is_full_width' => true, 'content' => $event['payload']]
+                ['is_full_width' => true, 'content' => $event['evsPayload']]
             ];
             $result[] = $event;
         }
@@ -78,11 +78,11 @@ class PlatformRecoveryController implements ControllerInterface {
 
                 // 1. Fetch events to undo
                 $qb = new QueryBuilder($dialect);
-                $sql = $qb->table('event_store')
-                          ->where('created_at', '>', $targetTimeStr)
-                          ->where('status', '=', 'processed')
-                          ->where('event_type', '!=', 'PlatformRecoveryReplay')
-                          ->orderBy('id', 'DESC')
+                $sql = $qb->table('tblEventStore')
+                          ->where('evsCreatedAt', '>', $targetTimeStr)
+                          ->where('evsStatus', '=', 'processed')
+                          ->where('evsEventType', '!=', 'PlatformRecoveryReplay')
+                          ->orderBy('evsPK', 'DESC')
                           ->toSQL();
                 
                 $stmt = $db->prepare($sql);

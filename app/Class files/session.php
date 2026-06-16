@@ -433,10 +433,10 @@ class SessionController{
         
         // Find most recent event for this user to synchronize the playhead
         $qb = new QueryBuilder($this->dialect);
-        $qb->table('event_store')
-           ->select(['id'])
-           ->where('user_id', '=', (int)$userId)
-           ->orderBy('id', 'DESC')
+        $qb->table('tblEventStore')
+           ->select(['evsPK'])
+           ->where('evsUserFK', '=', (int)$userId)
+           ->orderBy('evsPK', 'DESC')
            ->limit(1);
         $stmt = $this->db->prepare($qb->toSQL());
         $qb->bindTo($stmt);

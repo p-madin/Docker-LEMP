@@ -1,4 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Hamburger menu toggle
+    const hamburger = document.querySelector('.hamburger-menu');
+    const navbar = document.getElementById('main-navbar');
+    if (hamburger && navbar) {
+        hamburger.addEventListener('click', () => {
+            navbar.classList.toggle('menu-open');
+        });
+    }
+
     // Only execute if the flex-table for ChildServiceDataProvider exists
     const childServiceTables = document.querySelectorAll('.flex-table[data-provider="ChildServiceDataProvider"]');
     

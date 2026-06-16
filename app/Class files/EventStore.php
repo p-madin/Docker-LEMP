@@ -21,15 +21,15 @@ class EventStore {
             $predecessorId = isset($sessionController) ? $sessionController->getPrimary('current_event_id') : null;
 
             $qb = new QueryBuilder($this->dialect);
-            $sql = $qb->table('event_store')->insert([
-                'aggregate_id'     => $aggregateId,
-                'event_type'       => $eventType,
-                'payload'          => json_encode($payload),
-                'previous_payload' => $previousPayload ? json_encode($previousPayload) : null,
-                'status'           => 'pending',
-                'user_id'          => $userId,
-                'is_reversal'      => $isReversal ? 1 : 0,
-                'predecessor_id'   => $predecessorId
+            $sql = $qb->table('tblEventStore')->insert([
+                'evsAggregateFK'     => $aggregateId,
+                'evsEventType'       => $eventType,
+                'evsPayload'         => json_encode($payload),
+                'evsPreviousPayload' => $previousPayload ? json_encode($previousPayload) : null,
+                'evsStatus'          => 'pending',
+                'evsUserFK'          => $userId,
+                'evsIsReversal'      => $isReversal ? 1 : 0,
+                'evsPredecessorFK'   => $predecessorId
             ]);
 
             $stmt = $this->db->prepare($sql);
@@ -92,14 +92,14 @@ class EventStore {
         while (time() - $start < $timeoutSeconds) {
             $qb = new QueryBuilder($this->dialect);
             // We use a fresh query to avoid PDO caching issues if any
-            $sql = $qb->table('event_store')->select(['status'])->where('id', '=', $eventId)->toSQL();
+            $sql = $qb->table('tblEventStore')->select(['evsStatus'])->where('evsPK', '=', $eventId)->toSQL();
             $stmt = $this->db->prepare($sql);
             $qb->bindTo($stmt);
             $stmt->execute();
             $event = $stmt->fetch();
 
-            if ($event && ($event['status'] === 'processed' || $event['status'] === 'failed')) {
-                return $event['status'] === 'processed';
+            if ($event && ($event['evsStatus'] === 'processed' || $event['evsStatus'] === 'failed')) {
+                return $event['evsStatus'] === 'processed';
             }
             // Sleep for 200ms before polling again
             usleep(200000);
@@ -114,9 +114,9 @@ class EventStore {
         $userId = $sessionController->getSystemUserId();
         $playheadId = $sessionController->getPrimary('current_event_id');
         $qb = new QueryBuilder($this->dialect);
-        $sql = $qb->table('event_store')
-                  ->where('user_id', '=', $userId)
-                  ->where('status', '=', 'processed')
+        $sql = $qb->table('tblEventStore')
+                  ->where('evsUserFK', '=', $userId)
+                  ->where('evsStatus', '=', 'processed')
                   ->toSQL();
         
         $stmt = $this->db->prepare($sql);
@@ -129,7 +129,7 @@ class EventStore {
         // Build a lookup table for fast traversal
         $lookup = [];
         foreach ($allEvents as $e) {
-            $lookup[(int)$e['id']] = $e;
+            $lookup[(int)$e['evsPK']] = $e;
         }
 
         $path = [];
@@ -138,10 +138,10 @@ class EventStore {
         // Traverse backwards along the predecessor chain
         while ($currentId && isset($lookup[$currentId])) {
             $e = $lookup[$currentId];
-            if ((int)$e['is_reversal'] === 0) {
+            if ((int)$e['evsIsReversal'] === 0) {
                 $path[] = $e;
             }
-            $currentId = $e['predecessor_id'] ? (int)$e['predecessor_id'] : null;
+            $currentId = $e['evsPredecessorFK'] ? (int)$e['evsPredecessorFK'] : null;
         }
 
         return $path;
@@ -153,9 +153,9 @@ class EventStore {
         if (empty($redoStack)) return [];
 
         $qb = new QueryBuilder($this->dialect);
-        $sql = $qb->table('event_store')
-                    ->whereIn('id', $redoStack)
-                    ->orderBy('id', 'DESC')
+        $sql = $qb->table('tblEventStore')
+                    ->whereIn('evsPK', $redoStack)
+                    ->orderBy('evsPK', 'DESC')
                   ->toSQL();
 
         $stmt = $this->db->prepare($sql);
@@ -167,9 +167,9 @@ class EventStore {
 
     public function getPendingEvents(int $limit = 1): array {
         $qb = new QueryBuilder($this->dialect);
-        $sql = $qb->table('event_store')
-                  ->where('status', '=', 'pending')
-                  ->orderBy('id', 'ASC')
+        $sql = $qb->table('tblEventStore')
+                  ->where('evsStatus', '=', 'pending')
+                  ->orderBy('evsPK', 'ASC')
                   ->limit($limit)
                   ->toSQL();
                   
@@ -184,10 +184,10 @@ class EventStore {
     }
 
     public function createReversalEvent(array $event, int $userId, bool $isUndo, bool $isRedo = false): ?int {
-        $eventType = $event['event_type'];
-        $payload = json_decode($event['payload'], true);
-        $previousPayload = json_decode($event['previous_payload'] ?? 'null', true);
-        $aggregateId = $event['aggregate_id'];
+        $eventType = $event['evsEventType'];
+        $payload = json_decode($event['evsPayload'], true);
+        $previousPayload = json_decode($event['evsPreviousPayload'] ?? 'null', true);
+        $aggregateId = $event['evsAggregateFK'];
 
         $targetEventType = $eventType;
         $targetPayload = [];
@@ -220,7 +220,7 @@ class EventStore {
         }
 
         if ($targetPayload) {
-            $targetPayload['original_event_id'] = $event['id'];
+            $targetPayload['original_event_id'] = $event['evsPK'];
             // For Redo, we treat it as a normal action (is_reversal=false) but preserve the redo stack
             $isReversal = $isUndo;
             $preserveRedo = $isRedo;
@@ -249,12 +249,12 @@ class EventStore {
      */
     public function getAggregateId(int $eventId): ?int {
         $qb = new QueryBuilder($this->dialect);
-        $sql = $qb->table('event_store')->select(['aggregate_id'])->where('id', '=', $eventId)->toSQL();
+        $sql = $qb->table('tblEventStore')->select(['evsAggregateFK'])->where('evsPK', '=', $eventId)->toSQL();
         $stmt = $this->db->prepare($sql);
         $qb->bindTo($stmt);
         $stmt->execute();
         $event = $stmt->fetch();
-        return ($event && isset($event['aggregate_id'])) ? (int)$event['aggregate_id'] : null;
+        return ($event && isset($event['evsAggregateFK'])) ? (int)$event['evsAggregateFK'] : null;
     }
 }
 ?>

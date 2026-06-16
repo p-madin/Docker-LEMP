@@ -224,12 +224,6 @@
         <step>
           <action>FillForm</action>
           <selector>#editNavbarFormComponent</selector>
-          <parameters>
-            <parameter><name>nbText</name><value>Temporary Test Link</value></parameter>
-            <parameter><name>nbPath</name><value>/test_path</value></parameter>
-            <parameter><name>nbControllerClass</name><value>DashboardController</value></parameter>
-            <parameter><name>nbOrder</name><value>99</value></parameter>
-          </parameters>
           <submit>true</submit>
           <expected>
             <saveSuiteVariable>testNavbarID</saveSuiteVariable>
@@ -242,7 +236,7 @@
         <step>
           <action>AssertText</action>
           <expected>
-            <contains>Temporary Test Link</contains>
+            <contains>{{testNavbarID_nbText}}</contains>
           </expected>
         </step>
         <step>
@@ -252,7 +246,7 @@
         <step>
           <action>AssertText</action>
           <expected>
-            <not_contains>Temporary Test Link</not_contains>
+            <not_contains>{{testNavbarID_nbText}}</not_contains>
           </expected>
         </step>
         
@@ -264,7 +258,7 @@
         <step>
           <action>AssertText</action>
           <expected>
-            <contains>Temporary Test Link</contains>
+            <contains>{{testNavbarID_nbText}}</contains>
           </expected>
         </step>
         <step>
@@ -274,7 +268,7 @@
         <step>
           <action>AssertText</action>
           <expected>
-            <not_contains>Temporary Test Link</not_contains>
+            <not_contains>{{testNavbarID_nbText}}</not_contains>
           </expected>
         </step>
         <step>
@@ -284,7 +278,7 @@
         <step>
           <action>AssertText</action>
           <expected>
-            <contains>Temporary Test Link</contains>
+            <contains>{{testNavbarID_nbText}}</contains>
           </expected>
         </step>
         
@@ -296,7 +290,7 @@
         <step>
           <action>AssertText</action>
           <expected>
-            <not_contains>Temporary Test Link</not_contains>
+            <not_contains>{{testNavbarID_nbText}}</not_contains>
           </expected>
         </step>
         
@@ -329,12 +323,6 @@
         <step>
           <action>FillForm</action>
           <selector>#editFormFormComponent</selector>
-          <parameters>
-            <parameter>
-              <name>tfName</name>
-              <value>Temporary Test Form</value>
-            </parameter>
-          </parameters>
           <submit>true</submit>
           <expected>
             <saveSuiteVariable>testFormID</saveSuiteVariable>
@@ -347,7 +335,7 @@
         <step>
           <action>AssertText</action>
           <expected>
-            <contains>Temporary Test Form</contains>
+            <contains>{{testFormID_tfName}}</contains>
           </expected>
         </step>
         <step>
@@ -361,12 +349,6 @@
         <step>
           <action>FillForm</action>
           <selector>#editColumnFormComponent</selector>
-          <parameters>
-            <parameter><name>tcName</name><value>test_field</value></parameter>
-            <parameter><name>tcLabel</name><value>Test Field Label</value></parameter>
-            <parameter><name>tcType</name><value>text</value></parameter>
-            <parameter><name>tcOrder</name><value>10</value></parameter>
-          </parameters>
           <submit>true</submit>
           <expected>
             <saveSuiteVariable>testFieldID</saveSuiteVariable>
@@ -379,7 +361,7 @@
         <step>
           <action>AssertText</action>
           <expected>
-            <contains>Test Field Label</contains>
+            <contains>{{testFieldID_tcLabel}}</contains>
           </expected>
         </step>
 
@@ -390,7 +372,7 @@
         <step>
           <action>AssertText</action>
           <expected>
-            <not_contains>Test Field Label</not_contains>
+            <not_contains>{{testFieldID_tcLabel}}</not_contains>
           </expected>
         </step>
 
@@ -405,7 +387,7 @@
         <step>
           <action>AssertText</action>
           <expected>
-            <not_contains>Temporary Test Form</not_contains>
+            <not_contains>{{testFormID_tfName}}</not_contains>
           </expected>
         </step>
 

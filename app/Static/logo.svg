@@ -1,37 +1,120 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 1000 1000">
+    <style>
+        @keyframes blink {
+            0%, 100% {
+                opacity: 1; /* 50% of the time: fully visible */
+            }
+            50% {
+                opacity: 0; /* 50% of the time: completely hidden */
+            }
+        }
+        .animated-cursor {
+            fill: #FF0000;
+            transform-origin: center;
+            animation: blink 1s steps(1, start) infinite;
+        }
+    </style>
     <defs>
-        <linearGradient id="neonGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#00ff55" stop-opacity="0.8"/>
-            <stop offset="100%" stop-color="#00aa33" stop-opacity="1"/>
-        </linearGradient>
         <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
-            <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.3"/>
+            <feDropShadow dx="0" dy="2" stdDeviation="3"
+                          flood-color="#000000"
+                          flood-opacity="0.3"/>
         </filter>
     </defs>
-    
-    <!-- Background Circle -->
-    <circle cx="60" cy="60" r="55" fill="#1a1a1a" filter="url(#shadow)"/>
-    
-    <!-- Server Stack Base (L, E, M, P) -->
-    <g transform="translate(25, 30)">
-        <!-- Layer 1 -->
-        <rect x="0" y="0" width="70" height="12" rx="3" fill="#333333"/>
-        <circle cx="10" cy="6" r="3" fill="url(#neonGlow)"/>
-        <line x1="20" y1="6" x2="60" y2="6" stroke="#555555" stroke-width="2" stroke-linecap="round"/>
-        
-        <!-- Layer 2 -->
-        <rect x="0" y="18" width="70" height="12" rx="3" fill="#333333"/>
-        <circle cx="10" cy="24" r="3" fill="url(#neonGlow)"/>
-        <line x1="20" y1="24" x2="60" y2="24" stroke="#555555" stroke-width="2" stroke-linecap="round"/>
-        
-        <!-- Layer 3 -->
-        <rect x="0" y="36" width="70" height="12" rx="3" fill="#333333"/>
-        <circle cx="10" cy="42" r="3" fill="url(#neonGlow)"/>
-        <line x1="20" y1="42" x2="60" y2="42" stroke="#555555" stroke-width="2" stroke-linecap="round"/>
-        
-        <!-- Layer 4 -->
-        <rect x="0" y="54" width="70" height="12" rx="3" fill="#333333"/>
-        <circle cx="10" cy="60" r="3" fill="url(#neonGlow)"/>
-        <line x1="20" y1="60" x2="60" y2="60" stroke="#555555" stroke-width="2" stroke-linecap="round"/>
+
+    <g filter="url(#shadow)">
+
+        <!-- Circle -->
+        <circle cx="500"
+                cy="500"
+                r="430"
+                fill="white"
+                stroke="#1F2937"
+                stroke-width="24"/>
+
+        <!-- Serif R (more classical serif styling) -->
+        <path class='animated-cursor' 
+            d="
+                M290 210
+                L320 210
+                L320 790
+                L290 790
+                Z
+            "/>
+            <path fill="#C5A253"
+            d="
+                M350 210
+
+                C350 210 420 190 505 210
+                C585 230 635 285 635 340
+
+                C635 410 585 465 505 485
+                C420 505 350 470 350 470
+                M350 500
+                M350 450
+                
+
+                C390 450 430 450 480 450
+                C545 440 585 395 585 340
+                C585 285 545 245 480 235
+                C430 230 390 235 350 260
+
+                Z
+            "/>
+            <path fill="#C5A253"
+            d="
+                M370 520
+                L440 520
+
+                L700 790
+                L630 790
+
+                Z
+            "/>
+
+        <!-- Thin-line F -->
+        <path fill="#1F2937"
+              d="
+                M500 420
+                L520 420
+                L520 700
+                L500 700
+                Z
+
+                M500 420
+                L680 420
+                L680 440
+                L500 440
+                Z
+
+                M500 545
+                L635 545
+                L635 565
+                L500 565
+                Z
+              "/>
+
+        <!-- Thin-line X -->
+        <path fill="#1F2937"
+              d="
+                M640 455
+                L670 455
+                L745 560
+                L820 455
+                L850 455
+
+                L765 580
+                L860 705
+                L825 705
+                L745 595
+                L665 705
+                L630 705
+
+                L725 580
+                Z
+              "/>
+
     </g>
+
 </svg>

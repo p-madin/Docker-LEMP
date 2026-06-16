@@ -63,3 +63,17 @@ Implement code resuse to design fit for purpose client side tools, fetch request
 3. **Session Status**: A fit for purpose session status tool, with auto session refresh, redirect to login and other appropriate mechanisms.
 4. **xmlDom Client Side**: A javascript equivalent of ./app/Class files/xmlDom.php
 5. **Other**: Other appropriate client side mechanisms.
+
+## Logic Blocked: Docker out of Docker hurdle - cannot bind host directory to new volume for siblings
+### Description
+To be able to startup an instance from within the application's container, it must have visibility over the host's file system.
+
+
+---
+
+## Idea: Responsive FlexTable Stacked Cards
+### Description
+Address the table collapse of `FlexTableComponent` rendering to a stacked card layout on widths < 768px for mobile responsiveness.
+### Implementation Goals
+1. Convert `.flex-table` row elements to use `flex-direction: column`.
+2. Hide table headers and append data-labels to cells for stacked contexts.

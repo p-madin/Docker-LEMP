@@ -43,10 +43,10 @@ while (true) {
     
     // Find the next unprocessed event and lock it exclusively
     // FOR UPDATE SKIP LOCKED is supported in MySQL 8.0+ and PostgreSQL
-    $stmt = $db->prepare("SELECT id, event_type, payload 
-                          FROM event_store 
-                          WHERE status = 'pending' 
-                          ORDER BY id ASC 
+    $stmt = $db->prepare("SELECT evsPK, evsEventType, evsPayload 
+                          FROM tblEventStore 
+                          WHERE evsStatus = 'pending' 
+                          ORDER BY evsPK ASC 
                           LIMIT 1 
                           FOR UPDATE SKIP LOCKED");
     $stmt->execute();
@@ -54,13 +54,13 @@ while (true) {
 
     if ($event) {
         try {
-            $updateStmt = $db->prepare("UPDATE event_store SET status = 'processing' WHERE id = :id");
-            $updateStmt->execute([':id' => $event['id']]);
+            $updateStmt = $db->prepare("UPDATE tblEventStore SET evsStatus = 'processing' WHERE evsPK = :id");
+            $updateStmt->execute([':id' => $event['evsPK']]);
             // $db->commit();
-            $eventType = $event['event_type'];
-            $payload = json_decode($event['payload'], true);
+            $eventType = $event['evsEventType'];
+            $payload = json_decode($event['evsPayload'], true);
 
-            echo "Processing event ID: {$event['id']} ({$eventType})...\n";
+            echo "Processing event ID: {$event['evsPK']} ({$eventType})...\n";
 
             if (isset($handlers[$eventType])) {
                 $returnedId = $handlers[$eventType]($payload, $db, $dialect);
@@ -68,27 +68,27 @@ while (true) {
                 // If the handler returned an ID (typically for 'Created' events), 
                 // update the aggregate_id in the store so it can be used for Undos.
                 if ($returnedId && is_numeric($returnedId)) {
-                    $updateAggStmt = $db->prepare("UPDATE event_store SET aggregate_id = :agg_id WHERE id = :id");
-                    $updateAggStmt->execute([':agg_id' => $returnedId, ':id' => $event['id']]);
+                    $updateAggStmt = $db->prepare("UPDATE tblEventStore SET evsAggregateFK = :agg_id WHERE evsPK = :id");
+                    $updateAggStmt->execute([':agg_id' => $returnedId, ':id' => $event['evsPK']]);
                 }
             } else {
                 throw new Exception("No handler found for event type: {$eventType}");
             }
             
             // Mark as complete and commit
-            $updateStmt = $db->prepare("UPDATE event_store SET status = 'processed' WHERE id = :id");
-            $updateStmt->execute([':id' => $event['id']]);
+            $updateStmt = $db->prepare("UPDATE tblEventStore SET evsStatus = 'processed' WHERE evsPK = :id");
+            $updateStmt->execute([':id' => $event['evsPK']]);
             $db->commit();
             
-            echo "Successfully processed event ID: {$event['id']}\n";
+            echo "Successfully processed event ID: {$event['evsPK']}\n";
         } catch (Exception $e) {
             $db->rollBack();
             
             // Re-open a non-transactional connection to mark as failed
-            $failStmt = $db->prepare("UPDATE event_store SET status = 'failed' WHERE id = :id");
-            $failStmt->execute([':id' => $event['id']]);
+            $failStmt = $db->prepare("UPDATE tblEventStore SET evsStatus = 'failed' WHERE evsPK = :id");
+            $failStmt->execute([':id' => $event['evsPK']]);
             
-            echo "Failed to process event ID: {$event['id']}. Error: " . $e->getMessage() . "\n";
+            echo "Failed to process event ID: {$event['evsPK']}. Error: " . $e->getMessage() . "\n";
         }
     } else {
         $db->rollBack();

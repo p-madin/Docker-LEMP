@@ -110,6 +110,29 @@ class BlockEditor {
                 this.draggedBlockType = bt.type;
                 e.dataTransfer.setData('text/plain', bt.type);
             });
+
+            el.addEventListener('dragend', (e) => {
+                this.draggedBlockType = null;
+                if (this.placeholder) {
+                    this.placeholder.classList.remove('is-active');
+                    if (this.placeholder.parentNode) {
+                        this.placeholder.parentNode.removeChild(this.placeholder);
+                    }
+                }
+            });
+
+            // Tap/Click to drop (Mobile friendly)
+            el.addEventListener('click', (e) => {
+                this.pendingDropType = bt.type;
+                if (window.innerWidth <= 767) {
+                    this.palette.classList.remove('show-mobile');
+                }
+                this.canvasWrapper.style.cursor = 'crosshair';
+                
+                // Add a visual cue to the body or wrapper
+                this.canvasWrapper.setAttribute('title', 'Tap anywhere on the canvas to drop the block');
+            });
+
             paletteContent.appendChild(el);
         });
 
@@ -224,6 +247,25 @@ class BlockEditor {
         this.editorContainer.appendChild(this.palette);
         this.editorContainer.appendChild(this.canvasWrapper);
         this.editorContainer.appendChild(this.propertiesPanel);
+
+        // Mobile Sidebar Toggles
+        const leftToggle = document.createElement('button');
+        leftToggle.className = 'mobile-sidebar-toggle left-toggle';
+        leftToggle.innerText = 'Components';
+        leftToggle.onclick = () => {
+            this.palette.classList.toggle('show-mobile');
+            this.propertiesPanel.classList.remove('show-mobile');
+        };
+        this.editorContainer.appendChild(leftToggle);
+
+        const rightToggle = document.createElement('button');
+        rightToggle.className = 'mobile-sidebar-toggle right-toggle';
+        rightToggle.innerText = 'Properties';
+        rightToggle.onclick = () => {
+            this.propertiesPanel.classList.toggle('show-mobile');
+            this.palette.classList.remove('show-mobile');
+        };
+        this.editorContainer.appendChild(rightToggle);
 
         // Append to target
         this.container.appendChild(this.editorContainer);
@@ -473,6 +515,44 @@ class BlockEditor {
                 this.placeholder.parentNode.removeChild(this.placeholder);
             }
         });
+
+        // Handle click-to-drop
+        this.canvasWrapper.addEventListener('click', (e) => {
+            if (this.pendingDropType) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                let targetParent = this.canvasContent;
+                let beforeElement = null;
+
+                const block = e.target.closest('.block-instance');
+
+                if (block) {
+                    const rect = block.getBoundingClientRect();
+                    const next = (e.clientY - rect.top) > (rect.height / 2);
+
+                    if (block.dataset.blockType === 'container' && e.target === block) {
+                        targetParent = block;
+                        beforeElement = null;
+                    } else {
+                        targetParent = block.parentNode;
+                        beforeElement = next ? block.nextSibling : block;
+                    }
+                } else {
+                    const container = e.target.closest('.block-instance[data-block-type="container"]');
+                    if (container) {
+                        targetParent = container;
+                        beforeElement = null;
+                    }
+                }
+
+                this.addBlock(this.pendingDropType, null, targetParent, beforeElement);
+                this.pendingDropType = null;
+                this.canvasWrapper.style.cursor = '';
+                this.canvasWrapper.removeAttribute('title');
+                return;
+            }
+        }, true); // Use capture phase to intercept block selection clicks
 
         // Deselect if clicking directly on canvas content background
         this.canvasWrapper.addEventListener('click', (e) => {

@@ -16,6 +16,7 @@ class NavbarComponent extends Component {
 
     protected function build(): void {
         $navRow = $this->fabricateChild($this->root, "div", ["class" => "flex-row"]);
+        $mobileSpacer = $this->fabricateChild($this->root, "div", ["class" => "mobile-hamburger-spacer"]);
 
         // 0. Logo
         $logoCell = $this->fabricateChild($navRow, "div", ["class" => "flex-cell logo icon"]);
@@ -24,6 +25,9 @@ class NavbarComponent extends Component {
             "alt" => "Logo",
             "style" => "height: 40px; display: block;"
         ]);
+
+        $hamburgerCell = $this->fabricateChild($navRow, "div", ["class" => "flex-cell hamburger-menu icon"]);
+        $hamburgerCell->textContent = '☰';
 
         if(!is_null($this->userId)){
             global $db, $dialect, $eventStore;
@@ -47,13 +51,13 @@ class NavbarComponent extends Component {
 
             $undoHyperlink_element = $undoHyperlink->querySelector("a");
             
-            $undoCaption = ($undoCount>0) ? "Undo ".$undoableEvents[0]['event_type']." event" : "Nothing to undo";
+            $undoCaption = ($undoCount>0) ? "Undo ".$undoableEvents[0]['evsEventType']." event" : "Nothing to undo";
             
             $undoHyperlink_element->setAttribute("title", $undoCaption);
 
             $redoHyperlink_element = $redoHyperlink->querySelector("a");
             
-            $redoCaption = ($redoCount>0) ? "Redo ".$redoableEvents[0]['event_type']." event" : "Nothing to redo";
+            $redoCaption = ($redoCount>0) ? "Redo ".$redoableEvents[0]['evsEventType']." event" : "Nothing to redo";
 
             $redoHyperlink_element->setAttribute("title", $redoCaption);
 

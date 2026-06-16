@@ -16,17 +16,17 @@ class UndoRedoController implements ControllerInterface {
                 $targetEvent = $this->getEventById($currentEventId);
                 if ($targetEvent) {
                     // 1. Move playhead to predecessor
-                    $sessionController->setPrimary('current_event_id', $targetEvent['predecessor_id']);
+                    $sessionController->setPrimary('current_event_id', $targetEvent['evsPredecessorFK']);
                     
                     // 2. Add to redo stack
-                    $eventStore->pushToRedoStack($sessionController, (int)$targetEvent['id']);
+                    $eventStore->pushToRedoStack($sessionController, (int)$targetEvent['evsPK']);
 
                     // 3. Apply the undo (append reversal)
                     $newEventId = $eventStore->createReversalEvent($targetEvent, $userId, true); 
                     if ($newEventId) {
                         $eventStore->waitUntilProcessed($newEventId);
                     }
-                    $msg = "Undone: " . $targetEvent['event_type'];
+                    $msg = "Undone: " . $targetEvent['evsEventType'];
                 }
             } else {
                 $msg = "No actions to undo";
@@ -43,7 +43,7 @@ class UndoRedoController implements ControllerInterface {
                     if ($newEventId) {
                         $eventStore->waitUntilProcessed($newEventId);
                     }
-                    $msg = "Redone: " . $targetEvent['event_type'];
+                    $msg = "Redone: " . $targetEvent['evsEventType'];
                 }
             } else {
                 $msg = "Nothing to redo";
@@ -64,23 +64,23 @@ class UndoRedoController implements ControllerInterface {
     private function getLatestEventId(int $userId): ?int {
         global $db, $dialect;
         $qb = new QueryBuilder($dialect);
-        $sql = $qb->table('event_store')
-                  ->where('user_id', '=', $userId)
-                  ->where('status', '=', 'processed')
-                  ->orderBy('id', 'DESC')
+        $sql = $qb->table('tblEventStore')
+                  ->where('evsUserFK', '=', $userId)
+                  ->where('evsStatus', '=', 'processed')
+                  ->orderBy('evsPK', 'DESC')
                   ->limit(1)
                   ->toSQL();
         $stmt = $db->prepare($sql);
         $qb->bindTo($stmt);
         $stmt->execute();
         $res = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $res ? (int)$res['id'] : null;
+        return $res ? (int)$res['evsPK'] : null;
     }
 
     private function getEventById(int $id): ?array {
         global $db, $dialect;
         $qb = new QueryBuilder($dialect);
-        $sql = $qb->table('event_store')->where('id', '=', $id)->toSQL();
+        $sql = $qb->table('tblEventStore')->where('evsPK', '=', $id)->toSQL();
         $stmt = $db->prepare($sql);
         $qb->bindTo($stmt);
         $stmt->execute();

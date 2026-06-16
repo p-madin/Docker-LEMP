@@ -11,8 +11,8 @@ $password = getenv('DB_PASS') ?: 'docker_user_lemp';
 $dsn = "$vendor:host=$host;dbname=$dbname";
 $db = new PDO($dsn, $username, $password, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 
-$stmt = $db->query("SELECT id, event_type, previous_payload FROM event_store WHERE event_type = 'AccountUpdated' ORDER BY id DESC LIMIT 5");
+$stmt = $db->query("SELECT evsPK, evsEventType, evsPreviousPayload FROM tblEventStore WHERE evsEventType = 'AccountUpdated' ORDER BY evsPK DESC LIMIT 5");
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 foreach ($rows as $row) {
-    echo "ID: " . $row['id'] . " | Type: " . $row['event_type'] . " | Prev Payload: " . ($row['previous_payload'] ? "exists" : "NULL") . "\n";
+    echo "ID: " . $row['evsPK'] . " | Type: " . $row['evsEventType'] . " | Prev Payload: " . ($row['evsPreviousPayload'] ? "exists" : "NULL") . "\n";
 }

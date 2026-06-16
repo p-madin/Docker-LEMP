@@ -156,18 +156,18 @@ CREATE TABLE banned_ips(
     PRIMARY KEY(biPK)
 );
 
-CREATE TABLE event_store(
-    id INT NOT NULL AUTO_INCREMENT,
-    aggregate_id INT NULL,
-    event_type VARCHAR(128) NOT NULL,
-    payload TEXT NOT NULL,
-    previous_payload TEXT NULL,
-    status VARCHAR(32) NOT NULL DEFAULT 'pending',
-    user_id INT NULL,
-    is_reversal TINYINT(1) NOT NULL DEFAULT 0,
-    predecessor_id INT NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY(id)
+CREATE TABLE tblEventStore(
+    evsPK INT NOT NULL AUTO_INCREMENT,
+    evsAggregateFK INT NULL,
+    evsEventType VARCHAR(128) NOT NULL,
+    evsPayload TEXT NOT NULL,
+    evsPreviousPayload TEXT NULL,
+    evsStatus VARCHAR(32) NOT NULL DEFAULT 'pending',
+    evsUserFK INT NULL,
+    evsIsReversal TINYINT(1) NOT NULL DEFAULT 0,
+    evsPredecessorFK INT NULL,
+    evsCreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY(evsPK)
 );
 
 /* sample data for Block - Graph */
