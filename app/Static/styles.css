@@ -79,6 +79,10 @@ body>div.full-width {
     align-items: stretch;
 }
 
+body>div.full-width>#editor-root {
+    width: 100%
+}
+
 /* end doc */
 
 
