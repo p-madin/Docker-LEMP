@@ -242,3 +242,9 @@ VALUES ('Child Service Action', 'a', NULL, '/childServiceAction', 'ChildServiceA
 -- Render the form on the child management page
 INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (17, 'form', (SELECT CAST(tfPK AS CHAR) FROM tblForm WHERE tfName = 'createChildService'));
 INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (8, 17, 2);
+
+-- Archived Pages Elements
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (50, 'heading', 'Archived Pages');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (51, 'table', '{"dataProvider":"ArchivedPageDataProvider"}');
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (5, 50, 4);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (5, 51, 5);

@@ -18,7 +18,7 @@ class PageDataProvider implements DataProviderInterface {
         global $db;
         $sql = "SELECT p.pagPK, p.pagTitle, p.pagCreated, 
                        (SELECT nbPath FROM tblNavBar WHERE nbPageFK = p.pagPK ORDER BY nbPK ASC LIMIT 1) as nbPath
-                FROM tblPages p ORDER BY p.pagPK ASC";
+                FROM tblPages p WHERE p.pagDeleted IS NULL ORDER BY p.pagPK ASC";
         $stmt = $db->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);

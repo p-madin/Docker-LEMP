@@ -26,6 +26,21 @@ class PageAction implements ControllerInterface {
                 Hyperlink::redirection(self::$manage_URI);
             }
 
+            // Handle restore request
+            if (isset($request->post['action']) && $request->post['action'] === 'restore') {
+                $pk = (int)($request->post['pagPK'] ?? 0);
+                if ($pk > 0) {
+                    $qb_data = new QueryBuilder($dialect);
+                    $pageData = $qb_data->table('tblPages')->where('pagPK', '=', $pk)->getFetch($db);
+                    if ($pageData) {
+                        $eventId = $eventStore->append('PageRestored', $pageData, $pk, $authorId);
+                        $eventStore->waitUntilProcessed($eventId);
+                    }
+                }
+                
+                Hyperlink::redirection(self::$manage_URI);
+            }
+
             $cleanData = FormValidation::processAndValidate('page', $request->post, $formSchemas, $sessionController, function($clean) {
                 return self::$manage_URI;
             });
@@ -73,6 +88,13 @@ class PageAction implements ControllerInterface {
                 $qb = new QueryBuilder($dialect);
                 // Soft delete
                 $sql = $qb->table('tblPages')->where('pagPK', '=', $pk)->update(['pagDeleted' => date('Y-m-d H:i:s')]);
+                $qb->doExecute($db, $sql);
+            },
+            'PageRestored' => function($payload, $db, $dialect) {
+                $pk = (int)$payload['pagPK'];
+                $qb = new QueryBuilder($dialect);
+                // Restore page
+                $sql = $qb->table('tblPages')->where('pagPK', '=', $pk)->update(['pagDeleted' => null]);
                 $qb->doExecute($db, $sql);
             },
         ];

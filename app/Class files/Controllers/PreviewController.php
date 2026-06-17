@@ -14,7 +14,7 @@ class PreviewController implements ControllerInterface {
         $qb_page = new QueryBuilder($dialect);
         $pageData = $qb_page->table('tblPages')->where('pagPK', '=', $pageId)->getFetch($db);
         
-        if (!$pageData) {
+        if (!$pageData || $pageData['pagDeleted'] !== null) {
             Hyperlink::redirection("/");
         }
 

@@ -983,9 +983,11 @@ class BlockEditor {
                     headers: { 'Accept': 'application/json' }
                 });
                 const pResult = await pRes.json();
-                if (pResult.success && pResult.eventId) {
-                    location.href = '/page_management';
-                    return;
+                if (pResult.success && pResult.dependency) {
+                    this.pageId = pResult.dependency;
+                    window.history.replaceState({}, '', `/page_editor?id=${this.pageId}`);
+                } else {
+                    throw new Error("Failed to create page: " + JSON.stringify(pResult));
                 }
             } else {
                 this.saveBtn.innerText = 'Updating Page...';

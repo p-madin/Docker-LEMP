@@ -73,7 +73,7 @@ function renderElement($el, $dom, $target, $formSchemas) {
         }
     } else if (!in_array($el['eleType'], ['container', 'divider'])) {
         // Text content
-        $node->textContent = $el['eleContent'];
+        $node->textContent = htmlspecialchars_decode($el['eleContent'], ENT_QUOTES);
     }
 
     // Recursively render children

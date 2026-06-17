@@ -77,3 +77,36 @@ Address the table collapse of `FlexTableComponent` rendering to a stacked card l
 ### Implementation Goals
 1. Convert `.flex-table` row elements to use `flex-direction: column`.
 2. Hide table headers and append data-labels to cells for stacked contexts.
+
+---
+
+## Idea: Content Export Engine (The Data Sovereign)
+### Description
+Provide comprehensive data portability to prevent vendor lock-in. Allow users to export their entire site's structured content (pages and elements) as a clean JSON package.
+
+### Implementation Goals
+1. **JSON Export Action**: Create a backend action that aggregates data from `tblPages` and `tblElements` into a structured, nested JSON tree.
+2. **Management UI**: Add an "Export Content" button to the Page Management dashboard that triggers the JSON download.
+
+---
+
+## Idea: CRUD Role-Based Access Control (RBAC)
+### Description
+Introduce granular permissions to allow Operations Managers to delegate tasks securely. Different users will have distinct capabilities (e.g., Admin vs. Editor vs. Viewer).
+
+### Implementation Goals
+1. **Database Schema**: Add a `role` column to `appUsers` or create distinct `tblRoles` and `tblPermissions` tables for more complex mapping.
+2. **Middleware Authorization**: Implement a routing middleware that intercepts requests to `nbProtected` routes and verifies the user's role against the required capability.
+3. **UI Adjustments**: Update the Navbar and Page Builder to hide restricted elements or tools from users lacking the appropriate permissions.
+
+---
+
+## Idea: Headless Content API (The Headless Pioneer)
+### Description
+Expose the application's content structure via secure RESTful endpoints, allowing developers to pull structured content directly into external frontends, mobile applications, or static site generators.
+
+### Implementation Goals
+1. **API Router**: Create an API-specific route handler (e.g., `/api/v1/*`) that bypasses the standard HTML view rendering and exclusively outputs JSON.
+2. **Page Content Endpoint**: Implement an endpoint (e.g., `GET /api/v1/pages/{id}`) that queries `tblPages` and `tblElements` and recursively returns the nested JSON tree representing the requested page.
+3. **API Authentication**: Introduce API keys or Bearer token support so that secure or restricted extranet content can be safely queried by authorized external systems without using browser session cookies.
+
