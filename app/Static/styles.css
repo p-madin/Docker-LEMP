@@ -210,7 +210,8 @@ body>div details[open] summary {
     text-wrap-mode: nowrap;
 }
 
-#main-navbar>.flex-row .flex-cell.logo {
+#main-navbar>.flex-row .flex-cell.logo,
+#main-navbar>.flex-row .flex-cell.hamburger-menu {
     background-color: rgba(0, 0, 0, 0);
     width: 50px;
     height: 50px;
@@ -470,14 +471,6 @@ form.form_hyperlink a.ajax {
 #main-navbar>.flex-row .flex-cell.hamburger-menu {
     display: none;
     cursor: pointer;
-    font-size: 24px;
-    user-select: none;
-    border: solid 1px black;
-    background-color: rgba(255, 255, 255, 0.95);
-    color: black;
-    height: 35px;
-    width: 35px;
-    margin: 5px 5px
 }
 
 .mobile-sidebar-toggle {
@@ -515,6 +508,7 @@ form.form_hyperlink a.ajax {
 
     body>#content-root:not(.full-width) {
         max-width: 100%;
+        padding: 0 20px
     }
 
     body>#content-root>form.flex-form {

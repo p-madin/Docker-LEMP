@@ -64,6 +64,14 @@
     box-shadow: var(--shadow-sm);
 }
 
+.editor-sidebar.left {
+    padding-top: 10px;
+    position: sticky;
+    top: 0;
+    left: 0;
+    max-height: 90vh;
+}
+
 .editor-sidebar.right {
     border-right: none;
     border-left: 1px solid var(--border-light);

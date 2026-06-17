@@ -27,7 +27,12 @@ class NavbarComponent extends Component {
         ]);
 
         $hamburgerCell = $this->fabricateChild($navRow, "div", ["class" => "flex-cell hamburger-menu icon"]);
-        $hamburgerCell->textContent = '☰';
+        $this->fabricateChild($hamburgerCell, "img", [
+            "src" => $this->assetManager->getImageUrl('/Static/menu.svg'),
+            "alt" => "Menu",
+            "style" => "height: 40px; display: block;"
+        ]);
+        //$hamburgerCell->textContent = '☰';
 
         if(!is_null($this->userId)){
             global $db, $dialect, $eventStore;
