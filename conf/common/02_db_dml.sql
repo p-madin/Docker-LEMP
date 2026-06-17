@@ -37,6 +37,9 @@ INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (16, 'table', '{"dat
 INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (21, 'hyperlink', '{"label":"Create New Navbar Item", "url":"/edit_navbar"}');
 INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (22, 'hyperlink', '{"label":"Create New Form", "url":"/edit_form"}');
 INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (23, 'hyperlink', '{"label":"Create New Page", "url":"/page_editor"}');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (17, 'form', "11");
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (50, 'heading', 'Archived Pages');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (51, 'table', '{"dataProvider":"ArchivedPageDataProvider"}');
 
 -- Link Elements to Pages
 INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (1, 1, 1);
@@ -58,6 +61,9 @@ INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (7, 13, 1
 INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (7, 14, 2);
 INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (8, 15, 1);
 INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (8, 16, 2);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (8, 17, 2);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (5, 50, 4);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (5, 51, 5);
 
 -- Root Items
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Home', 'c', NULL, '/', 'IndexController', false, 1, NULL);
@@ -101,6 +107,8 @@ INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerCl
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Preview Page', 'a', NULL, '/preview', 'PreviewController', true, 0);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Data Provider JSON Action', 'a', NULL, '/dataProviders', 'DataProviderAction', true, 0);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Boot Child Action', 'a', NULL, '/bootChild', 'BootChildAction', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Create Child Service Action', 'a', NULL, '/createChildService', 'CreateChildServiceAction', 1, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Child Service Action', 'a', NULL, '/childServiceAction', 'ChildServiceAction', 1, 0);
 
 INSERT INTO tblForm (tfName, tfAction, tfReadOnly) 
 VALUES ('login', 'login', false), 
@@ -112,7 +120,8 @@ VALUES ('login', 'login', false),
 ('banned_ips', 'banned_ips', true), 
 ('platform_recovery', 'platform_recovery', false), 
 ('page', 'page', false), 
-('element', 'element', false);
+('element', 'element', false),
+('createChildService', 'createChildService', false);
 
 INSERT INTO tblColumns (tcFormFK, tcName, tcLabel, tcType, tcRules, tcOrder) VALUES
 (1, 'username', 'Username', 'text', '{"required":true}', 1),
@@ -155,7 +164,9 @@ INSERT INTO tblColumns (tcFormFK, tcName, tcLabel, tcType, tcRules, tcOrder) VAL
 (10, 'eleType', 'Type', 'text', '{"required":true}', 20),
 (10, 'eleContent', 'Content', 'textarea', '{}', 30),
 (10, 'eleCSSClasses', 'CSS Classes', 'css_class', '{"regex":"/^[a-zA-Z0-9\\\\-_ ]*$/"}', 40),
-(10, 'eleParentFK', 'Parent ID', 'number', '{}', 50);
+(10, 'eleParentFK', 'Parent ID', 'number', '{}', 50),
+(11, 'csName', 'Service Name', 'alpha_dash', '{"required":true,"alpha_dash":true}', 1),
+(11, 'csAdminFK', 'Tenant Administrator', 'user_select', '{"required":true,"numeric":true}', 2);
 
 -- SaaS Children
 -- -- chiStatus = [u = {unknown - to be discovered by HTTP}, a = {active}, d = {deleted}, p = {paused}, i = {inactive}]
@@ -223,28 +234,3 @@ INSERT INTO tblAnalytics (anaLabel, anaValue, anaCategory) VALUES ('May', 250, '
 INSERT INTO tblAnalytics (anaLabel, anaValue, anaCategory) VALUES ('Jun', 300, 'Sales');
 
 /* END sample data for Block - Graph */
-
--- Form to create a new child service
-INSERT INTO tblForm (tfName, tfAction, tfReadOnly) VALUES ('createChildService', 'createChildService', 0);
-INSERT INTO tblColumns (tcFormFK, tcName, tcLabel, tcType, tcRules, tcOrder) 
-VALUES ((SELECT tfPK FROM tblForm WHERE tfName = 'createChildService'), 'csName', 'Service Name', 'alpha_dash', '{"required":true,"alpha_dash":true}', 1);
-INSERT INTO tblColumns (tcFormFK, tcName, tcLabel, tcType, tcRules, tcOrder) 
-VALUES ((SELECT tfPK FROM tblForm WHERE tfName = 'createChildService'), 'csAdminFK', 'Tenant Administrator', 'user_select', '{"required":true,"numeric":true}', 2);
-
--- Route in tblNavBar for this new form action
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) 
-VALUES ('Create Child Service Action', 'a', NULL, '/createChildService', 'CreateChildServiceAction', 1, 0);
-
--- Route in tblNavBar for childServiceAction
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) 
-VALUES ('Child Service Action', 'a', NULL, '/childServiceAction', 'ChildServiceAction', 1, 0);
-
--- Render the form on the child management page
-INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (17, 'form', (SELECT CAST(tfPK AS CHAR) FROM tblForm WHERE tfName = 'createChildService'));
-INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (8, 17, 2);
-
--- Archived Pages Elements
-INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (50, 'heading', 'Archived Pages');
-INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (51, 'table', '{"dataProvider":"ArchivedPageDataProvider"}');
-INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (5, 50, 4);
-INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (5, 51, 5);

@@ -114,6 +114,7 @@ RUN echo "www-data ALL=(root) NOPASSWD: /usr/local/nginx/nginx, /usr/local/bin/d
 RUN cp /usr/src/php/php.ini-production /usr/local/etc/php.ini
 
 COPY ./conf/nginx.conf /usr/local/nginx/nginx.conf
+COPY ./conf/nginx.live.conf /usr/local/nginx/nginx.live.conf
 COPY ./conf/php-fpm.conf /usr/local/etc/php-fpm.conf
 COPY ./conf/www.conf /usr/local/etc/php-fpm.d/www.conf
 COPY ./conf/php.ini /usr/local/etc/php/php.ini

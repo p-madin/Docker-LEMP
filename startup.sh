@@ -5,6 +5,10 @@ printenv > /etc/cron.d/environment.env
 
 docker network create superhost-network 2>/dev/null || true
 
+if [ "$TARGET_ENV" = "live" ] || [ "$TARGET_ENV" = "prod" ]; then
+    cp /usr/local/nginx/nginx.live.conf /usr/local/nginx/nginx.conf
+fi
+
 cat /etc/cron.d/environment.env >> /etc/cron.d/worker-cron
 cat /etc/cron.d/worker-source >> /etc/cron.d/worker-cron
 crontab /etc/cron.d/worker-cron

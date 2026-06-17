@@ -17,6 +17,7 @@ services:
       TZ: Australia/Sydney
       DB_VENDOR: mysql
       DB_HOST: db
+      TARGET_ENV: ${TARGET_ENV:-dev}
     networks:
       - stack-network
       - superhost-network
