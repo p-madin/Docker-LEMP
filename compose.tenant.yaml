@@ -8,7 +8,8 @@ services:
       - "443"
     environment:
       DB_HOST: db
-      TENANT_DB_NAME: stackDB
+      DB_VENDOR: ${DB_VENDOR}
+      TENANT_DB_NAME: ${TENANT_DB_NAME}
       TENANT_DB_USER: ${TENANT_DB_USER}
       TENANT_DB_PASS: ${TENANT_DB_PASS}
       TENANT_NAME: ${TENANT_NAME}
@@ -29,7 +30,7 @@ services:
       - "3306"
     environment:
       MYSQL_ROOT_PASSWORD: ${TENANT_DB_ROOT}
-      MYSQL_DATABASE: stackDB
+      MYSQL_DATABASE: ${TENANT_DB_NAME}
       MYSQL_USER: ${TENANT_DB_USER}
       MYSQL_PASSWORD: ${TENANT_DB_PASS}
     volumes:

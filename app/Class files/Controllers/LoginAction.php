@@ -13,11 +13,7 @@ class LoginAction implements ControllerInterface {
 
         $qb = new QueryBuilder($dialect);
         $qb->table('appUsers')->select(['auPK', 'password', 'verified'])->where('username', '=', $sanitizedUsername);
-        $stmt = $db->prepare($qb->toSQL());
-        $qb->bindTo($stmt);
-        $stmt->execute();
-
-        $user = $stmt->fetch();
+        $user = $qb->executeFetch($db);
 
         if($user && password_verify($request->post['password'] ?? '', $user['password'])){
             if($user['verified'] == 0){

@@ -18,4 +18,13 @@ interface DatabaseDialect {
 
     /* Compiles the pagination/limit syntax for the specific DBMS. */
     public function compileLimitOffset(array $components): string;
+
+    /* Extracts a date part from a column. */
+    public function extractDatePart(string $part, string $column): string;
+
+    /* Compiles raw SQL strings, translating standard SQL functions to dialect-specific equivalents if needed. */
+    public function compileRaw(string $raw): string;
+
+    /* Begins a database transaction appropriately for the dialect. Returns true if the transaction was started (owned), false otherwise. */
+    public function beginTransaction(PDO $db): bool;
 }

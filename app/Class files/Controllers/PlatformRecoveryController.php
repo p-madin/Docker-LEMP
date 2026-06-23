@@ -24,11 +24,7 @@ class PlatformRecoveryController implements ControllerInterface {
         }
 
         // 1. Fetch General Event Log
-        $sql = $qb->table('tblEventStore')->orderBy('evsPK', 'DESC')->limit(100)->toSQL();
-        $stmt = $db->prepare($sql);
-        $qb->bindTo($stmt);
-        $stmt->execute();
-        $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $events = $qb->table('tblEventStore')->orderBy('evsPK', 'DESC')->limit(100)->executeFetchAll($db);
 
         // 2. Fetch Current User's Undoable Path
         $undoableEvents = $eventStore->getUndoableEvents($sessionController);
@@ -78,17 +74,12 @@ class PlatformRecoveryController implements ControllerInterface {
 
                 // 1. Fetch events to undo
                 $qb = new QueryBuilder($dialect);
-                $sql = $qb->table('tblEventStore')
+                $eventsToUndo = $qb->table('tblEventStore')
                           ->where('evsCreatedAt', '>', $targetTimeStr)
                           ->where('evsStatus', '=', 'processed')
                           ->where('evsEventType', '!=', 'PlatformRecoveryReplay')
                           ->orderBy('evsPK', 'DESC')
-                          ->toSQL();
-                
-                $stmt = $db->prepare($sql);
-                $qb->bindTo($stmt);
-                $stmt->execute();
-                $eventsToUndo = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                          ->executeFetchAll($db);
 
                 $lastReversalId = null;
 

@@ -253,11 +253,7 @@ class QueryBuilder {
             throw new \Exception("QueryBuilder: toSQL() is generally for SELECT queries. Use the direct insert/update/delete methods.");
         }
         
-        // Handle pagination bindings at compile time
-        if ($this->components['limit'] !== null || $this->components['offset'] !== null) {
-            $this->components['limitParam'] = ($this->components['limit'] !== null) ? $this->nextParam($this->components['limit']) : null;
-            $this->components['offsetParam'] = ($this->components['offset'] !== null) ? $this->nextParam($this->components['offset'] ?: 0) : null;
-        }
+        // Handle pagination directly in dialects since some drivers (MSSQL) fail with string-bound limits
 
         return $this->dialect->compileSelect($this->components);
     }
@@ -282,26 +278,27 @@ class QueryBuilder {
         }
     }
 
-    public function doExecute($db, $sql){
+    public function doExecute(\PDO $db, ?string $sql = null): \PDOStatement {
+        if ($sql === null) {
+            $sql = $this->toSQL();
+        }
         $stmt = $db->prepare($sql);
         $this->bindTo($stmt);
         $stmt->execute();
         return $stmt;
     }
 
-    public function getFetch($db){
-        $sql = $this->toSQL();
-        $stmt = $db->prepare($sql);
-        $this->bindTo($stmt);
-        $stmt->execute();
-        return $stmt->fetch();
+    public function executeFetch(\PDO $db, int $fetchType = \PDO::FETCH_ASSOC) {
+        $results = $this->doExecute($db)->fetchAll($fetchType);
+        return $results ? $results[0] : false;
     }
 
-    public function getFetchAll($db){
-        $sql = $this->toSQL();
-        $stmt = $db->prepare($sql);
-        $this->bindTo($stmt);
-        $stmt->execute();
-        return $stmt->fetchAll();
+    public function executeFetchAll(\PDO $db, int $fetchType = \PDO::FETCH_ASSOC) {
+        return $this->doExecute($db)->fetchAll($fetchType);
+    }
+
+    public function executeFetchColumn(\PDO $db, int $column = 0) {
+        $results = $this->doExecute($db)->fetchAll(\PDO::FETCH_NUM);
+        return $results ? $results[0][$column] : false;
     }
 }

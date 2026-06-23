@@ -20,7 +20,7 @@ class PageRendererController implements ControllerInterface {
         $pageData = $qb_page->table('tblPages')
             ->select(['pagPK', 'pagTitle'])
             ->where('pagPK', '=', $pageId)
-            ->getFetch($db);
+            ->executeFetch($db);
         
         if (!$pageData) {
             Hyperlink::redirection("/");
@@ -32,7 +32,7 @@ class PageRendererController implements ControllerInterface {
             ->join('brgPageElements', 'tblElements.elePK', '=', 'brgPageElements.pelElementFK')
             ->where('brgPageElements.pelPageFK', '=', $pageId)
             ->orderBy('brgPageElements.pelOrder', 'ASC')
-            ->getFetchAll($db);
+            ->executeFetchAll($db);
 
         // Build hierarchical tree
         $tree = $this->buildTree($elements);

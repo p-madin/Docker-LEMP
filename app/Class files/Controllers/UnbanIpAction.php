@@ -17,7 +17,7 @@ class UnbanIpAction implements ControllerInterface {
             
             // Fetch current data for undo support
             $qb_data = new QueryBuilder($dialect);
-            $banData = $qb_data->table('banned_ips')->where('biPK', '=', (int)$pk)->getFetch($db);
+            $banData = $qb_data->table('banned_ips')->where('biPK', '=', (int)$pk)->executeFetch($db);
             
             if ($banData) {
                 $eventId = $eventStore->append('IpUnbanned', $banData, (int)$pk, $authorId);
@@ -37,11 +37,7 @@ class UnbanIpAction implements ControllerInterface {
                 
                 // 1. Get the IP address first
                 $qb_get = new QueryBuilder($dialect);
-                $sql_get = $qb_get->table('banned_ips')->select(['biIP'])->where('biPK', '=', $pk)->toSQL();
-                $stmt_get = $db->prepare($sql_get);
-                $qb_get->bindTo($stmt_get);
-                $stmt_get->execute();
-                $row = $stmt_get->fetch();
+                $row = $qb_get->table('banned_ips')->select(['biIP'])->where('biPK', '=', $pk)->executeFetch($db);
 
                 if ($row) {
                     $ip = $row['biIP'];

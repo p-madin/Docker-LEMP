@@ -15,6 +15,11 @@ services:
       TZ: Australia/Sydney
       DB_VENDOR: mysql
       DB_HOST: db
+      TARGET_ENV: ${TARGET_ENV:-dev}
+      EXTERNAL_PORT: ${EXTERNAL_PORT}
+      TENANT_DB_NAME: ${TENANT_DB_NAME}
+      TENANT_DB_USER: ${TENANT_DB_USER}
+      TENANT_DB_PASS: ${TENANT_DB_PASS}
     networks:
       - stack-network
       - superhost-network
@@ -26,10 +31,10 @@ services:
 
     image: mariadb:latest
     environment:
-      MYSQL_ROOT_PASSWORD: docker_lemp
-      MYSQL_DATABASE: stackDB
-      MYSQL_USER: docker_user_lemp
-      MYSQL_PASSWORD: docker_user_lemp
+      MYSQL_ROOT_PASSWORD: ${TENANT_DB_ROOT}
+      MYSQL_DATABASE: ${TENANT_DB_NAME}
+      MYSQL_USER: ${TENANT_DB_USER}
+      MYSQL_PASSWORD: ${TENANT_DB_PASS}
       TZ: Australia/Sydney
     volumes:
       - maria_db_data:/var/lib/mysql

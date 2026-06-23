@@ -13,7 +13,7 @@ class AccountDataProvider implements DataProviderInterface {
     public function getData(): array {
         global $db, $dialect;
         $qb = new QueryBuilder($dialect);
-        return $qb->table('appUsers')->select(['auPK', 'username', 'name', 'verified'])->getFetchAll($db);
+        return $qb->table('appUsers')->select(['auPK', 'username', 'name', 'verified'])->executeFetchAll($db);
     }
 
     public function getNestedKey(): ?string {

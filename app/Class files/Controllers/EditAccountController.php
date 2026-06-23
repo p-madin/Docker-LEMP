@@ -13,7 +13,7 @@ class EditAccountController implements ControllerInterface {
 
         $qb = new QueryBuilder($dialect);
         $qb->table('appUsers')->select(['auPK', 'username', 'name', 'age', 'city', 'email', 'verified'])->where('auPK', '=', $id);
-        $user = $qb->getFetch($db);
+        $user = $qb->executeFetch($db);
 
         return View::render('management/edit_account', [
             'user' => $user,

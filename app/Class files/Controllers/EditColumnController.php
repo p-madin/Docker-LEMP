@@ -13,7 +13,7 @@ class EditColumnController implements ControllerInterface {
         if ($id > 0) {
             $qb = new QueryBuilder($dialect);
             $qb->table('tblColumns')->select(['tcPK', 'tcFormFK', 'tcName', 'tcLabel', 'tcType', 'tcRules', 'tcOrder'])->where('tcPK', '=', $id);
-            $raw = $qb->getFetch($db);
+            $raw = $qb->executeFetch($db);
             if ($raw) {
                 $form_id = $raw['tcFormFK'];
             }
@@ -35,7 +35,7 @@ class EditColumnController implements ControllerInterface {
         if ($form_id > 0) {
             $checkQb = new QueryBuilder($dialect);
             $checkQb->table('tblForm')->select(['tfReadOnly'])->where('tfPK', '=', $form_id);
-            $fraw = $checkQb->getFetch($db);
+            $fraw = $checkQb->executeFetch($db);
             if ($fraw && (int)($fraw['tfReadOnly']) === 1) {
                 Hyperlink::redirection("/edit_form?id=" . $form_id);
             }

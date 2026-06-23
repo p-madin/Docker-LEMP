@@ -18,7 +18,7 @@ class EditNavbarAction implements ControllerInterface {
             if ($pk > 0) {
                 // Fetch current data for undo support
                 $qb_data = new QueryBuilder($dialect);
-                $itemData = $qb_data->table('tblNavBar')->where('nbPK', '=', $pk)->getFetch($db);
+                $itemData = $qb_data->table('tblNavBar')->where('nbPK', '=', $pk)->executeFetch($db);
                 
                 if ($itemData) {
                     $eventId = $eventStore->append('NavbarItemDeleted', $itemData, $pk, $authorId);
@@ -54,7 +54,7 @@ class EditNavbarAction implements ControllerInterface {
         if ($pk > 0) {
             // Fetch current state for Memento support
             $qb_old = new QueryBuilder($dialect);
-            $oldData = $qb_old->table('tblNavBar')->where('nbPK', '=', $pk)->getFetch($db);
+            $oldData = $qb_old->table('tblNavBar')->where('nbPK', '=', $pk)->executeFetch($db);
             $previousPayload = is_array($oldData) ? $oldData : null;
             $eventId = $eventStore->append('NavbarItemUpdated', array_merge(['nbPK' => $pk], $data), $pk, $authorId, $previousPayload);
         } else {
@@ -72,12 +72,23 @@ class EditNavbarAction implements ControllerInterface {
         return [
             'NavbarItemCreated' => function($payload, $db, $dialect) {
                 unset($payload['original_event_id']);
+                $hasExplicitId = isset($payload['nbPK']) && (int)$payload['nbPK'] > 0;
+                
+                if ($hasExplicitId && $dialect instanceof MSSQLDialect) {
+                    $db->exec("SET IDENTITY_INSERT [tblNavBar] ON");
+                }
+                
                 $qb = new QueryBuilder($dialect);
                 $sql = $qb->table('tblNavBar')->insert($payload);
                 $stmt = $db->prepare($sql);
                 $qb->bindTo($stmt);
                 $stmt->execute();
-                return (int)$db->lastInsertId();
+                
+                if ($hasExplicitId && $dialect instanceof MSSQLDialect) {
+                    $db->exec("SET IDENTITY_INSERT [tblNavBar] OFF");
+                }
+                
+                return $hasExplicitId ? (int)$payload['nbPK'] : (int)$db->lastInsertId();
             },
             'NavbarItemUpdated' => function($payload, $db, $dialect) {
                 $pk = (int)$payload['nbPK'];

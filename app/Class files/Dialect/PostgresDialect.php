@@ -9,12 +9,12 @@ class PostgresDialect extends ANSIStandardDialect {
     public function compileLimitOffset(array $components): string {
         $sql = "";
         
-        if (isset($components['limitParam'])) {
-            $sql .= "LIMIT :" . $components['limitParam'];
+        if (isset($components['limit'])) {
+            $sql .= "LIMIT " . (int)$components['limit'];
         }
 
-        if (isset($components['offsetParam'])) {
-            $sql .= ($sql === "" ? "" : " ") . "OFFSET :" . $components['offsetParam'];
+        if (isset($components['offset'])) {
+            $sql .= ($sql === "" ? "" : " ") . "OFFSET " . (int)$components['offset'];
         }
         
         return $sql;

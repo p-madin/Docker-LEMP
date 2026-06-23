@@ -14,7 +14,7 @@ class ErrorLogDataProvider implements DataProviderInterface {
     public function getData(): array {
         global $db, $dialect;
         $qb = new QueryBuilder($dialect);
-        return $qb->table('phpErrorLog')->select(['pelPK', 'pelTimestamp', 'pelSeverity', 'pelMessage', 'pelFile', 'pelLine'])->orderBy('pelPK', 'DESC')->limit(100)->getFetchAll($db);
+        return $qb->table('phpErrorLog')->select(['pelPK', 'pelTimestamp', 'pelSeverity', 'pelMessage', 'pelFile', 'pelLine'])->orderBy('pelPK', 'DESC')->limit(100)->executeFetchAll($db);
     }
 
     public function getNestedKey(): ?string {

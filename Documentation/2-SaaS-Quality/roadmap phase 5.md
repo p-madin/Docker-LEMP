@@ -13,7 +13,7 @@ When an entity is updated or deleted, the Action Controller fetches the *current
 
 ```php
 // In EditFormAction.php
-$oldData = $qb_old->table('tblForm')->where('tfPK', '=', $pk)->getFetch($db);
+$oldData = $qb_old->table('tblForm')->where('tfPK', '=', $pk)->executeFetch($db);
 $previousPayload = is_array($oldData) ? $oldData : null;
 
 $eventId = $eventStore->append('FormUpdated', $newData, $pk, $authorId, $previousPayload);

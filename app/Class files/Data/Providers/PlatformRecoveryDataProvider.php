@@ -13,7 +13,7 @@ class PlatformRecoveryDataProvider implements DataProviderInterface {
     public function getData(): array {
         global $db, $dialect;
         $qb = new QueryBuilder($dialect);
-        $data = $qb->table('tblEventStore')->select(['evsPK', 'evsEventType', 'evsAggregateFK', 'evsUserFK', 'evsCreatedAt'])->orderBy('evsPK', 'DESC')->limit(100)->getFetchAll($db);
+        $data = $qb->table('tblEventStore')->select(['evsPK', 'evsEventType', 'evsAggregateFK', 'evsUserFK', 'evsCreatedAt'])->orderBy('evsPK', 'DESC')->limit(100)->executeFetchAll($db);
         
         foreach ($data as &$row) {
             $row['evsUserFK'] = $row['evsUserFK'] ?? 'System';

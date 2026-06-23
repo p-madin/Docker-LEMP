@@ -16,11 +16,7 @@ class SystemConfigController {
      */
     public function getSysConfig(): array {
         $qb = new QueryBuilder($this->dialect);
-        $qb->table('sysConfig')->select(['scName', 'scValue']);
-        $stmt = $this->db->prepare($qb->toSQL());
-        $qb->bindTo($stmt);
-        $stmt->execute();
-        $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $data = $qb->table('sysConfig')->select(['scName', 'scValue'])->executeFetchAll($this->db);
 
         $scvRows = [];
         foreach($data as $value) {
@@ -36,15 +32,9 @@ class SystemConfigController {
      */
     public function getNavbarItems(): array {
         $qb = new QueryBuilder($this->dialect);
-        $qb->table('tblNavBar')->select(['nbPK', 'nbText', 'nbDiscriminator', 'nbPageFK', 'nbPath', 'nbControllerClass', 'nbProtected', 'nbOrder', 'nbParentFK']);
-        
-        $sql = $qb->toSQL();
-        $sql .= " ORDER BY nbOrder ASC";
-        
-        $stmt = $this->db->prepare($sql);
-        $qb->bindTo($stmt);
-        $stmt->execute();
-        $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $data = $qb->table('tblNavBar')->select(['nbPK', 'nbText', 'nbDiscriminator', 'nbPageFK', 'nbPath', 'nbControllerClass', 'nbProtected', 'nbOrder', 'nbParentFK'])
+                   ->orderBy('nbOrder', 'ASC')
+                   ->executeFetchAll($this->db);
 
         $items = [];
         foreach($data as $row) {

@@ -8,12 +8,12 @@ class MySQLDialect extends ANSIStandardDialect {
     public function compileLimitOffset(array $components): string {
         $sql = "";
         
-        if (isset($components['limitParam'])) {
-            $sql .= "LIMIT :" . $components['limitParam'];
+        if (isset($components['limit'])) {
+            $sql .= "LIMIT " . (int)$components['limit'];
         }
 
-        if (isset($components['offsetParam'])) {
-            $sql .= ($sql === "" ? "LIMIT 18446744073709551615 " : " ") . "OFFSET :" . $components['offsetParam'];
+        if (isset($components['offset'])) {
+            $sql .= ($sql === "" ? "LIMIT 18446744073709551615 " : " ") . "OFFSET " . (int)$components['offset'];
         }
         
         return $sql;

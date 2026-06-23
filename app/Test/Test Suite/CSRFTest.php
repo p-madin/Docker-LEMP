@@ -30,13 +30,12 @@ class CSRFTest extends TestSuiteBase {
         curl_close($chA);
         
         $docA = \Dom\HTMLDocument::createFromString($resA, LIBXML_NOERROR);
-        $inputA = $docA->querySelector('input[name="csrf_token"]');
-
-        if (!$inputA) {
+        $metaA = $docA->querySelector('meta[name="csrf-token"]');
+        $tokenA = $metaA ? $metaA->getAttribute('content') : '';
+        if (!$tokenA) {
             $GLOBALS['returnable'] .= "[FAIL] User A could not find CSRF token in home page via querySelector.\n";
             return false;
         }
-        $tokenA = $inputA->getAttribute('value');
         
         // 2. User B: Get Session B and Token B
         $GLOBALS['returnable'] .= " - User B: Retrieving session and token...\n";
@@ -47,13 +46,12 @@ class CSRFTest extends TestSuiteBase {
         curl_close($chB);
         
         $docB = \Dom\HTMLDocument::createFromString($resB, LIBXML_NOERROR);
-        $inputB = $docB->querySelector('input[name="csrf_token"]');
-
-        if (!$inputB) {
+        $metaB = $docB->querySelector('meta[name="csrf-token"]');
+        $tokenB = $metaB ? $metaB->getAttribute('content') : '';
+        if (!$tokenB) {
             $GLOBALS['returnable'] .= "[FAIL] User B could not find CSRF token in home page via querySelector.\n";
             return false;
         }
-        $tokenB = $inputB->getAttribute('value');
         
         if ($tokenA === $tokenB) {
             $GLOBALS['returnable'] .= "[FAIL] User A and User B received the same CSRF token!\n";

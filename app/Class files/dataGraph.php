@@ -67,7 +67,7 @@ class DataGraphComponent extends Component {
             global $db, $dialect;
             $qb = new QueryBuilder($dialect);
             
-            $rawData = $qb->table($this->dataSource)->getFetchAll($db);
+            $rawData = $qb->table($this->dataSource)->executeFetchAll($db);
 
             $mapper = new \Services\GenericDataMapper();
             $mappedData = $mapper->map($rawData, $this->dataConfig['mapping'] ?? []);

@@ -14,7 +14,7 @@ class ElementAction implements ControllerInterface {
             $pk = (int)($request->post['elePK'] ?? 0);
             if ($pk > 0) {
                 $qb_data = new QueryBuilder($dialect);
-                $elementData = $qb_data->table('tblElements')->where('elePK', '=', $pk)->getFetch($db);
+                $elementData = $qb_data->table('tblElements')->where('elePK', '=', $pk)->executeFetch($db);
                 if ($elementData) {
                     $eventId = $eventStore->append('ElementDeleted', $elementData, null, $authorId);
                     $eventStore->waitUntilProcessed($eventId);
@@ -41,7 +41,7 @@ class ElementAction implements ControllerInterface {
 
         if ($pk > 0) {
             $qb_old = new QueryBuilder($dialect);
-            $oldData = $qb_old->table('tblElements')->where('elePK', '=', $pk)->getFetch($db);
+            $oldData = $qb_old->table('tblElements')->where('elePK', '=', $pk)->executeFetch($db);
             $eventId = $eventStore->append('ElementUpdated', array_merge(['elePK' => $pk, 'pageId' => $pageId, 'pelOrder' => $pelOrder], $data), null, $authorId, $oldData);
         } else {
             $eventId = $eventStore->append('ElementCreated', array_merge($data, ['pageId' => $pageId, 'pelOrder' => $pelOrder]), null, $authorId);
@@ -75,7 +75,7 @@ class ElementAction implements ControllerInterface {
                     if ($pelOrder === 0) {
                         // Get max order fallback
                         $qb_order = new QueryBuilder($dialect);
-                        $row = $qb_order->table('brgPageElements')->select([$qb_order->raw('MAX(pelOrder) as max_order')])->where('pelPageFK', '=', $pageId)->getFetch($db);
+                        $row = $qb_order->table('brgPageElements')->select([$qb_order->raw('MAX(pelOrder) as max_order')])->where('pelPageFK', '=', $pageId)->executeFetch($db);
                         $pelOrder = (($row['max_order'] ?? 0) + 10);
                     }
 

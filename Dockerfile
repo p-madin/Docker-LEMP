@@ -28,6 +28,7 @@ RUN apt install libpcre2-dev -y
 RUN apt install libpq-dev -y
 RUN apt install cron -y
 RUN apt install libicu-dev -y
+RUN apt install freetds-dev -y
 
 
 RUN mkdir -p /usr/src/php && \
@@ -36,27 +37,29 @@ RUN mkdir -p /usr/src/php && \
     rm php.tar.gz && \
     cd /usr/src/php && \
     ./configure \
-        --prefix=/usr/local \
-        --with-config-file-path=/usr/local/etc/php \
-        --with-config-file-scan-dir=/usr/local/etc/php/conf.d \
-        --enable-fpm \
-        --with-fpm-user=www-data \
-        --with-fpm-group=www-data \
-        --enable-mbstring \
-        --enable-mysqlnd \
-        --with-pdo-mysql=mysqlnd \
-        --with-pdo-pgsql \
-        --with-pgsql \
-        --with-openssl \
-        --with-curl \
-        --with-libzip \
-        --with-gd \
-        --with-webp \
-        --with-freetype \
-        --enable-exif \
-        --enable-bcmath \
-        --enable-intl \
-        --with-readline && \
+    --prefix=/usr/local \
+    --with-config-file-path=/usr/local/etc/php \
+    --with-config-file-scan-dir=/usr/local/etc/php/conf.d \
+    --enable-fpm \
+    --with-fpm-user=www-data \
+    --with-fpm-group=www-data \
+    --enable-mbstring \
+    --enable-mysqlnd \
+    --with-pdo-mysql=mysqlnd \
+    --with-pdo-pgsql \
+    --with-pgsql \
+    --with-pdo-dblib \
+    --with-pdo-sqlite \
+    --with-openssl \
+    --with-curl \
+    --with-libzip \
+    --with-gd \
+    --with-webp \
+    --with-freetype \
+    --enable-exif \
+    --enable-bcmath \
+    --enable-intl \
+    --with-readline && \
     make -j$(nproc) && \
     make install
 
@@ -67,12 +70,12 @@ RUN mkdir -p /usr/src/nginx && \
     rm nginx.tar.gz && \
     cd /usr/src/nginx && \
     ./configure \
-        --sbin-path=/usr/local/nginx/nginx \
-        --conf-path=/usr/local/nginx/nginx.conf \
-        --pid-path=/usr/local/nginx/nginx.pid \
-        --with-http_ssl_module \
-        --with-http_v2_module \
-        --add-module=/usr/src/echo-nginx-module && \
+    --sbin-path=/usr/local/nginx/nginx \
+    --conf-path=/usr/local/nginx/nginx.conf \
+    --pid-path=/usr/local/nginx/nginx.pid \
+    --with-http_ssl_module \
+    --with-http_v2_module \
+    --add-module=/usr/src/echo-nginx-module && \
     make -j$(nproc) && \
     make install
 

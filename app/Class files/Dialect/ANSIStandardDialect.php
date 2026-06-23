@@ -8,7 +8,7 @@ abstract class ANSIStandardDialect implements DatabaseDialect {
         // 1. Columns
         $columns = $components['columns'] ?? ['*'];
         $quotedColumns = array_map(function($col) {
-            if ($col instanceof QueryRaw) return (string)$col;
+            if ($col instanceof QueryRaw) return $this->compileRaw((string)$col);
             if ($col === '*') return '*';
             
             $quoted = $this->quoteIdentifier($col);
@@ -71,7 +71,7 @@ abstract class ANSIStandardDialect implements DatabaseDialect {
         foreach ($params as $col => $paramName) {
             $quotedCols[] = $this->quoteIdentifier($col);
             if ($paramName instanceof QueryRaw) {
-                $placeholders[] = (string)$paramName;
+                $placeholders[] = $this->compileRaw((string)$paramName);
             } else {
                 $placeholders[] = ":" . $paramName;
             }
@@ -86,7 +86,7 @@ abstract class ANSIStandardDialect implements DatabaseDialect {
         
         foreach ($params as $col => $paramName) {
             if ($paramName instanceof QueryRaw) {
-                $setClauses[] = $this->quoteIdentifier($col) . " = " . (string)$paramName;
+                $setClauses[] = $this->quoteIdentifier($col) . " = " . $this->compileRaw((string)$paramName);
             } else {
                 $setClauses[] = $this->quoteIdentifier($col) . " = :" . $paramName;
             }
@@ -140,7 +140,7 @@ abstract class ANSIStandardDialect implements DatabaseDialect {
                     $sql .= $quotedCol . " " . $operator;
                     break;
                 case 'Raw':
-                    $sql .= $quotedCol . " " . $where['operator'] . " " . $where['value'];
+                    $sql .= $quotedCol . " " . $where['operator'] . " " . $this->compileRaw($where['value']);
                     break;
             }
         }
@@ -149,7 +149,7 @@ abstract class ANSIStandardDialect implements DatabaseDialect {
 
     protected function compileGroups(array $groups): string {
         $quoted = array_map(function($group) {
-            return ($group instanceof QueryRaw) ? (string)$group : $this->quoteIdentifier($group);
+            return ($group instanceof QueryRaw) ? $this->compileRaw((string)$group) : $this->quoteIdentifier($group);
         }, $groups);
         return implode(', ', $quoted);
     }
@@ -157,7 +157,7 @@ abstract class ANSIStandardDialect implements DatabaseDialect {
     protected function compileOrders(array $orders): string {
         $clauses = [];
         foreach ($orders as $order) {
-            $col = ($order['column'] instanceof QueryRaw) ? (string)$order['column'] : $this->quoteIdentifier($order['column']);
+            $col = ($order['column'] instanceof QueryRaw) ? $this->compileRaw((string)$order['column']) : $this->quoteIdentifier($order['column']);
             $clauses[] = $col . " " . strtoupper($order['direction']);
         }
         return "ORDER BY " . implode(', ', $clauses);
@@ -181,16 +181,17 @@ abstract class ANSIStandardDialect implements DatabaseDialect {
     public function compileLimitOffset(array $components): string {
         $sql = "";
         
-        if (isset($components['offsetParam'])) {
-            $sql .= "OFFSET :" . $components['offsetParam'] . " ROWS";
+        $hasLimit = isset($components['limit']);
+        $hasOffset = isset($components['offset']);
 
-            if (isset($components['limitParam'])) {
-                $sql .= " FETCH NEXT :" . $components['limitParam'] . " ROWS ONLY";
+        if ($hasLimit || $hasOffset) {
+            // ANSI SQL (and MSSQL) requires OFFSET if FETCH NEXT is used
+            $offset = $hasOffset ? (int)$components['offset'] : 0;
+            $sql .= "OFFSET " . $offset . " ROWS";
+
+            if ($hasLimit) {
+                $sql .= " FETCH NEXT " . (int)$components['limit'] . " ROWS ONLY";
             }
-        } elseif (isset($components['limitParam'])) {
-            // ANSI requires OFFSET to be present for FETCH NEXT in some strict interpretations, 
-            // but we'll try FETCH NEXT alone if no offset.
-            $sql .= "FETCH NEXT :" . $components['limitParam'] . " ROWS ONLY";
         }
         
         return $sql;
@@ -217,5 +218,21 @@ abstract class ANSIStandardDialect implements DatabaseDialect {
         }
 
         return '"' . str_replace('"', '""', $identifier) . '"';
+    }
+
+    public function extractDatePart(string $part, string $column): string {
+        return "EXTRACT(" . strtoupper($part) . " FROM " . $this->quoteIdentifier($column) . ")";
+    }
+
+    public function compileRaw(string $raw): string {
+        return $raw;
+    }
+
+    public function beginTransaction(PDO $db): bool {
+        if ($db->inTransaction()) {
+            return false;
+        }
+        $db->beginTransaction();
+        return true;
     }
 }

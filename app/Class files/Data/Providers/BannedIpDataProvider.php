@@ -12,7 +12,7 @@ class BannedIpDataProvider implements DataProviderInterface {
     public function getData(): array {
         global $db, $dialect;
         $qb = new QueryBuilder($dialect);
-        return $qb->table('banned_ips')->select(['biPK', 'biIP', 'biDateAdded', 'biReason'])->getFetchAll($db);
+        return $qb->table('banned_ips')->select(['biPK', 'biIP', 'biDateAdded', 'biReason'])->executeFetchAll($db);
     }
 
     public function getNestedKey(): ?string {

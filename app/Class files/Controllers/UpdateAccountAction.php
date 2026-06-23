@@ -24,7 +24,7 @@ class UpdateAccountAction implements ControllerInterface {
 
             // Fetch current state for Memento support
             $qb_old = new QueryBuilder($dialect);
-            $oldData = $qb_old->table('appUsers')->where('auPK', '=', $userId)->getFetch($db);
+            $oldData = $qb_old->table('appUsers')->where('auPK', '=', $userId)->executeFetch($db);
             
             // Ensure we have an array for the event store
             $previousPayload = is_array($oldData) ? $oldData : null;

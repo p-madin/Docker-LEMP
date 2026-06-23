@@ -13,10 +13,7 @@ class DashboardController implements ControllerInterface {
             $range_query_builder->raw('MIN(haDate) as min'),
             $range_query_builder->raw('MAX(haDate) as max')
         ]);
-        $stmt_range = $db->prepare($range_query_builder->toSQL());
-        $range_query_builder->bindTo($stmt_range);
-        $stmt_range->execute();
-        $range = $stmt_range->fetch();
+        $range = $range_query_builder->executeFetch($db);
 
         if (!$range || is_null($range['min'])) {
             $start = (new DateTime())->modify("-24 hours");
@@ -29,22 +26,20 @@ class DashboardController implements ControllerInterface {
         $graph_query_builder = new QueryBuilder($dialect);
 
         $graph_query_builder->table('httpAction')->select([
-            $graph_query_builder->raw('EXTRACT(YEAR FROM haDate) y'),
-            $graph_query_builder->raw('EXTRACT(MONTH FROM haDate) m'),
-            $graph_query_builder->raw('EXTRACT(DAY FROM haDate) d'),
-            $graph_query_builder->raw('EXTRACT(HOUR FROM haDate) h'),
+            $graph_query_builder->raw($dialect->extractDatePart('YEAR', 'haDate') . ' y'),
+            $graph_query_builder->raw($dialect->extractDatePart('MONTH', 'haDate') . ' m'),
+            $graph_query_builder->raw($dialect->extractDatePart('DAY', 'haDate') . ' d'),
+            $graph_query_builder->raw($dialect->extractDatePart('HOUR', 'haDate') . ' h'),
             $graph_query_builder->raw('COUNT(*) c')
         ])->groupBy([
-            $graph_query_builder->raw('EXTRACT(YEAR FROM haDate)'),
-            $graph_query_builder->raw('EXTRACT(MONTH FROM haDate)'),
-            $graph_query_builder->raw('EXTRACT(DAY FROM haDate)'),
-            $graph_query_builder->raw('EXTRACT(HOUR FROM haDate)')
+            $graph_query_builder->raw($dialect->extractDatePart('YEAR', 'haDate')),
+            $graph_query_builder->raw($dialect->extractDatePart('MONTH', 'haDate')),
+            $graph_query_builder->raw($dialect->extractDatePart('DAY', 'haDate')),
+            $graph_query_builder->raw($dialect->extractDatePart('HOUR', 'haDate'))
         ]);
-        $stmt_graph = $db->prepare($graph_query_builder->toSQL());
-        $graph_query_builder->bindTo($stmt_graph);
-        $stmt_graph->execute();
+        $rawGraphData = $graph_query_builder->executeFetchAll($db);
         $lookup = [];
-        foreach($stmt_graph as $row) {
+        foreach($rawGraphData as $row) {
             $key = sprintf("%04d-%02d-%02d %02d:00:00", $row['y'], $row['m'], $row['d'], $row['h']);
             $lookup[$key] = $row['c'];
         }
@@ -65,19 +60,19 @@ class DashboardController implements ControllerInterface {
         $ip_query_builder->table('httpAction')
             ->select(['haIP', $ip_query_builder->raw('count(*) as count')])
             ->groupBy(['haIP'])->orderBy($ip_query_builder->raw('count'), 'DESC');
-        $ipData = $ip_query_builder->getFetchAll($db);
+        $ipData = $ip_query_builder->executeFetchAll($db);
 
         $user_query_builder = new QueryBuilder($dialect);
         $user_query_builder->table('httpAction')
             ->select(['haUserFK', $user_query_builder->raw('count(*) as count')])
             ->groupBy(['haUserFK'])->orderBy($user_query_builder->raw('count'), 'DESC');
-        $userData = $user_query_builder->getFetchAll($db);
+        $userData = $user_query_builder->executeFetchAll($db);
 
         $ua_query_builder = new QueryBuilder($dialect);
         $ua_query_builder->table('httpAction')
             ->select(['haUserAgent', $ua_query_builder->raw('count(*) as count')])
             ->groupBy(['haUserAgent'])->orderBy($ua_query_builder->raw('count'), 'DESC');
-        $uaData = $ua_query_builder->getFetchAll($db);
+        $uaData = $ua_query_builder->executeFetchAll($db);
 
         $script = $dom->dom->createElement('script');
         $script->setAttribute('src', 'Static/dashboard.js');

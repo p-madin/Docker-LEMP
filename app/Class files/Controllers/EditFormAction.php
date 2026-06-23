@@ -19,7 +19,7 @@ class EditFormAction implements ControllerInterface {
 
         if ($targetPk > 0) {
             $checkQb = new QueryBuilder($dialect);
-            $formStatus = $checkQb->table('tblForm')->select(['tfReadOnly'])->where('tfPK', '=', $targetPk)->getFetch($db);
+            $formStatus = $checkQb->table('tblForm')->select(['tfReadOnly'])->where('tfPK', '=', $targetPk)->executeFetch($db);
             if($formStatus['tfReadOnly']) {
                 Hyperlink::redirection(self::$manage_URI);
             }
@@ -33,7 +33,7 @@ class EditFormAction implements ControllerInterface {
             if ($pk > 0) {
                 // Fetch current data for undo support
                 $qb_data = new QueryBuilder($dialect);
-                $formData = $qb_data->table('tblForm')->where('tfPK', '=', $pk)->getFetch($db);
+                $formData = $qb_data->table('tblForm')->where('tfPK', '=', $pk)->executeFetch($db);
                 
                 if ($formData) {
                     $eventId = $eventStore->append('FormDeleted', $formData, $pk, $authorId);
@@ -56,7 +56,7 @@ class EditFormAction implements ControllerInterface {
         if ($pk > 0) {
             // Fetch current state for Memento support
             $qb_old = new QueryBuilder($dialect);
-            $oldData = $qb_old->table('tblForm')->where('tfPK', '=', $pk)->getFetch($db);
+            $oldData = $qb_old->table('tblForm')->where('tfPK', '=', $pk)->executeFetch($db);
             $previousPayload = is_array($oldData) ? $oldData : null;
             $eventId = $eventStore->append('FormUpdated', array_merge(['tfPK' => $pk], $data), $pk, $authorId, $previousPayload);
         } else {

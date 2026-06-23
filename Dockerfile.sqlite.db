@@ -1,0 +1,8 @@
+FROM ubuntu:latest
+
+RUN apt-get update && apt-get install -y sqlite3
+
+COPY ["./sqlite conf/sqlite-entrypoint.sh", "/usr/local/bin/sqlite-entrypoint.sh"]
+RUN chmod +x /usr/local/bin/sqlite-entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/sqlite-entrypoint.sh"]

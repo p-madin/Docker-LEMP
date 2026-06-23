@@ -11,7 +11,7 @@ $qb = new \QueryBuilder($dialect);
 $tenants = $qb->table('absChildServices')
     ->where('csStatus', '!=', 'd') // Don't check deleted
     ->where('csStatus', '!=', 'i') // Optionally don't check inactive if they are fully down? Wait, we should check all non-deleted so they can recover.
-    ->getFetchAll($db);
+    ->executeFetchAll($db);
 
 $manager = new \ChildServiceManager();
 

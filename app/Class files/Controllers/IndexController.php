@@ -8,19 +8,19 @@ class IndexController implements ControllerInterface {
 
         $graph_query_builder = new QueryBuilder($dialect);
         $graph_query_builder->table('httpAction')->select([
-            $graph_query_builder->raw('EXTRACT(YEAR FROM haDate) y'),
-            $graph_query_builder->raw('EXTRACT(MONTH FROM haDate) m'),
-            $graph_query_builder->raw('EXTRACT(DAY FROM haDate) d'),
-            $graph_query_builder->raw('EXTRACT(HOUR FROM haDate) h'),
+            $graph_query_builder->raw($dialect->extractDatePart('YEAR', 'haDate') . ' y'),
+            $graph_query_builder->raw($dialect->extractDatePart('MONTH', 'haDate') . ' m'),
+            $graph_query_builder->raw($dialect->extractDatePart('DAY', 'haDate') . ' d'),
+            $graph_query_builder->raw($dialect->extractDatePart('HOUR', 'haDate') . ' h'),
             $graph_query_builder->raw('COUNT(*) c')
         ])->groupBy([
-            $graph_query_builder->raw('EXTRACT(YEAR FROM haDate)'),
-            $graph_query_builder->raw('EXTRACT(MONTH FROM haDate)'),
-            $graph_query_builder->raw('EXTRACT(DAY FROM haDate)'),
-            $graph_query_builder->raw('EXTRACT(HOUR FROM haDate)')
+            $graph_query_builder->raw($dialect->extractDatePart('YEAR', 'haDate')),
+            $graph_query_builder->raw($dialect->extractDatePart('MONTH', 'haDate')),
+            $graph_query_builder->raw($dialect->extractDatePart('DAY', 'haDate')),
+            $graph_query_builder->raw($dialect->extractDatePart('HOUR', 'haDate'))
         ]);
         
-        $rawGraphData = $graph_query_builder->getFetchAll($db);
+        $rawGraphData = $graph_query_builder->executeFetchAll($db);
         $graphData = [];
         foreach($rawGraphData as $row){
             $dt = (new DateTime())->setDate($row['y'], $row['m'], $row['d'])->setTime($row['h'], 0);

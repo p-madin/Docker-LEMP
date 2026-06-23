@@ -4,6 +4,8 @@ include_once(__DIR__ . "/Dialect/DatabaseDialect.php");
 include_once(__DIR__ . "/Dialect/ANSIStandardDialect.php");
 include_once(__DIR__ . "/Dialect/MySQLDialect.php");
 include_once(__DIR__ . "/Dialect/PostgresDialect.php");
+include_once(__DIR__ . "/Dialect/MSSQLDialect.php");
+include_once(__DIR__ . "/Dialect/SQLiteDialect.php");
 
 class db_connect_controller{
     public $dsn;
@@ -39,6 +41,8 @@ class db_connect_controller{
         $vendor = getenv('DB_VENDOR') ?: 'mysql';
         return match(strtolower($vendor)) {
             'pgsql' => new PostgresDialect(),
+            'mssql' => new MSSQLDialect(),
+            'sqlite' => new SQLiteDialect(),
             'mysql', 'mariadb' => new MySQLDialect(),
             default => new class extends ANSIStandardDialect {}
         };

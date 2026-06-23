@@ -224,7 +224,7 @@ class FormComponent extends Component {
             $select = $this->fabricateChild($inputCell, 'select', $inputAttrs);
             global $db, $dialect;
             $qb = new \QueryBuilder($dialect);
-            $users = $qb->table('appUsers')->select(['auPK', 'username'])->getFetchAll($db);
+            $users = $qb->table('appUsers')->select(['auPK', 'username'])->executeFetchAll($db);
             foreach ($users as $user) {
                 $optAttrs = ['value' => (string)$user['auPK']];
                 if ((string)$value === (string)$user['auPK']) {

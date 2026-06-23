@@ -67,7 +67,7 @@ class FlexTableComponent extends Component {
             if ($this->dataSource === 'httpAction') {
                 $query->limit(10);
             }
-            $rawData = $query->getFetchAll($db);
+            $rawData = $query->executeFetchAll($db);
             $mapper = new \Services\GenericDataMapper();
             $this->data = $mapper->map($rawData, $this->dataConfig['mapping'] ?? []);
             $this->columns = $this->dataConfig['columns'] ?? [];

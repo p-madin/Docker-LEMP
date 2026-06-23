@@ -1,0 +1,64 @@
+services:
+  app:
+    build: .
+    image: local-dockerlempapp:latest
+    ports:
+      - "8080:80"
+      - "${EXTERNAL_PORT:-8443}:443"
+    volumes:
+      - ./app:/var/www/html
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./tenants:/tenants
+      - ./compose.tenant.yaml:/home/ubuntu/Workspace/compose.tenant.yaml
+    depends_on:
+      - db
+    environment:
+      DOCKER_CONFIG: /tmp/.docker
+      TZ: Australia/Sydney
+      DB_VENDOR: mssql
+      DB_HOST: db
+      TARGET_ENV: ${TARGET_ENV:-dev}
+      EXTERNAL_PORT: ${EXTERNAL_PORT}
+      TENANT_DB_NAME: ${TENANT_DB_NAME}
+      TENANT_DB_USER: ${TENANT_DB_USER}
+      TENANT_DB_PASS: ${TENANT_DB_PASS}
+    networks:
+      - stack-network
+      - superhost-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  db:
+    build:
+      context: .
+      dockerfile: Dockerfile.mssql.db
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${TENANT_DB_PASS}
+      MSSQL_PID: "Developer"
+      TZ: Australia/Sydney
+    volumes:
+      - mssql_db_data:/var/opt/mssql
+      - ./mssql conf/common/01_db_ddl.sql:/docker-entrypoint-initdb.d/01_db_ddl.sql
+      - ./mssql conf/common/02_db_dml.sql:/docker-entrypoint-initdb.d/02_db_dml.sql
+      - ./mssql conf/${TARGET_ENV}/03_db_dml.sql:/docker-entrypoint-initdb.d/03_db_dml.sql:ro
+    ports:
+      - "1433:1433"
+    networks:
+      - stack-network
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+
+
+volumes:
+  mssql_db_data:
+networks:
+  stack-network:
+    driver: bridge
+  superhost-network:
+    external: true
+    name: superhost-network

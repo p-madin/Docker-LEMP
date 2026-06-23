@@ -20,7 +20,7 @@ class ChildServiceAction implements ControllerInterface {
         $service = $qb->table('absChildServices')
             ->select(['csPK', 'csName', 'csStatus'])
             ->where('csPK', '=', $csPK)
-            ->getFetch($db);
+            ->executeFetch($db);
 
         if (!$service) {
             $this->redirectError('Child service not found');

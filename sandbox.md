@@ -28,6 +28,7 @@ Address the limitation where PostgreSQL natively folds unquoted identifiers to l
 3. **Strict Parameter Validation**: Expose the dictionary to the `Validator` class and API endpoints. This provides a definitive whitelist of valid database tables and columns, allowing the system to strictly validate any dynamically POSTed table or column parameters (e.g., for sorting, filtering, or dynamic data ingestion).
 4. **Outcome**: 
    - Allows developers to safely use `SELECT *` without worrying about database-engine level case normalisation stripping expected keys.
+   - Specifically resolves fatal array key errors (e.g., `Undefined array key "evsPK"`) encountered in background tasks like `./app/Cron/worker.php` when testing PostgreSQL.
    - Drastically improves security by preventing SQL injection and arbitrary schema traversal on endpoints that accept dynamic table or column references.
 
 ---

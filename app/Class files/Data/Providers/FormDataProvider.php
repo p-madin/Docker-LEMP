@@ -33,7 +33,7 @@ class FormDataProvider implements DataProviderInterface {
         return $qb->table('tblForm')->select(['tfPK', 'tfName', 'tfReadOnly', $qb->raw('COUNT(tcPK) AS columnCount')])
                     ->leftJoin('tblColumns', 'tblForm.tfPK', '=', 'tblColumns.tcFormFK')
                     ->groupBy(['tfPK', 'tfName', 'tfReadOnly', 'tfPK'])
-                    ->orderBy('tfName', 'ASC')->getFetchAll($db);
+                    ->orderBy('tfName', 'ASC')->executeFetchAll($db);
     }
 
     public function getNestedKey(): ?string {

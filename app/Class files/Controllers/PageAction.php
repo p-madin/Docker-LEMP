@@ -16,7 +16,7 @@ class PageAction implements ControllerInterface {
                 $pk = (int)($request->post['pagPK'] ?? 0);
                 if ($pk > 0) {
                     $qb_data = new QueryBuilder($dialect);
-                    $pageData = $qb_data->table('tblPages')->where('pagPK', '=', $pk)->getFetch($db);
+                    $pageData = $qb_data->table('tblPages')->where('pagPK', '=', $pk)->executeFetch($db);
                     if ($pageData) {
                         $eventId = $eventStore->append('PageDeleted', $pageData, $pk, $authorId);
                         $eventStore->waitUntilProcessed($eventId);
@@ -31,7 +31,7 @@ class PageAction implements ControllerInterface {
                 $pk = (int)($request->post['pagPK'] ?? 0);
                 if ($pk > 0) {
                     $qb_data = new QueryBuilder($dialect);
-                    $pageData = $qb_data->table('tblPages')->where('pagPK', '=', $pk)->getFetch($db);
+                    $pageData = $qb_data->table('tblPages')->where('pagPK', '=', $pk)->executeFetch($db);
                     if ($pageData) {
                         $eventId = $eventStore->append('PageRestored', $pageData, $pk, $authorId);
                         $eventStore->waitUntilProcessed($eventId);
@@ -54,7 +54,7 @@ class PageAction implements ControllerInterface {
 
             if ($pk > 0) {
                 $qb_old = new QueryBuilder($dialect);
-                $oldData = $qb_old->table('tblPages')->where('pagPK', '=', $pk)->getFetch($db);
+                $oldData = $qb_old->table('tblPages')->where('pagPK', '=', $pk)->executeFetch($db);
                 $eventId = $eventStore->append('PageUpdated', array_merge(['pagPK' => $pk], $data), $pk, $authorId, $oldData);
             } else {
                 $eventId = $eventStore->append('PageCreated', $data, null, $authorId);

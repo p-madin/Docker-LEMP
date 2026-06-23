@@ -12,7 +12,7 @@ class EditNavbarController implements ControllerInterface {
         if ($id > 0) {
             $qb = new QueryBuilder($dialect);
             $qb->table('tblNavBar')->select(['nbPK', 'nbText', 'nbDiscriminator', 'nbPath', 'nbProtected', 'nbOrder', 'nbParentFK'])->where('nbPK', '=', $id);
-            $u = $qb->getFetch($db);
+            $u = $qb->executeFetch($db);
         } else {
             $u = [
                 'nbPK' => '',

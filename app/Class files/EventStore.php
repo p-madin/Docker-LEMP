@@ -11,11 +11,7 @@ class EventStore {
     public function append(string $eventType, array $payload, ?int $aggregateId = null, ?int $userId = null, ?array $previousPayload = null, bool $isReversal = false, bool $preserveRedo = false): int {
         global $sessionController;
 
-        $ownsTransaction = false;
-        if (!$this->db->inTransaction()) {
-            $this->db->beginTransaction();
-            $ownsTransaction = true;
-        }
+        $ownsTransaction = $this->dialect->beginTransaction($this->db);
 
         try {
             $predecessorId = isset($sessionController) ? $sessionController->getPrimary('current_event_id') : null;
@@ -92,11 +88,7 @@ class EventStore {
         while (time() - $start < $timeoutSeconds) {
             $qb = new QueryBuilder($this->dialect);
             // We use a fresh query to avoid PDO caching issues if any
-            $sql = $qb->table('tblEventStore')->select(['evsStatus'])->where('evsPK', '=', $eventId)->toSQL();
-            $stmt = $this->db->prepare($sql);
-            $qb->bindTo($stmt);
-            $stmt->execute();
-            $event = $stmt->fetch();
+            $event = $qb->table('tblEventStore')->select(['evsStatus'])->where('evsPK', '=', $eventId)->executeFetch($this->db);
 
             if ($event && ($event['evsStatus'] === 'processed' || $event['evsStatus'] === 'failed')) {
                 return $event['evsStatus'] === 'processed';
@@ -114,15 +106,10 @@ class EventStore {
         $userId = $sessionController->getSystemUserId();
         $playheadId = $sessionController->getPrimary('current_event_id');
         $qb = new QueryBuilder($this->dialect);
-        $sql = $qb->table('tblEventStore')
+        $allEvents = $qb->table('tblEventStore')
                   ->where('evsUserFK', '=', $userId)
                   ->where('evsStatus', '=', 'processed')
-                  ->toSQL();
-        
-        $stmt = $this->db->prepare($sql);
-        $qb->bindTo($stmt);
-        $stmt->execute();
-        $allEvents = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                  ->executeFetchAll($this->db);
 
         if (empty($allEvents) || !$playheadId) return [];
 
@@ -153,34 +140,20 @@ class EventStore {
         if (empty($redoStack)) return [];
 
         $qb = new QueryBuilder($this->dialect);
-        $sql = $qb->table('tblEventStore')
+        $allEvents = $qb->table('tblEventStore')
                     ->whereIn('evsPK', $redoStack)
                     ->orderBy('evsPK', 'DESC')
-                  ->toSQL();
-
-        $stmt = $this->db->prepare($sql);
-        $qb->bindTo($stmt);
-        $stmt->execute();
-        $allEvents = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                  ->executeFetchAll($this->db);
         return $allEvents;
     }
 
     public function getPendingEvents(int $limit = 1): array {
         $qb = new QueryBuilder($this->dialect);
-        $sql = $qb->table('tblEventStore')
+        return $qb->table('tblEventStore')
                   ->where('evsStatus', '=', 'pending')
                   ->orderBy('evsPK', 'ASC')
                   ->limit($limit)
-                  ->toSQL();
-                  
-        // Note: The specific worker lock logic (FOR UPDATE SKIP LOCKED) 
-        // will typically be written directly in the worker script or an extended method 
-        // to handle the transaction block effectively.
-        
-        $stmt = $this->db->prepare($sql);
-        $qb->bindTo($stmt);
-        $stmt->execute();
-        return $stmt->fetchAll();
+                  ->executeFetchAll($this->db, \PDO::FETCH_BOTH);
     }
 
     public function createReversalEvent(array $event, int $userId, bool $isUndo, bool $isRedo = false): ?int {
@@ -249,11 +222,7 @@ class EventStore {
      */
     public function getAggregateId(int $eventId): ?int {
         $qb = new QueryBuilder($this->dialect);
-        $sql = $qb->table('tblEventStore')->select(['evsAggregateFK'])->where('evsPK', '=', $eventId)->toSQL();
-        $stmt = $this->db->prepare($sql);
-        $qb->bindTo($stmt);
-        $stmt->execute();
-        $event = $stmt->fetch();
+        $event = $qb->table('tblEventStore')->select(['evsAggregateFK'])->where('evsPK', '=', $eventId)->executeFetch($this->db);
         return ($event && isset($event['evsAggregateFK'])) ? (int)$event['evsAggregateFK'] : null;
     }
 }

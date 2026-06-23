@@ -160,7 +160,7 @@ class Validator {
                 $qb = new \QueryBuilder($this->dialect);
                 $qb->table($table)->select([$qb->raw('COUNT(*) as count')])->where($column, '=', $value);
                 
-                if ($qb->getFetch($this->db)['count'] > 0) {
+                if ($qb->executeFetch($this->db)['count'] > 0) {
                     $this->addError($field, "This $field is already taken.");
                     return false;
                 }

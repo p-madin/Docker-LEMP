@@ -1,0 +1,179 @@
+CREATE TABLE appUsers(
+    auPK INTEGER PRIMARY KEY AUTOINCREMENT,
+    name VARCHAR(32) NOT NULL,
+    age INT NOT NULL,
+    city VARCHAR(32) NOT NULL,
+    username VARCHAR(16) NOT NULL,
+    password VARCHAR(256) NOT NULL,
+    email VARCHAR(32) NOT NULL,
+    dateAdded DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    dateVerified DATETIME,
+    verified INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE tblPages (
+    pagPK INTEGER PRIMARY KEY AUTOINCREMENT,
+    pagCreated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    pagUpdated DATETIME NULL,
+    pagDeleted DATETIME NULL,
+    pagAuthorFK INT NOT NULL,
+    pagTitle VARCHAR(128) NOT NULL
+);
+
+CREATE TABLE tblElements (
+    elePK INTEGER PRIMARY KEY AUTOINCREMENT,
+    eleType VARCHAR(32) NOT NULL,
+    eleContent TEXT NULL,
+    eleCSSClasses VARCHAR(255) NULL,
+    eleParentFK INT NULL DEFAULT NULL,
+    eleCreated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(eleParentFK) REFERENCES tblElements(elePK) ON DELETE CASCADE
+);
+
+CREATE TABLE brgPageElements (
+    pelPK INTEGER PRIMARY KEY AUTOINCREMENT,
+    pelPageFK INT NOT NULL,
+    pelElementFK INT NOT NULL,
+    pelOrder INT NOT NULL,
+    FOREIGN KEY(pelPageFK) REFERENCES tblPages(pagPK) ON DELETE CASCADE,
+    FOREIGN KEY(pelElementFK) REFERENCES tblElements(elePK) ON DELETE CASCADE
+);
+
+CREATE TABLE tblSession(
+    sessPK INTEGER PRIMARY KEY AUTOINCREMENT,
+    sessCreated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    sessUpdated DATETIME NULL,
+    sessDeleted DATETIME NULL,
+    sessChars VARCHAR(64) NOT NULL,
+    sessUser INT NULL,
+    sessTransactionActive INT NOT NULL
+);
+
+CREATE TABLE tblSessionAtt(
+    sattPK INTEGER PRIMARY KEY AUTOINCREMENT,
+    sattSessionFK INT NOT NULL,
+    sattDisc CHAR(1) NOT NULL,
+    sattKey VARCHAR(32) NOT NULL,
+    sattPrimaryValueFK INT NOT NULL
+);
+
+CREATE TABLE tblSessionAttValue(
+    sattvPK INTEGER PRIMARY KEY AUTOINCREMENT,
+    sattvAttFK INT NOT NULL,
+    sattvValueFK INT NULL,
+    sattvValue VARCHAR(128) NULL
+);
+
+CREATE TABLE sysConfig(
+    scPK INTEGER PRIMARY KEY AUTOINCREMENT,
+    scName VARCHAR(32) NOT NULL,
+    scValue VARCHAR(128) NOT NULL
+);
+
+CREATE TABLE tblNavBar(
+    nbPK INTEGER PRIMARY KEY AUTOINCREMENT,
+    nbText VARCHAR(32) NOT NULL,
+    nbDiscriminator CHAR(1) NOT NULL,
+    nbPageFK INT NULL,
+    nbPath VARCHAR(64) NULL,
+    nbControllerClass VARCHAR(64) NULL,
+    nbProtected INTEGER NOT NULL,
+    nbOrder INT NOT NULL,
+    nbParentFK INT NULL DEFAULT NULL,
+    FOREIGN KEY(nbParentFK) REFERENCES tblNavBar(nbPK) ON DELETE SET NULL,
+    FOREIGN KEY(nbPageFK) REFERENCES tblPages(pagPK) ON DELETE SET NULL
+);
+
+CREATE UNIQUE INDEX idx_session_chars ON tblSession(sessChars);
+CREATE INDEX idx_session_att_lookup ON tblSessionAtt(sattSessionFK, sattKey, sattDisc);
+CREATE INDEX idx_session_val_lookup ON tblSessionAttValue(sattvAttFK);
+
+CREATE TABLE httpAction(
+    haPK INTEGER PRIMARY KEY AUTOINCREMENT,
+    haDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    haSessionFK INT NOT NULL,
+    haUserFK INT NULL,
+    haIP VARCHAR(45) NOT NULL,
+    haURL VARCHAR(512) NOT NULL,
+    haReferrer VARCHAR(512) NULL,
+    haMethod VARCHAR(8) NOT NULL,
+    haUserAgent VARCHAR(512) NOT NULL,
+    haHeaders TEXT NULL,
+    haWafRuleTriggered VARCHAR(255) NULL,
+    haWafPayload TEXT NULL
+);
+
+CREATE TABLE phpErrorLog (
+  pelPK INTEGER PRIMARY KEY AUTOINCREMENT,
+  pelTimestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  pelSeverity VARCHAR(32) NOT NULL,
+  pelMessage TEXT NOT NULL,
+  pelFile VARCHAR(512) NOT NULL,
+  pelLine INT NOT NULL
+);
+
+CREATE TABLE tblForm(
+    tfPK INTEGER PRIMARY KEY AUTOINCREMENT,
+    tfName VARCHAR(32) NOT NULL,
+    tfAction VARCHAR(255) NULL,
+    tfReadOnly INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE tblColumns(
+    tcPK INTEGER PRIMARY KEY AUTOINCREMENT,
+    tcFormFK INT NOT NULL,
+    tcName VARCHAR(32) NOT NULL,
+    tcLabel VARCHAR(64) NOT NULL,
+    tcType VARCHAR(32) NOT NULL,
+    tcRules TEXT NOT NULL,
+    tcOrder INT NOT NULL,
+    FOREIGN KEY(tcFormFK) REFERENCES tblForm(tfPK) ON DELETE CASCADE
+);
+
+CREATE TABLE banned_ips(
+    biPK INTEGER PRIMARY KEY AUTOINCREMENT,
+    biIP VARCHAR(45) NOT NULL,
+    biReason VARCHAR(255) NOT NULL,
+    biExpires DATETIME NOT NULL,
+    biDateAdded DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE tblEventStore(
+    evsPK INTEGER PRIMARY KEY AUTOINCREMENT,
+    evsAggregateFK INT NULL,
+    evsEventType VARCHAR(128) NOT NULL,
+    evsPayload TEXT NOT NULL,
+    evsPreviousPayload TEXT NULL,
+    evsStatus VARCHAR(32) NOT NULL DEFAULT 'pending',
+    evsUserFK INT NULL,
+    evsIsReversal INTEGER NOT NULL DEFAULT 0,
+    evsPredecessorFK INT NULL,
+    evsCreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+/* sample data for Block - Graph */
+
+CREATE TABLE tblAnalytics (
+    anaPK INTEGER PRIMARY KEY AUTOINCREMENT,
+    anaLabel VARCHAR(32) NOT NULL,
+    anaValue INT NOT NULL,
+    anaCategory VARCHAR(32) NOT NULL,
+    anaDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+/* END sample data for Block - Graph */
+
+CREATE TABLE absChildServices (
+    csPK INTEGER PRIMARY KEY AUTOINCREMENT,
+    csCreatedDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    csCreatedByFK INT NOT NULL,
+    csUpdatedDate DATETIME NULL,
+    csAdminFK INT NOT NULL,
+    csUptimeDate DATETIME NULL,
+    csCheckDate DATETIME NULL,
+    csName VARCHAR(32) NOT NULL,
+    csStatus CHAR(1) NOT NULL,
+    csDockerID VARCHAR(64) NULL,
+    csSubdomain VARCHAR(64) NULL,
+    csFailureCount INT NOT NULL DEFAULT 0
+);

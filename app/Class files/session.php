@@ -30,10 +30,7 @@ class SessionController{
             //we need to check if this is in the database
             $qb = new QueryBuilder($this->dialect);
             $qb->table('tblSession')->select(['sessPK'])->where('sessChars', '=', $sanitizedSessChars);
-            $stmt = $this->db->prepare($qb->toSQL());
-            $qb->bindTo($stmt);
-            $stmt->execute();
-            $data = $stmt->fetchAll();
+            $data = $qb->executeFetchAll($this->db);
             if(count($data) == 0){
                 //was set but it didnt exist... redirect to login
                 $this->destroySession();
@@ -47,10 +44,7 @@ class SessionController{
                 while(1==1){
                     $count++;
                     $qb->table('tblSession')->select(['sessTransactionActive'])->where('sessPK', '=', $this->sessPK);
-                    $stmt = $this->db->prepare($qb->toSQL());
-                    $qb->bindTo($stmt);
-                    $stmt->execute();
-                    $data = $stmt->fetch();
+                    $data = $qb->executeFetch($this->db);
                     if($count>100){
                         $this->destroySession();
                         Hyperlink::redirection("/");
@@ -63,7 +57,7 @@ class SessionController{
 
                 $qb = new QueryBuilder($this->dialect);
                 $qb->table('tblSession')->select(['sessPK', 'sessUser', 'sessTransactionActive'])->where('sessChars', '=', $sanitizedSessChars);
-                $sql = $qb->update(['sessUpdated' => $qb->raw('NOW()')]);
+                $sql = $qb->update(['sessUpdated' => $qb->raw('CURRENT_TIMESTAMP')]);
                 $stmt = $this->db->prepare($sql);
                 $qb->bindTo($stmt);
                 $stmt->execute();
@@ -124,7 +118,7 @@ class SessionController{
         ]);
         $qb = new QueryBuilder($this->dialect);
         $qb->table('tblSession')->where('sessPK', '=', $this->sessPK);
-        $sql = $qb->update(['sessDeleted' => $qb->raw('NOW()')]);
+        $sql = $qb->update(['sessDeleted' => $qb->raw('CURRENT_TIMESTAMP')]);
         $stmt = $this->db->prepare($sql);
         $qb->bindTo($stmt);
         $stmt->execute();
@@ -149,10 +143,7 @@ class SessionController{
         // Verify user status in database
         $qb = new QueryBuilder($this->dialect);
         $qb->table('appUsers')->select(['auPK', 'verified'])->where('auPK', '=', (int)$userID);
-        $stmt = $this->db->prepare($qb->toSQL());
-        $qb->bindTo($stmt);
-        $stmt->execute();
-        $user = $stmt->fetch();
+        $user = $qb->executeFetch($this->db);
 
         if (!$user || ($user['verified'] ?? 0) == 0) {
             $this->isVerified = false;
@@ -288,11 +279,9 @@ class SessionController{
         $qb->table('tblSessionAttValue')
             ->select(['sattvPK', 'sattvValueFK'])
             ->where('sattvAttFK', '=', $attPK);
-        $stmt = $this->db->prepare($qb->toSQL());
-        $qb->bindTo($stmt);
-        $stmt->execute();
+        $rows = $qb->executeFetchAll($this->db, PDO::FETCH_ASSOC);
         
-        while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+        foreach($rows as $row){
             $valIds[] = $row['sattvPK'];
             // If value points to a child attribute, recurse
             if($row['sattvValueFK']){
@@ -304,20 +293,14 @@ class SessionController{
     private function buildNode($attPK){
         $qb = new QueryBuilder($this->dialect);
         $qb->table('tblSessionAtt')->select(['sattDisc'])->where('sattPK', '=', $attPK);
-        $stmt = $this->db->prepare($qb->toSQL());
-        $qb->bindTo($stmt);
-        $stmt->execute();
-        $disc = $stmt->fetchColumn();
+        $disc = $qb->executeFetchColumn($this->db);
         
         $qb2 = new QueryBuilder($this->dialect);
         $qb2->table('tblSessionAttValue')
             ->select(['sattvPK', 'sattvAttFK', 'sattvValueFK', 'sattvValue'])
             ->where('sattvAttFK', '=', $attPK)
             ->orderBy('sattvPK', 'ASC');
-        $stmt2 = $this->db->prepare($qb2->toSQL());
-        $qb2->bindTo($stmt2);
-        $stmt2->execute();
-        $rows = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+        $rows = $qb2->executeFetchAll($this->db, PDO::FETCH_ASSOC);
         
         if($disc === 'l' || $disc === 'Y'){
              $arr = [];
@@ -331,10 +314,7 @@ class SessionController{
                 if($r['sattvValueFK']){
                     $qbk = new QueryBuilder($this->dialect);
                     $qbk->table('tblSessionAtt')->select(['sattKey'])->where('sattPK', '=', $r['sattvValueFK']);
-                    $stmtk = $this->db->prepare($qbk->toSQL());
-                    $qbk->bindTo($stmtk);
-                    $stmtk->execute();
-                    $key = $stmtk->fetchColumn();
+                    $key = $qbk->executeFetchColumn($this->db);
                     $arr[$key] = $this->buildNode($r['sattvValueFK']);
                 }
             }
@@ -345,55 +325,60 @@ class SessionController{
     public function detachPrimary($key){
         if(!$this->sessPK) return;
         
-        $qb = new QueryBuilder($this->dialect);
-        $qb->table('tblSessionAtt')
-            ->select(['sattPK'])
-            ->where('sattSessionFK', '=', $this->sessPK)
-            ->where('sattKey', '=', $key)
-            ->whereIn('sattDisc', ['X', 'Y', 'Z']);
-        $stmt = $this->db->prepare($qb->toSQL());
-        $qb->bindTo($stmt);
-        $stmt->execute();
-        $row = $stmt->fetch();
+        $ownsTransaction = $this->dialect->beginTransaction($this->db);
         
-        if($row){
-            $attIds = [];
-            $valIds = [];
-            $this->collectIds($row['sattPK'], $attIds, $valIds);
+        try {
+            $qb = new QueryBuilder($this->dialect);
+            $qb->table('tblSessionAtt')
+                ->select(['sattPK'])
+                ->where('sattSessionFK', '=', $this->sessPK)
+                ->where('sattKey', '=', $key)
+                ->whereIn('sattDisc', ['X', 'Y', 'Z']);
+            $row = $qb->executeFetch($this->db);
             
-            if(!empty($valIds)){
-                // Batch delete values
-                // Use chunking to be safe with query size limits
-                $chunks = array_chunk($valIds, 1000);
-                foreach($chunks as $chunk){
-                    $qbv = new QueryBuilder($this->dialect);
-                    $qbv->table('tblSessionAttValue')->whereIn('sattvPK', $chunk);
-                    $stmtv = $this->db->prepare($qbv->delete());
-                    $qbv->bindTo($stmtv);
-                    $stmtv->execute();
+            if($row){
+                $attIds = [];
+                $valIds = [];
+                $this->collectIds($row['sattPK'], $attIds, $valIds);
+                
+                if(!empty($valIds)){
+                    // Batch delete values
+                    // Use chunking to be safe with query size limits
+                    $chunks = array_chunk($valIds, 1000);
+                    foreach($chunks as $chunk){
+                        $qbv = new QueryBuilder($this->dialect);
+                        $qbv->table('tblSessionAttValue')->whereIn('sattvPK', $chunk);
+                        $stmtv = $this->db->prepare($qbv->delete());
+                        $qbv->bindTo($stmtv);
+                        $stmtv->execute();
+                    }
+                }
+                
+                if(!empty($attIds)){
+                    // Batch delete attributes
+                    $chunks = array_chunk($attIds, 1000);
+                    foreach($chunks as $chunk){
+                        $qba = new QueryBuilder($this->dialect);
+                        $qba->table('tblSessionAtt')->whereIn('sattPK', $chunk);
+                        $stmta = $this->db->prepare($qba->delete());
+                        $qba->bindTo($stmta);
+                        $stmta->execute();
+                    }
                 }
             }
-            
-            if(!empty($attIds)){
-                // Batch delete attributes
-                $chunks = array_chunk($attIds, 1000);
-                foreach($chunks as $chunk){
-                    $qba = new QueryBuilder($this->dialect);
-                    $qba->table('tblSessionAtt')->whereIn('sattPK', $chunk);
-                    $stmta = $this->db->prepare($qba->delete());
-                    $qba->bindTo($stmta);
-                    $stmta->execute();
-                }
+            if ($ownsTransaction) {
+                $this->db->commit();
             }
+        } catch (Exception $e) {
+            if ($ownsTransaction) {
+                $this->db->rollBack();
+            }
+            throw $e;
         }
     }
 
     public function setPrimary($key, $array){
-        $ownsTransaction = false;
-        if (!$this->db->inTransaction()) {
-            $this->db->beginTransaction();
-            $ownsTransaction = true;
-        }
+        $ownsTransaction = $this->dialect->beginTransaction($this->db);
         try {
             $this->detachPrimary($key);
             $this->saveNode($key, $array, 'r', $this->sessPK);
@@ -415,10 +400,7 @@ class SessionController{
             ->where('sattSessionFK', '=', $this->sessPK)
             ->where('sattKey', '=', $key)
             ->whereIn('sattDisc', ['X', 'Y', 'Z']);
-        $stmt = $this->db->prepare($qb->toSQL());
-        $qb->bindTo($stmt);
-        $stmt->execute();
-        $row = $stmt->fetch();
+        $row = $qb->executeFetch($this->db);
         if($row){
             return $this->buildNode($row['sattPK']);
         }
@@ -438,10 +420,7 @@ class SessionController{
            ->where('evsUserFK', '=', (int)$userId)
            ->orderBy('evsPK', 'DESC')
            ->limit(1);
-        $stmt = $this->db->prepare($qb->toSQL());
-        $qb->bindTo($stmt);
-        $stmt->execute();
-        $latestEventId = $stmt->fetchColumn();
+        $latestEventId = $qb->executeFetchColumn($this->db);
 
         $this->setPrimary('current_event_id', $latestEventId ? (int)$latestEventId : null);
         $this->setPrimary('redo_stack', []);

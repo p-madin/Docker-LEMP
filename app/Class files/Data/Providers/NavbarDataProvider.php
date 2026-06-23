@@ -16,7 +16,7 @@ class NavbarDataProvider implements DataProviderInterface {
     public function getData(): array {
         global $db, $dialect;
         $qb = new QueryBuilder($dialect);
-        $data = $qb->table('tblNavBar')->select(['nbPK', 'nbText', 'nbPath', 'nbOrder', 'nbParentFK'])->orderBy('nbOrder', 'ASC')->getFetchAll($db);
+        $data = $qb->table('tblNavBar')->select(['nbPK', 'nbText', 'nbPath', 'nbOrder', 'nbParentFK'])->orderBy('nbOrder', 'ASC')->executeFetchAll($db);
         $tree = [];
         $lookup = [];
         foreach ($data as $item) {

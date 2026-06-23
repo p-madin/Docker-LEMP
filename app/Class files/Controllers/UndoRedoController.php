@@ -64,27 +64,20 @@ class UndoRedoController implements ControllerInterface {
     private function getLatestEventId(int $userId): ?int {
         global $db, $dialect;
         $qb = new QueryBuilder($dialect);
-        $sql = $qb->table('tblEventStore')
+        $res = $qb->table('tblEventStore')
                   ->where('evsUserFK', '=', $userId)
                   ->where('evsStatus', '=', 'processed')
                   ->orderBy('evsPK', 'DESC')
                   ->limit(1)
-                  ->toSQL();
-        $stmt = $db->prepare($sql);
-        $qb->bindTo($stmt);
-        $stmt->execute();
-        $res = $stmt->fetch(PDO::FETCH_ASSOC);
+                  ->executeFetch($db);
         return $res ? (int)$res['evsPK'] : null;
     }
 
     private function getEventById(int $id): ?array {
         global $db, $dialect;
         $qb = new QueryBuilder($dialect);
-        $sql = $qb->table('tblEventStore')->where('evsPK', '=', $id)->toSQL();
-        $stmt = $db->prepare($sql);
-        $qb->bindTo($stmt);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+        $res = $qb->table('tblEventStore')->where('evsPK', '=', $id)->executeFetch($db);
+        return is_array($res) ? $res : null;
     }
 
 }

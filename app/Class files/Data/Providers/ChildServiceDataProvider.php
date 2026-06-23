@@ -30,7 +30,7 @@ class ChildServiceDataProvider implements DataProviderInterface {
     public function getData(): array {
         global $db, $dialect;
         $qb = new QueryBuilder($dialect);
-        return $qb->table('absChildServices')->select(['csPK','csCreatedDate','csCreatedByFK','csUpdatedDate','csAdminFK','csUptimeDate','csCheckDate','csName','csStatus'])->getFetchAll($db);
+        return $qb->table('absChildServices')->select(['csPK','csCreatedDate','csCreatedByFK','csUpdatedDate','csAdminFK','csUptimeDate','csCheckDate','csName','csStatus'])->executeFetchAll($db);
     }
 
     public function getNestedKey(): ?string {

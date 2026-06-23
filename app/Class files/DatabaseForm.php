@@ -21,7 +21,7 @@ class DatabaseForm {
            ->orderBy('tblForm.tfName', 'ASC')
            ->orderBy('tblColumns.tcOrder', 'ASC');
 
-        $rows = $qb->getFetchAll($db);
+        $rows = $qb->executeFetchAll($db);
 
         $schemas = [];
         

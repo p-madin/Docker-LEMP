@@ -6,7 +6,7 @@ class WafMiddleware implements MiddlewareInterface {
 
         $rateLimiter = new RateLimiter($db, $dialect);
 
-        if (empty($ip)) {
+        if (empty($ip) || $ip === '127.0.0.1' || $ip === '::1') {
             return $next($request);
         }
 

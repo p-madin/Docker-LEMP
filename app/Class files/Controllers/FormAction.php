@@ -9,7 +9,7 @@ class FormAction implements ControllerInterface {
         global $db, $dialect;
 
         $qb = new QueryBuilder($dialect);
-        $forms = $qb->table('tblForm')->select(['tfPK', 'tfName'])->orderBy('tfName', 'ASC')->getFetchAll($db);
+        $forms = $qb->table('tblForm')->select(['tfPK', 'tfName'])->orderBy('tfName', 'ASC')->executeFetchAll($db);
             
         header('Content-Type: application/json');
         echo json_encode(['success' => true, 'forms' => $forms]);

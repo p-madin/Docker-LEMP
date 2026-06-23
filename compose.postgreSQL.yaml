@@ -15,6 +15,11 @@ services:
       TZ: Australia/Sydney
       DB_VENDOR: pgsql
       DB_HOST: db
+      TARGET_ENV: ${TARGET_ENV:-dev}
+      EXTERNAL_PORT: ${EXTERNAL_PORT}
+      TENANT_DB_NAME: ${TENANT_DB_NAME}
+      TENANT_DB_USER: ${TENANT_DB_USER}
+      TENANT_DB_PASS: ${TENANT_DB_PASS}
     networks:
       - stack-network
       - superhost-network
@@ -26,9 +31,9 @@ services:
     image: postgres:latest
     environment:
       #MARIADB_ROOT_PASSWORD: docker_lemp
-      POSTGRES_DB: stackDB
-      POSTGRES_USER: docker_user_lemp
-      POSTGRES_PASSWORD: docker_user_lemp
+      POSTGRES_DB: ${TENANT_DB_NAME}
+      POSTGRES_USER: ${TENANT_DB_USER}
+      POSTGRES_PASSWORD: ${TENANT_DB_PASS}
       TZ: Australia/Sydney
     volumes:
       - postgres_db_data:/var/lib/postgresql

@@ -37,25 +37,47 @@ while (true) {
         echo "Time limit reached. Exiting worker.\n";
         exit(0);
     }
-
-    $db->beginTransaction();
+    $ownsTransaction = $dialect->beginTransaction($db);
 
     
     // Find the next unprocessed event and lock it exclusively
-    // FOR UPDATE SKIP LOCKED is supported in MySQL 8.0+ and PostgreSQL
-    $stmt = $db->prepare("SELECT evsPK, evsEventType, evsPayload 
-                          FROM tblEventStore 
-                          WHERE evsStatus = 'pending' 
-                          ORDER BY evsPK ASC 
-                          LIMIT 1 
-                          FOR UPDATE SKIP LOCKED");
+    if ($dialect instanceof MSSQLDialect) {
+        $stmt = $db->prepare("SELECT [evsPK], [evsEventType], [evsPayload] 
+                              FROM [tblEventStore] WITH (UPDLOCK, READPAST) 
+                              WHERE [evsStatus] = 'pending' 
+                              ORDER BY [evsPK] ASC 
+                              OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY");
+    } elseif ($dialect instanceof SQLiteDialect) {
+        $stmt = $db->prepare("SELECT evsPK, evsEventType, evsPayload 
+                              FROM tblEventStore 
+                              WHERE evsStatus = 'pending' 
+                              ORDER BY evsPK ASC 
+                              LIMIT 1");
+    } else {
+        $stmt = $db->prepare("SELECT evsPK, evsEventType, evsPayload 
+                              FROM tblEventStore 
+                              WHERE evsStatus = 'pending' 
+                              ORDER BY evsPK ASC 
+                              LIMIT 1 
+                              FOR UPDATE SKIP LOCKED");
+    }
     $stmt->execute();
-    $event = $stmt->fetch(PDO::FETCH_ASSOC);
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $event = $results ? $results[0] : false;
 
     if ($event) {
         try {
-            $updateStmt = $db->prepare("UPDATE tblEventStore SET evsStatus = 'processing' WHERE evsPK = :id");
-            $updateStmt->execute([':id' => $event['evsPK']]);
+            if ($dialect instanceof SQLiteDialect) {
+                $updateStmt = $db->prepare("UPDATE tblEventStore SET evsStatus = 'processing' WHERE evsPK = :id AND evsStatus = 'pending'");
+                $updateStmt->execute([':id' => $event['evsPK']]);
+                if ($updateStmt->rowCount() === 0) {
+                    $db->rollBack();
+                    continue;
+                }
+            } else {
+                $updateStmt = $db->prepare("UPDATE tblEventStore SET evsStatus = 'processing' WHERE evsPK = :id");
+                $updateStmt->execute([':id' => $event['evsPK']]);
+            }
             // $db->commit();
             $eventType = $event['evsEventType'];
             $payload = json_decode($event['evsPayload'], true);

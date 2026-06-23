@@ -40,10 +40,10 @@ class ChildServiceManager {
         // 1 — Pull admin user info and generate SQL script
         $sqlContent = "-- No admin user mapped for this tenant.\n";
         $qb = new \QueryBuilder($dialect);
-        $service = $qb->table('absChildServices')->select(['csAdminFK'])->where('csName', '=', $tenant)->getFetch($db);
+        $service = $qb->table('absChildServices')->select(['csAdminFK'])->where('csName', '=', $tenant)->executeFetch($db);
         if ($service && !empty($service['csAdminFK'])) {
             $qb2 = new \QueryBuilder($dialect);
-            $adminUser = $qb2->table('appUsers')->where('auPK', '=', $service['csAdminFK'])->getFetch($db);
+            $adminUser = $qb2->table('appUsers')->where('auPK', '=', $service['csAdminFK'])->executeFetch($db);
             if ($adminUser) {
                 // Ensure values are properly escaped for SQL (this uses basic string replacement, PDO would be better but we're generating a static script)
                 $name = str_replace("'", "''", $adminUser['name']);
@@ -71,7 +71,8 @@ class ChildServiceManager {
         shell_exec("{$cmdPrefix}docker network create superhost-network 2>/dev/null || true");
         
         // 3 — bring the stack up
-        $output = shell_exec("{$cmdPrefix}docker-compose -p {$tenant} -f {$tenantDir}/compose.yaml --env-file {$tenantDir}/.env up -d 2>&1");
+        $cleanEnv = "env -u DB_VENDOR -u TENANT_DB_NAME -u TENANT_DB_USER -u TENANT_DB_PASS -u TENANT_DB_ROOT -u TARGET_ENV -u EXTERNAL_PORT ";
+        $output = shell_exec("{$cmdPrefix}{$cleanEnv}docker-compose -p {$tenant} -f {$tenantDir}/compose.yaml --env-file {$tenantDir}/.env up -d 2>&1");
         
         // wait for the compose to complete...
         sleep(3);
@@ -111,7 +112,8 @@ class ChildServiceManager {
         $cmdPrefix = $this->getDockerCmdPrefix();
 
         if (file_exists("{$tenantDir}/compose.yaml")) {
-            $output = shell_exec("{$cmdPrefix}docker-compose -p {$tenant} down 2>&1");
+            $cleanEnv = "env -u DB_VENDOR -u TENANT_DB_NAME -u TENANT_DB_USER -u TENANT_DB_PASS -u TENANT_DB_ROOT -u TARGET_ENV -u EXTERNAL_PORT ";
+            $output = shell_exec("{$cmdPrefix}{$cleanEnv}docker-compose -p {$tenant} -f {$tenantDir}/compose.yaml --env-file {$tenantDir}/.env down 2>&1");
             return ['status' => 'success', 'output' => $output];
         }
         return ['status' => 'error', 'message' => 'Tenant configuration not found.'];
@@ -123,7 +125,8 @@ class ChildServiceManager {
 
         $output = "";
         if (file_exists("{$tenantDir}/compose.yaml")) {
-            $output = shell_exec("{$cmdPrefix}docker-compose -p {$tenant} down -v 2>&1");
+            $cleanEnv = "env -u DB_VENDOR -u TENANT_DB_NAME -u TENANT_DB_USER -u TENANT_DB_PASS -u TENANT_DB_ROOT -u TARGET_ENV -u EXTERNAL_PORT ";
+            $output = shell_exec("{$cmdPrefix}{$cleanEnv}docker-compose -p {$tenant} -f {$tenantDir}/compose.yaml --env-file {$tenantDir}/.env down -v 2>&1");
         }
         
         // Remove nginx conf and reload
@@ -254,9 +257,11 @@ class ChildServiceManager {
 
         return implode("\n", [
             "TENANT_NAME={$tenant}",
+            "TENANT_DB_NAME=stackDB",
             "TENANT_DB_USER={$dbUser}",
             "TENANT_DB_PASS={$dbPass}",
             "TENANT_DB_ROOT={$dbRoot}",
+            "DB_VENDOR=" . 'mysql',
             "TARGET_ENV=" . (getenv('TARGET_ENV') ?: 'dev'),
             "HOST_PROJECT_ROOT=" . $this->getHostProjectRoot(),
             "TENANT_APP_IMAGE=" . ($scvRows['TENANT_APP_IMAGE'] ?: 'local-dockerlempapp:latest'),

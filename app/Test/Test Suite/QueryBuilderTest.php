@@ -53,9 +53,9 @@ class QueryBuilderTest extends TestSuiteBase {
 
         $bindings = $qb->getBindings();
         // Offset (i_2) comes before Limit (i_3) because of toSQL order
-        $expectedSql = "SELECT `id`, `username`, `email` FROM `users` WHERE `status` = :i_0 AND `age` > :i_1 ORDER BY `created_at` DESC LIMIT :i_2 OFFSET :i_3";
+        $expectedSql = "SELECT `id`, `username`, `email` FROM `users` WHERE `status` = :i_0 AND `age` > :i_1 ORDER BY `created_at` DESC LIMIT 10 OFFSET 20";
         return $this->assertEquals($expectedSql, $sql, "MySQL SELECT Query Generation") &&
-               $this->assertEquals(['i_0' => 'active', 'i_1' => 18, 'i_2' => 10, 'i_3' => 20], $bindings, "MySQL SELECT Bindings");
+               $this->assertEquals(['i_0' => 'active', 'i_1' => 18], $bindings, "MySQL SELECT Bindings");
     }
 
     protected function testPostgresSelect() {
@@ -69,9 +69,9 @@ class QueryBuilderTest extends TestSuiteBase {
                   ->toSQL();
 
         $bindings = $qb->getBindings();
-        $expectedSql = 'SELECT "id", "username", "email" FROM "users" WHERE "status" = :i_0 ORDER BY "created_at" DESC LIMIT :i_1 OFFSET :i_2';
+        $expectedSql = 'SELECT "id", "username", "email" FROM "users" WHERE "status" = :i_0 ORDER BY "created_at" DESC LIMIT 5 OFFSET 10';
         return $this->assertEquals($expectedSql, $sql, "Postgres SELECT Query Generation") &&
-               $this->assertEquals(['i_0' => 'active', 'i_1' => 5, 'i_2' => 10], $bindings, "Postgres SELECT Bindings");
+               $this->assertEquals(['i_0' => 'active'], $bindings, "Postgres SELECT Bindings");
     }
 
     protected function testMySQLInsert() {

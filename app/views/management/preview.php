@@ -30,7 +30,7 @@ function renderElement($el, $dom, $target, $formSchemas) {
             // We need to fetch the form name from tblForm because $formSchemas keys are names
             global $db, $dialect;
             $qb = new QueryBuilder($dialect);
-            $fData = $qb->table('tblForm')->select(['tfName', 'tfReadOnly'])->where('tfPK', '=', $formId)->getFetch($db);
+            $fData = $qb->table('tblForm')->select(['tfName', 'tfReadOnly'])->where('tfPK', '=', $formId)->executeFetch($db);
             if ($fData) {
                 $formName = $fData['tfName'];
                 $formComp = new FormComponent($dom, $formName);

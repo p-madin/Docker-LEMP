@@ -32,6 +32,11 @@ class xmlDomTest extends TestSuiteBase {
         foreach ($this->suiteVariables as $key => $value) {
             $input = str_replace('{{' . $key . '}}', $value, $input);
         }
+        if (preg_match('/\{\{.*?\}\}/', $input, $matches)) {
+            $GLOBALS['returnable'] .= "     [FAIL] Unsubstituted variable found: " . $matches[0] . "\n";
+            $GLOBALS['returnable'] .= "     [DEBUG] Last Response: " . substr($this->lastResponse, 0, 500) . "\n";
+            return false;
+        }
         return $input;
     }
 
@@ -65,6 +70,7 @@ class xmlDomTest extends TestSuiteBase {
                 #echo " - Test: " . $test->name . "\n";
                 $step_number = 1;
                 foreach ($test->stepList->step as $step) {
+                    #usleep(1000000); 
                     $rawAction = (string)$step->action;
                     $action = str_replace(' ', '', $rawAction);
                     $GLOBALS['returnable'] .= "   - Step: $step_number ($rawAction)\n";
@@ -109,14 +115,15 @@ class xmlDomTest extends TestSuiteBase {
             }
         }
 
-        if (isset($this->suiteVariables['testUserID_username'])) {
-            $db->exec("DELETE FROM appUsers WHERE username = '" . $this->suiteVariables['testUserID_username'] . "'");
-        } else {
-            $db->exec("DELETE FROM appUsers WHERE username = 'LifecycleUser'");
-        }
+        // Clean up test data by deleting all users created during the test
+        $db->exec("DELETE FROM appUsers WHERE auPK > 2");
         $driver = $db->getAttribute(PDO::ATTR_DRIVER_NAME);
         if ($driver === 'pgsql') {
             $db->exec("ALTER TABLE appUsers ALTER COLUMN auPK RESTART WITH 3");
+        } elseif ($driver === 'dblib' || $driver === 'sqlsrv') {
+            $db->exec("DBCC CHECKIDENT ('appUsers', RESEED, 2)");
+        } elseif ($driver === 'sqlite') {
+            $db->exec("UPDATE sqlite_sequence SET seq = 2 WHERE name = 'appUsers'");
         } else {
             $db->exec("ALTER TABLE appUsers AUTO_INCREMENT = 3");
         }
@@ -316,6 +323,11 @@ XML;
 
         if ($csrfMode === 'invalid') {
             $postData['csrf_token'] = 'invalid_token_value';
+        } else {
+            $csrfMeta = $dom->querySelector('meta[name="csrf-token"]');
+            if ($csrfMeta && $csrfMeta->hasAttribute('content')) {
+                $postData['csrf_token'] = $csrfMeta->getAttribute('content');
+            }
         }
 
         // Add any overrides that were NOT in the DOM

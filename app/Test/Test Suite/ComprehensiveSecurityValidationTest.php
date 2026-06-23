@@ -217,9 +217,9 @@ class ComprehensiveSecurityValidationTest extends TestSuiteBase {
         curl_close($ch);
 
         $doc = \Dom\HTMLDocument::createFromString($res, LIBXML_NOERROR);
-        $input = $doc->querySelector('input[name="csrf_token"]');
-        if (!$input) throw new Exception("Could not find CSRF token");
-        return $input->getAttribute('value');
+        $meta = $doc->querySelector('meta[name="csrf-token"]');
+        if (!$meta) return null;
+        return $meta->getAttribute('content');
     }
 }
 

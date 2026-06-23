@@ -21,7 +21,7 @@ class EditColumnAction implements ControllerInterface {
 
         if ($targetFormPk > 0) {
             $checkQb = new QueryBuilder($dialect);
-            $formStatus = $checkQb->table('tblForm')->select(['tfReadOnly'])->where('tfPK', '=', $targetFormPk)->getFetch($db);
+            $formStatus = $checkQb->table('tblForm')->select(['tfReadOnly'])->where('tfPK', '=', $targetFormPk)->executeFetch($db);
             if($formStatus['tfReadOnly']) {
                 Hyperlink::redirection(self::$manage_URI);
             }
@@ -36,7 +36,7 @@ class EditColumnAction implements ControllerInterface {
             if ($pk > 0) {
                 // Fetch current data for undo support
                 $qb_data = new QueryBuilder($dialect);
-                $columnData = $qb_data->table('tblColumns')->where('tcPK', '=', $pk)->getFetch($db);
+                $columnData = $qb_data->table('tblColumns')->where('tcPK', '=', $pk)->executeFetch($db);
                 
                 if ($columnData) {
                     $eventId = $eventStore->append('ColumnDeleted', $columnData, $targetFormPk, $authorId);
@@ -74,7 +74,7 @@ class EditColumnAction implements ControllerInterface {
         if ($pk > 0) {
             // Fetch current state for Memento support
             $qb_old = new QueryBuilder($dialect);
-            $oldData = $qb_old->table('tblColumns')->where('tcPK', '=', $pk)->getFetch($db);
+            $oldData = $qb_old->table('tblColumns')->where('tcPK', '=', $pk)->executeFetch($db);
             $previousPayload = is_array($oldData) ? $oldData : null;
             $eventId = $eventStore->append('ColumnUpdated', array_merge(['tcPK' => $pk], $data), $form_fk, $authorId, $previousPayload);
         } else {

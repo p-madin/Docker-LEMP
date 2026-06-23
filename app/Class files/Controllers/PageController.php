@@ -14,7 +14,7 @@ class PageController implements ControllerInterface {
 
         if ($pageId > 0) {
             $qb_page = new QueryBuilder($dialect);
-            $pageData = $qb_page->table('tblPages')->where('pagPK', '=', $pageId)->getFetch($db);
+            $pageData = $qb_page->table('tblPages')->where('pagPK', '=', $pageId)->executeFetch($db);
             
             if ($pageData) {
                 $qb_elements = new QueryBuilder($dialect);
@@ -22,11 +22,11 @@ class PageController implements ControllerInterface {
                     ->join('brgPageElements', 'tblElements.elePK', '=', 'brgPageElements.pelElementFK')
                     ->where('brgPageElements.pelPageFK', '=', $pageId)
                     ->orderBy('brgPageElements.pelOrder', 'ASC')
-                    ->getFetchAll($db);
+                    ->executeFetchAll($db);
 
                 // Fetch primary Navbar path for this page
                 $qb_nav = new QueryBuilder($dialect);
-                $navData = $qb_nav->table('tblNavBar')->where('nbPageFK', '=', $pageId)->getFetch($db);
+                $navData = $qb_nav->table('tblNavBar')->where('nbPageFK', '=', $pageId)->executeFetch($db);
                 $pageData['nbPath'] = $navData ? $navData['nbPath'] : '';
                 $pageData['nbPK'] = $navData ? $navData['nbPK'] : 0;
             }
