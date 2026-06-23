@@ -298,7 +298,7 @@ class BlockEditor {
         select.innerHTML = '<option value="">-- Select a Form --</option>';
         this.forms.forEach(f => {
             const opt = document.createElement('option');
-            opt.value = f.tfPK;
+            opt.value = f.tfName;
             opt.innerText = f.tfName;
             select.appendChild(opt);
         });
@@ -641,9 +641,14 @@ class BlockEditor {
                 el.innerText = data.eleContent;
             }
             if (type === 'form') {
-                el.dataset.formId = data.eleContent;
-                // We'll need a way to resolve the name, for now just show ID
-                el.innerText = `[Form ID: ${data.eleContent}]`;
+                try {
+                    const config = JSON.parse(data.eleContent);
+                    el.dataset.formId = config.source || '';
+                    el.innerText = `[Form: ${config.source}]`;
+                } catch (e) {
+                    el.dataset.formId = data.eleContent;
+                    el.innerText = `[Form ID: ${data.eleContent}]`;
+                }
             }
             if (['table', 'chart'].includes(type)) {
                 try {
@@ -1017,7 +1022,11 @@ class BlockEditor {
 
                 // Only save text content for non-container/non-form types to avoid duplication
                 if (block.dataset.blockType === 'form') {
-                    data.append('eleContent', block.dataset.formId || '');
+                    const config = {
+                        dataProvider: "FormSchemaDataProvider",
+                        source: block.dataset.formId || ''
+                    };
+                    data.append('eleContent', JSON.stringify(config));
                 } else if (['table', 'chart'].includes(block.dataset.blockType)) {
                     const config = {
                         dataProvider: block.dataset.dataProvider || '',

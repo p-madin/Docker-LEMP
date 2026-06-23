@@ -2,10 +2,7 @@
 
 class ViewDecorationMiddleware implements MiddlewareInterface {
     public function handle(Request $request, Closure $next) {
-        global $db, $dialect, $systemConfigController, $sessionController, $dom, $formSchemas, $assetManager;
-
-        // 1. Generate Global Form Schemas
-        $formSchemas = DatabaseForm::generateGlobalSchemas($db, $dialect);
+        global $db, $dialect, $systemConfigController, $sessionController, $dom, $assetManager;
 
         // 2. Initialize Navbar
         $navbar = new Navbar($systemConfigController);

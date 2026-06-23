@@ -8,6 +8,7 @@ include_once(__DIR__ . "/EventStore.php");
 include_once(__DIR__ . "/Component.php");
 include_once(__DIR__ . "/Components/FlexTableComponent.php");
 include_once(__DIR__ . "/Components/FormComponent.php");
+include_once(__DIR__ . "/Components/ChartComponent.php");
 include_once(__DIR__ . "/Services/GenericDataMapper.php");
 include_once(__DIR__ . "/Services/ChildServiceManager.php");
 include_once(__DIR__ . "/dataGraph.php");
@@ -16,6 +17,7 @@ include_once(__DIR__ . "/Router/MiddlewareInterface.php");
 include_once(__DIR__ . "/Router/Router.php");
 include_once(__DIR__ . "/Router/ControllerInterface.php");
 include_once(__DIR__ . "/Data/DataProviderInterface.php");
+include_once(__DIR__ . "/Data/Providers/FormSchemaDataProvider.php");
 include_once(__DIR__ . "/View.php");
 include_once(__DIR__ . "/Components/LayoutComponent.php");
 
@@ -25,7 +27,6 @@ include_once(__DIR__ . "/SystemConfigController.php");
 include_once(__DIR__ . "/hyperlink.php");
 include_once(__DIR__ . "/xmlDom.php");
 include_once(__DIR__ . "/xmlForm.php");
-include_once(__DIR__ . "/DatabaseForm.php");
 include_once(__DIR__ . "/formValidation.php");
 include_once(__DIR__ . "/navbar.php");
 include_once(__DIR__ . "/Security/RateLimiter.php");
@@ -47,7 +48,6 @@ $router = new Router();
 $request = new Request();
 $dom = new xmlDom();
 $assetManager = new AssetManager();
-$formSchemas;
 
 // Global Middlewares Pipeline (Execution Order)
 // 1. Establish Database Connection & Fetch Config

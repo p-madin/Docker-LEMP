@@ -4,11 +4,11 @@ class LoginAction implements ControllerInterface {
     public bool $isAction = true;
 
     public function execute(Request $request) {
-        global $sessionController, $formSchemas, $dialect, $db;
+        global $sessionController, $dialect, $db;
 
         Hyperlink::handleAction($sessionController);
 
-        $cleanData = FormValidation::processAndValidate('login', $request->post, $formSchemas, $sessionController, '/');
+        $cleanData = FormValidation::processAndValidate('login', $request->post, $sessionController, '/');
         $sanitizedUsername = $cleanData['username'] ?? '';
 
         $qb = new QueryBuilder($dialect);

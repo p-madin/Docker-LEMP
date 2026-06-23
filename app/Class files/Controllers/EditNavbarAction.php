@@ -6,7 +6,7 @@ class EditNavbarAction implements ControllerInterface {
     public bool $isAction = true;
 
     public function execute(Request $request) {
-        global $sessionController, $formSchemas, $dialect, $db, $eventStore;
+        global $sessionController, $dialect, $db, $eventStore;
 
         Hyperlink::handleAction($sessionController);
 
@@ -30,7 +30,7 @@ class EditNavbarAction implements ControllerInterface {
             Hyperlink::redirection(self::$manage_URI);
         }
 
-        $cleanData = FormValidation::processAndValidate('navbar', $request->post, $formSchemas, $sessionController, function($clean) {
+        $cleanData = FormValidation::processAndValidate('navbar', $request->post, $sessionController, function($clean) {
             $id = $clean['nbPK'] ?? 0;
             return self::$object_URI . ($id ? "?id=".$id : "");
         });

@@ -4,7 +4,7 @@ class PreviewController implements ControllerInterface {
     public bool $isAction = false;
 
     public function execute(Request $request) {
-        global $db, $dialect, $formSchemas;
+        global $db, $dialect;
 
         $pageId = (int)($request->get['id'] ?? 0);
         if ($pageId <= 0) {
@@ -31,7 +31,7 @@ class PreviewController implements ControllerInterface {
         return View::render('management/preview', [
             'pageData' => $pageData,
             'tree' => $tree,
-            'formSchemas' => $formSchemas
+            
         ]);
     }
 

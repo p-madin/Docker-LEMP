@@ -1,18 +1,19 @@
 <?php
 /** @var xmlDom $dom */
 /** @var \Dom\HTMLElement $target */
-/** @var array $graphData */
+
 /** @var array $ipData */
 /** @var array $userData */
 /** @var array $uaData */
 
 // 1. Render Graph
-$graph = new DataGraph($graphData);
+$chart = new ChartComponent($dom);
+$chart->setDataProvider("DashboardGraphDataProvider");
 $details = $dom->dom->createElement('details');
 $summary = $dom->dom->createElement('summary');
 $summary->textContent = "Visits per hour";
 $details->appendChild($summary);
-$graph->render($dom, $details);
+$details->appendChild($chart->render());
 $target->append($details);
 
 // 2. Render Filter Form

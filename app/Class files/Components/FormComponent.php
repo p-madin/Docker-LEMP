@@ -9,6 +9,8 @@ class FormComponent extends Component {
     protected array $fields = [];
     protected array $flashErrors = [];
     protected array $flashData = [];
+    private ?string $valueProviderClass = null;
+    private bool $initialValidate = false;
 
     protected ?\DOM\Element $tableWrapper = null;
 
@@ -117,15 +119,56 @@ class FormComponent extends Component {
         return $this;
     }
 
-    public function buildFromSchema(string $schemaName, array $globalSchemas, array $overrideValues = []) {
-        if (!isset($globalSchemas[$schemaName])) return $this;
-        
-        if (isset($globalSchemas[$schemaName]['__meta']) && !empty($globalSchemas[$schemaName]['__meta']['action'])) {
-            $this->setAction($globalSchemas[$schemaName]['__meta']['action']);
+    public function setInitialValidate(bool $validate) {
+        $this->initialValidate = $validate;
+        return $this;
+    }
+
+    public function setValueProvider(?string $className) {
+        $this->valueProviderClass = $className;
+        return $this;
+    }
+
+    public function buildFromSchema(array $overrideValues = []) {
+        $provider = new \FormSchemaDataProvider($this->formName);
+        $rows = $provider->getData();
+
+        if (empty($rows)) return $this;
+
+        if ($this->valueProviderClass) {
+            if (!class_exists($this->valueProviderClass)) {
+                $filePath = __DIR__ . "/../Data/Providers/" . $this->valueProviderClass . ".php";
+                if (file_exists($filePath)) {
+                    include_once($filePath);
+                }
+            }
+            if (class_exists($this->valueProviderClass)) {
+                $vProvider = new $this->valueProviderClass();
+                if ($vProvider instanceof \DataProviderInterface) {
+                    $vData = $vProvider->getData();
+                    if (!empty($vData)) {
+                        // Support both [['key'=>'val']] and ['key'=>'val'] formats
+                        $row = isset($vData[0]) && is_array($vData[0]) ? $vData[0] : $vData;
+                        $overrideValues = array_merge($overrideValues, $row);
+                    }
+                }
+            }
         }
 
-        foreach ($globalSchemas[$schemaName] as $key => $field) {
-            if ($key === '__meta') continue;
+        $mapper = new \Services\GenericDataMapper();
+        $mapped = $mapper->map($rows, [
+            'name' => 'tcName',
+            'label' => 'tcLabel',
+            'type' => 'tcType',
+            'rules' => ['key' => 'tcRules', 'format' => 'json'],
+            'action' => 'tfAction'
+        ]);
+
+        if (!empty($mapped) && !empty($mapped[0]['action'])) {
+            $this->setAction($mapped[0]['action']);
+        }
+
+        foreach ($mapped as $field) {
             $value = $overrideValues[$field['name']] ?? null;
             $this->addField($field['name'], $field['label'], $field['type'], $value, $field['rules']);
         }
@@ -143,7 +186,11 @@ class FormComponent extends Component {
             ]);
         }
 
-        if ($this->useFlexTable) {
+        if ($this->initialValidate) {
+            $this->root->setAttribute('data-initial-validate', 'true');
+        }
+
+        if ($this->useFlexTable && empty($this->tableWrapper)) {
             $this->tableWrapper = $this->fabricateChild($this->root, 'div', ['class' => 'flex-table']);
         }
 

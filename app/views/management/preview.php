@@ -1,7 +1,7 @@
 <?php
 global $dom, $db, $dialect;
 
-function renderElement($el, $dom, $target, $formSchemas) {
+function renderElement($el, $dom, $target) {
     $tag = 'div';
     switch ($el['eleType']) {
         case 'heading': $tag = 'h2'; break;
@@ -22,23 +22,51 @@ function renderElement($el, $dom, $target, $formSchemas) {
     $node = $dom->fabricateChild($target, $tag, $attrs);
     
     if ($el['eleType'] === 'form') {
-        // Special case for forms
-        $formId = (int)$el['eleContent'];
-        if ($formId > 0) {
-            // Find form name in schemas
-            $formName = null;
-            // We need to fetch the form name from tblForm because $formSchemas keys are names
-            global $db, $dialect;
-            $qb = new QueryBuilder($dialect);
-            $fData = $qb->table('tblForm')->select(['tfName', 'tfReadOnly'])->where('tfPK', '=', $formId)->executeFetch($db);
-            if ($fData) {
-                $formName = $fData['tfName'];
-                $formComp = new FormComponent($dom, $formName);
-                $formComp->buildFromSchema($formName, $formSchemas);
-                if (!(bool)$fData['tfReadOnly']) {
-                    $formComp->addSubmit('Submit');
+        $rawContent = htmlspecialchars_decode($el['eleContent'], ENT_QUOTES);
+        $config = json_decode($rawContent, true);
+        if ($config) {
+            $formName = $config['source'] ?? null;
+            if ($formName) {
+                global $db, $dialect;
+                $qb = new QueryBuilder($dialect);
+                $fData = $qb->table('tblForm')->select(['tfReadOnly'])->where('tfName', '=', $formName)->executeFetch($db);
+                if ($fData) {
+                    $formComp = new FormComponent($dom, $formName);
+                    if (!empty($config['valueProvider'])) {
+                        $formComp->setValueProvider($config['valueProvider']);
+                    }
+                    if (!empty($config['initialValidate'])) {
+                        $formComp->setInitialValidate(true);
+                    }
+                    $formComp->buildFromSchema();
+                    if (!(bool)$fData['tfReadOnly']) {
+                        $formComp->addSubmit('Submit');
+                    }
+                    $node->appendChild($formComp->render());
                 }
-                $node->appendChild($formComp->render());
+            }
+        } else {
+            // Legacy fallback
+            $formId = (int)$el['eleContent'];
+            if ($formId > 0) {
+                global $db, $dialect;
+                $qb = new QueryBuilder($dialect);
+                $fData = $qb->table('tblForm')->select(['tfName', 'tfReadOnly'])->where('tfPK', '=', $formId)->executeFetch($db);
+                if ($fData) {
+                    $formName = $fData['tfName'];
+                    $formComp = new FormComponent($dom, $formName);
+                    if (!empty($config['valueProvider'])) {
+                        $formComp->setValueProvider($config['valueProvider']);
+                    }
+                    if (!empty($config['initialValidate'])) {
+                        $formComp->setInitialValidate(true);
+                    }
+                    $formComp->buildFromSchema();
+                    if (!(bool)$fData['tfReadOnly']) {
+                        $formComp->addSubmit('Submit');
+                    }
+                    $node->appendChild($formComp->render());
+                }
             }
         }
     } else if ($el['eleType'] === 'table') {
@@ -59,9 +87,14 @@ function renderElement($el, $dom, $target, $formSchemas) {
         $rawContent = htmlspecialchars_decode($el['eleContent'], ENT_QUOTES);
         $config = json_decode($rawContent, true);
         if ($config) {
-            $chart = new DataGraphComponent($dom);
-            $chart->setDataSource($config['source'] ?? null);
-            $chart->setDataConfig(json_decode($config['config'] ?? '{}', true) ?: []);
+            $chart = new ChartComponent($dom);
+            if (!empty($config['dataProvider'])) {
+                $chart->setDataProvider($config['dataProvider']);
+            } else {
+                $chart->setDataSource($config['source'] ?? null);
+                $chart->setDataConfig(json_decode($config['config'] ?? '{}', true) ?: []);
+            }
+            $node->setAttribute('style', 'width: 100%;');
             $node->appendChild($chart->render());
         }
     } else if ($el['eleType'] === 'hyperlink') {
@@ -78,13 +111,13 @@ function renderElement($el, $dom, $target, $formSchemas) {
 
     // Recursively render children
     foreach ($el['children'] as $child) {
-        renderElement($child, $dom, $node, $formSchemas);
+        renderElement($child, $dom, $node);
     }
 }
 
 $dom->fabricateChild($target, 'h1', [], $pageData['pagTitle']);
 
 foreach ($tree as $rootEl) {
-    renderElement($rootEl, $dom, $target, $formSchemas);
+    renderElement($rootEl, $dom, $target);
 }
 ?>

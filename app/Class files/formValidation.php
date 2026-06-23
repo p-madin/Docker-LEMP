@@ -5,13 +5,24 @@ class FormValidation {
      * Processes security sanitization, executes schema-based validation, and handles flash routing upon failure.
      * Returns sanitized data on success.
      */
-    public static function processAndValidate($schemaName, $inputData, $formSchemas, $sessionController, $failRedirectClosure) {
+    public static function processAndValidate($schemaName, $inputData, $sessionController, $failRedirectClosure) {
         // 1. Setup Security Sanitization
 
         $security = new \App\Security\SecurityValidation();
         
-        if (isset($formSchemas[$schemaName])) {
-            $security->configureFromSchema($formSchemas[$schemaName]);
+        $provider = new \FormSchemaDataProvider($schemaName);
+        $rows = $provider->getData();
+        $mapper = new \Services\GenericDataMapper();
+        $schema = $mapper->map($rows, [
+            'name' => 'tcName',
+            'label' => 'tcLabel',
+            'type' => 'tcType',
+            'rules' => ['key' => 'tcRules', 'format' => 'json'],
+            'action' => 'tfAction'
+        ]);
+
+        if (!empty($schema)) {
+            $security->configureFromSchema($schema);
         } else {
             // Fallback for when no schema is provided
             $security->setStrategy(\App\Security\SanitizerFactory::createDefault());
@@ -29,9 +40,9 @@ class FormValidation {
             $validator->setDb($db, $dialect);
         }
 
-        if (isset($formSchemas[$schemaName])) {
-            foreach ($formSchemas[$schemaName] as $key => $field) {
-                if ($key === '__meta') continue;
+        if (!empty($schema)) {
+            foreach ($schema as $field) {
+                if ($field['name'] === '__meta') continue;
                 if (!empty($field['rules'])) {
                     $validator->rule($field['name'], $field['rules']);
                 }

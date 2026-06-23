@@ -6,7 +6,7 @@ class EditColumnAction implements ControllerInterface {
     public bool $isAction = true;
 
     public function execute(Request $request) {
-        global $sessionController, $formSchemas, $dialect, $db, $eventStore;
+        global $sessionController, $dialect, $db, $eventStore;
 
         Hyperlink::handleAction($sessionController);
 
@@ -48,7 +48,7 @@ class EditColumnAction implements ControllerInterface {
             Hyperlink::redirection("/edit_form?id=" . $form_id);
         }
 
-        $cleanData = FormValidation::processAndValidate('editColumn', $request->post, $formSchemas, $sessionController, function($clean) {
+        $cleanData = FormValidation::processAndValidate('editColumn', $request->post, $sessionController, function($clean) {
             $id = $clean['tcPK'] ?? 0;
             $form_id = $clean['tcFormFK'] ?? 0;
             return self::$object_URI . ($id ? "?id=".$id : "?form_id=".$form_id);

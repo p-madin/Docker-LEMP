@@ -4,7 +4,7 @@ class PlatformRecoveryController implements ControllerInterface {
     public bool $isAction = false;
 
     public function execute(Request $request) {
-        global $db, $dialect, $sessionController, $eventStore, $formSchemas;
+        global $db, $dialect, $sessionController, $eventStore;
 
         // Ensure user has admin privileges to access platform recovery
         $userId = $sessionController->getSystemUserId();
@@ -39,7 +39,7 @@ class PlatformRecoveryController implements ControllerInterface {
             'undoableEvents' => $undoableEvents,
             'redoEvents'     => $redoEvents,
             'msg'            => $request->get['msg'] ?? null,
-            'formSchemas'    => $formSchemas
+            
         ]);
     }
 

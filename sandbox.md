@@ -111,3 +111,12 @@ Expose the application's content structure via secure RESTful endpoints, allowin
 2. **Page Content Endpoint**: Implement an endpoint (e.g., `GET /api/v1/pages/{id}`) that queries `tblPages` and `tblElements` and recursively returns the nested JSON tree representing the requested page.
 3. **API Authentication**: Introduce API keys or Bearer token support so that secure or restricted extranet content can be safely queried by authorized external systems without using browser session cookies.
 
+---
+
+## Idea: Pagination Standardization
+### Description
+Pagination should be considered in a separate project. Implement a unified pagination standard for components like `FlexTableComponent` when handling large datasets.
+
+### Implementation Goals
+1. **Server-Side Pagination**: Standardize how the `GenericDataMapper` and DataProviders handle limits and offsets.
+2. **UI Controls**: Build reusable pagination UI controls that integrate cleanly into `FlexTableComponent` and the `Action Tracker`.

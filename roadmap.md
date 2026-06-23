@@ -80,7 +80,7 @@ Abstract database interactions to support multiple DBMS engines.
 
 ---
 
-## Phase 9: Infrastructure & Advanced Blocks
+## Phase 9: Infrastructure & Advanced Blocks [COMPLETED]
 ### Description
 This phase is dedicated to building the necessary data abstraction and reusable presentation components that power advanced blocks like Forms, Tables, and Charts, ensuring these blocks are data-aware rather than just display-aware.
 
@@ -92,8 +92,16 @@ This phase is dedicated to building the necessary data abstraction and reusable 
 1.  **GenericDataMapper Service**: Abstract the difference between raw database result sets and structured key-value arrays.
 2.  **Advanced Block Support**: 
     - **Table**: Pass data through Mapper before rendering.
-    - **Form**: Convert database-ready structures into form field definitions.
-    - **Chart**: Aggregate and pivot raw data into time-series/statistical formats.
+    - **Form**: Introduce the data-fetching behavior found in `FlexTableComponent` (which uses `GenericDataMapper`) into `FormComponent`. `FormComponent` should pull its own schemas via a DataProvider/Mapper pipeline instead of relying on global schema variables.
+    - **Chart**: Formalize the procedural `dataGraph.php` into a dedicated `ChartComponent.php` class, standardizing how charts receive and pivot raw data into time-series/statistical formats via the mapper.
+
+### Definition of Done (DoD)
+- [x] **DataMapper Finalization**: `GenericDataMapper` is fully capable of applying array pivots, aggregations, and key-remapping without any business logic leaking into presentation components.
+- [x] **Chart Component**: A dedicated `ChartComponent` class is created to replace the procedural `dataGraph.php`, standardizing how charts receive data via the mapper.
+- [x] **Form Component Decoupling**: `FormComponent` is refactored to fetch its schema configurations via a DataProvider/Mapper pipeline, rather than relying on global variables (`$globalSchemas`).
+- [x] **Hardcoded Form Replacement**: Simple hardcoded forms are replaced by their new block builder equivalents within the initial seed data (`./conf/common/02_db_dml.sql`).
+- [x] **Block Editor Support**: The block editor at `./app/Static/block-editor.js` can use the new Chart block natively.
+- [x] **Regression Tested**: The Dashboard (Charts), Form Management UI, and Data Tables visually render identically to how they did prior to the abstraction, passing the automated visual/DOM tests.
 
 ---
 

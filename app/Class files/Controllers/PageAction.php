@@ -6,7 +6,7 @@ class PageAction implements ControllerInterface {
     public bool $isAction = true;
 
     public function execute(Request $request) {
-        global $sessionController, $formSchemas, $dialect, $db, $eventStore;
+        global $sessionController, $dialect, $db, $eventStore;
         
 
             $authorId = $sessionController->getSystemUserId();
@@ -41,7 +41,7 @@ class PageAction implements ControllerInterface {
                 Hyperlink::redirection(self::$manage_URI);
             }
 
-            $cleanData = FormValidation::processAndValidate('page', $request->post, $formSchemas, $sessionController, function($clean) {
+            $cleanData = FormValidation::processAndValidate('page', $request->post, $sessionController, function($clean) {
                 return self::$manage_URI;
             });
 

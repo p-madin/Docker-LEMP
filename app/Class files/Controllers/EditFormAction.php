@@ -6,7 +6,7 @@ class EditFormAction implements ControllerInterface {
     public bool $isAction = true;
 
     public function execute(Request $request) {
-        global $sessionController, $formSchemas, $dialect, $db, $eventStore;
+        global $sessionController, $dialect, $db, $eventStore;
 
         Hyperlink::handleAction($sessionController);
 
@@ -45,7 +45,7 @@ class EditFormAction implements ControllerInterface {
             Hyperlink::redirection(self::$manage_URI);
         }
 
-        $cleanData = FormValidation::processAndValidate('editForm', $request->post, $formSchemas, $sessionController, function($clean) {
+        $cleanData = FormValidation::processAndValidate('editForm', $request->post, $sessionController, function($clean) {
             $id = $clean['tfPK'] ?? 0;
             return self::$object_URI . ($id ? "?id=".$id : "");
         });

@@ -9,7 +9,7 @@ class PageRendererController implements ControllerInterface {
     }
 
     public function execute(Request $request) {
-        global $db, $dialect, $formSchemas;
+        global $db, $dialect;
 
         $pageId = $this->pageId ?: (int)($request->get['id'] ?? 0);
         if ($pageId <= 0) {
@@ -40,7 +40,7 @@ class PageRendererController implements ControllerInterface {
         return View::render('management/preview', [
             'pageData' => $pageData,
             'tree' => $tree,
-            'formSchemas' => $formSchemas
+            
         ]);
     }
 

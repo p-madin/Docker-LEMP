@@ -16,6 +16,11 @@ INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle) VALUES (5, 1, 'Page Manageme
 INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle) VALUES (6, 1, 'Banned IP Management');
 INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle) VALUES (7, 1, 'Platform Recovery');
 INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle) VALUES (8, 1, 'Child Services');
+INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle) VALUES (9, 1, 'Home');
+INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle) VALUES (10, 1, 'Edit Account');
+INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle) VALUES (11, 1, 'Edit Column');
+INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle) VALUES (12, 1, 'Edit Form');
+INSERT INTO tblPages (pagPK, pagAuthorFK, pagTitle) VALUES (13, 1, 'Edit Navbar');
 
 -- Create Table Elements for these pages
 INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (1, 'heading', 'Account Management');
@@ -37,9 +42,34 @@ INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (16, 'table', '{"dat
 INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (21, 'hyperlink', '{"label":"Create New Navbar Item", "url":"/edit_navbar"}');
 INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (22, 'hyperlink', '{"label":"Create New Form", "url":"/edit_form"}');
 INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (23, 'hyperlink', '{"label":"Create New Page", "url":"/page_editor"}');
-INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (17, 'form', "11");
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (17, 'form', '{"dataProvider":"FormSchemaDataProvider", "source":"createChildService"}');
 INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (50, 'heading', 'Archived Pages');
 INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (51, 'table', '{"dataProvider":"ArchivedPageDataProvider"}');
+
+-- Home
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (100, 'heading', 'Visits per hour');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (101, 'chart', '{"dataProvider":"DashboardGraphDataProvider"}');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (102, 'heading', 'Login form');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (103, 'form', '{"dataProvider":"FormSchemaDataProvider", "source":"login"}');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (104, 'heading', 'Register form');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (105, 'form', '{"dataProvider":"FormSchemaDataProvider", "source":"register"}');
+
+-- Edit Account
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (106, 'heading', 'Edit Account');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (107, 'form', '{"dataProvider":"FormSchemaDataProvider", "source":"editUser", "valueProvider":"AccountFormDataProvider", "initialValidate":true}');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (108, 'hyperlink', '{"label":"Back to Account List", "url":"/account_management"}');
+
+-- Edit Column
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (109, 'heading', 'Edit Column');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (110, 'form', '{"dataProvider":"FormSchemaDataProvider", "source":"editColumn", "valueProvider":"ColumnFormDataProvider"}');
+
+-- Edit Form
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (111, 'heading', 'Edit Form');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (112, 'form', '{"dataProvider":"FormSchemaDataProvider", "source":"editForm", "valueProvider":"FormFormDataProvider"}');
+
+-- Edit Navbar
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (113, 'heading', 'Edit Navbar');
+INSERT INTO tblElements (elePK, eleType, eleContent) VALUES (114, 'form', '{"dataProvider":"FormSchemaDataProvider", "source":"navbar", "valueProvider":"NavbarFormDataProvider"}');
 
 -- Link Elements to Pages
 INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (1, 1, 1);
@@ -65,8 +95,33 @@ INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (8, 17, 2
 INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (5, 50, 4);
 INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (5, 51, 5);
 
+-- Home
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (9, 100, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (9, 101, 2);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (9, 102, 3);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (9, 103, 4);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (9, 104, 5);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (9, 105, 6);
+
+-- Edit Account
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (10, 106, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (10, 107, 2);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (10, 108, 3);
+
+-- Edit Column
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (11, 109, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (11, 110, 2);
+
+-- Edit Form
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (12, 111, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (12, 112, 2);
+
+-- Edit Navbar
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (13, 113, 1);
+INSERT INTO brgPageElements (pelPageFK, pelElementFK, pelOrder) VALUES (13, 114, 2);
+
 -- Root Items
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Home', 'c', NULL, '/', 'IndexController', false, 1, NULL);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Home', 'c', 9, '/', NULL, false, 1, NULL);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder, nbParentFK) VALUES ('Dashboard', 'p', NULL, '/dashboard', 'DashboardController', true, 2, NULL);
 
 -- Settings Menu
@@ -91,10 +146,10 @@ INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerCl
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Login Action', 'a', NULL, '/login', 'LoginAction', false, 0);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Register Action', 'a', NULL, '/register', 'RegisterAction', false, 0);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Update Account', 'a', NULL, '/editAccount', 'UpdateAccountAction', true, 0);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Column', 'a', NULL, '/edit_column', 'EditColumnController', true, 0);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Form', 'a', NULL, '/edit_form', 'EditFormController', true, 0);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Navbar', 'a', NULL, '/edit_navbar', 'EditNavbarController', true, 0);
-INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Account', 'a', NULL, '/edit_account', 'EditAccountController', true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Column', 'a', 11, '/edit_column', NULL, true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Form', 'a', 12, '/edit_form', NULL, true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Navbar', 'a', 13, '/edit_navbar', NULL, true, 0);
+INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Account', 'a', 10, '/edit_account', NULL, true, 0);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Column Action', 'a', NULL, '/editColumn', 'EditColumnAction', true, 0);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Form Action', 'a', NULL, '/editForm', 'EditFormAction', true, 0);
 INSERT INTO tblNavBar (nbText, nbDiscriminator, nbPageFK, nbPath, nbControllerClass, nbProtected, nbOrder) VALUES ('Edit Navbar Action', 'a', NULL, '/editNavbar', 'EditNavbarAction', true, 0);
@@ -139,6 +194,7 @@ INSERT INTO tblColumns (tcFormFK, tcName, tcLabel, tcType, tcRules, tcOrder) VAL
 (3, 'age', 'Age', 'number', '{"required":true,"numeric":true}', 4),
 (3, 'city', 'City', 'text', '{}', 5),
 (3, 'email', 'Email', 'email', '{"required":true,"email":true}', 6),
+(3, 'verified', 'Verified:', 'checkbox', '{}', 7),
 (4, 'nbPK', '', 'hidden', '{}', 1),
 (4, 'nbText', 'Display Text', 'text', '{"required":true,"min":1}', 2),
 (4, 'nbDiscriminator', 'Discriminator (c/p/h)', 'text', '{"required":true,"min":1,"max":1}', 3),

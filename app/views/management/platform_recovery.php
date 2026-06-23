@@ -4,7 +4,6 @@
 /** @var array $undoableEvents */
 /** @var array $redoEvents */
 /** @var string|null $msg */
-/** @var array $formSchemas */
 
 $dom->fabricateChild($target, 'h1', [], 'Platform Recovery & Event Log');
 $dom->fabricateChild($target, 'p', [], 'View the immutable event log and perform point-in-time recovery.');
@@ -20,7 +19,7 @@ $dom->fabricateChild($recoveryTools, 'h2', [], 'Point-in-Time Recovery');
 $form = new xmlForm('platform_recovery', $dom);
 $form->prep('/platform_recovery', 'POST');
 $form->formWrapper->setAttribute('id', 'platformRecoveryFormComponent');
-$form->buildFromSchema('platform_recovery', $formSchemas, ['action' => 'replay']);
+$form->buildFromSchema(['action' => 'replay']);
 $form->addSubmit('Replay Events', [
     'class' => 'btn btn-danger', 
     'onclick' => "return confirm('Are you sure? This will overwrite the current database state.');"

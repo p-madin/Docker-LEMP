@@ -6,11 +6,11 @@ class UpdateAccountAction implements ControllerInterface {
     public bool $isAction = true;
 
     public function execute(Request $request) {
-        global $sessionController, $formSchemas, $dialect, $db, $eventStore;
+        global $sessionController, $dialect, $db, $eventStore;
 
         Hyperlink::handleAction($sessionController);
 
-            $cleanData = FormValidation::processAndValidate('editUser', $request->post, $formSchemas, $sessionController, function($clean) {
+            $cleanData = FormValidation::processAndValidate('editUser', $request->post, $sessionController, function($clean) {
                 return self::$object_URI . "?id=" . $clean['auPK'];
             });
 

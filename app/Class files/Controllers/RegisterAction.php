@@ -6,11 +6,11 @@ class RegisterAction implements ControllerInterface {
     public bool $isAction = true;
 
     public function execute(Request $request) {
-        global $sessionController, $formSchemas, $eventStore;
+        global $sessionController, $eventStore;
 
         Hyperlink::handleAction($sessionController);
 
-        $cleanData = FormValidation::processAndValidate('register', $request->post, $formSchemas, $sessionController, '/');
+        $cleanData = FormValidation::processAndValidate('register', $request->post, $sessionController, '/');
 
         $passwordHash = password_hash($request->post['password'] ?? '', PASSWORD_DEFAULT);
 
