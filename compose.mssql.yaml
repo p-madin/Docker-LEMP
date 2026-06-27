@@ -41,9 +41,7 @@ services:
       TZ: Australia/Sydney
     volumes:
       - mssql_db_data:/var/opt/mssql
-      - ./mssql conf/common/01_db_ddl.sql:/docker-entrypoint-initdb.d/01_db_ddl.sql
-      - ./mssql conf/common/02_db_dml.sql:/docker-entrypoint-initdb.d/02_db_dml.sql
-      - ./mssql conf/${TARGET_ENV}/03_db_dml.sql:/docker-entrypoint-initdb.d/03_db_dml.sql:ro
+      - ./mssql conf/common/01_setup_stack.sql:/docker-entrypoint-initdb.d/01_setup_stack.sql
     ports:
       - "1433:1433"
     networks:

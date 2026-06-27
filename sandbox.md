@@ -18,9 +18,9 @@ Address the limitation where all Page Builder edits are instantly pushed live.
 
 ---
 
-## Idea: The Schema Dictionary for PostgreSQL Case-Sensitivity
+## Idea: The Schema Dictionary for PostgreSQL & MSSQL Case-Sensitivity
 ### Description
-Address the limitation where PostgreSQL natively folds unquoted identifiers to lowercase, which destroys camelCase column names (e.g., `nbPK` becomes `nbpk`) when using wildcard `SELECT *` queries. This breaks Memento JSON payloads that require exact case matching.
+Address the limitation where PostgreSQL natively folds unquoted identifiers to lowercase, and where `ANSIStandardDialect` forces identifiers to lowercase for maximum portability. This destroys camelCase column names (e.g., `nbPK` becomes `nbpk`) when using wildcard `SELECT *` queries in databases like PostgreSQL and MSSQL. This breaks Memento JSON payloads that require exact case matching.
 
 ### Implementation Goals
 1. **Schema Parser**: Create a utility script that parses `01_db_ddl.sql` and builds an array mapping lowercase keys back to their original camelCase strings (e.g., `['nbpk' => 'nbPK']`).
@@ -28,7 +28,7 @@ Address the limitation where PostgreSQL natively folds unquoted identifiers to l
 3. **Strict Parameter Validation**: Expose the dictionary to the `Validator` class and API endpoints. This provides a definitive whitelist of valid database tables and columns, allowing the system to strictly validate any dynamically POSTed table or column parameters (e.g., for sorting, filtering, or dynamic data ingestion).
 4. **Outcome**: 
    - Allows developers to safely use `SELECT *` without worrying about database-engine level case normalisation stripping expected keys.
-   - Specifically resolves fatal array key errors (e.g., `Undefined array key "evsPK"`) encountered in background tasks like `./app/Cron/worker.php` when testing PostgreSQL.
+   - Specifically resolves fatal array key errors (e.g., `Undefined array key "evsPK"`) encountered in background tasks like `./app/Cron/worker.php` when testing PostgreSQL or MSSQL.
    - Drastically improves security by preventing SQL injection and arbitrary schema traversal on endpoints that accept dynamic table or column references.
 
 ---

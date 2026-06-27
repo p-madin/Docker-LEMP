@@ -25,6 +25,21 @@ interface DatabaseDialect {
     /* Compiles raw SQL strings, translating standard SQL functions to dialect-specific equivalents if needed. */
     public function compileRaw(string $raw): string;
 
+    /* Compiles a CREATE TABLE statement. */
+    public function compileCreateTable(string $tableName, array $columns, array $foreignKeys = [], array $indexes = []): string;
+
+    /* Compiles an ADD COLUMN statement. */
+    public function compileAddColumn(string $tableName, array $column): string;
+
+    /* Compiles a column definition for DDL. */
+    public function compileColumnDefinition(array $column): string;
+
+    /* Checks if a table exists in the database. */
+    public function tableExists(PDO $db, string $tableName): bool;
+
+    /* Checks if a column exists in a given table. */
+    public function columnExists(PDO $db, string $tableName, string $columnName): bool;
+
     /* Begins a database transaction appropriately for the dialect. Returns true if the transaction was started (owned), false otherwise. */
     public function beginTransaction(PDO $db): bool;
 }

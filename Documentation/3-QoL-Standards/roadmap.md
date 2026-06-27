@@ -105,11 +105,18 @@ This phase is dedicated to building the necessary data abstraction and reusable 
 
 ---
 
-## Phase 10: Update ./conf/*.sql scripts
+## Phase 10: XML-Based Dynamic Database Migrations
 ### Description
-The SQL scripts (`./conf/*.sql`) currently define the base schema and initial state for a tenant and the running database statically.
+The initial state of the system, including DDL (schema) and DML (seed data), should be defined via XML rather than static SQL. This ensures consistency across different DBMS vendors (MySQL, PostgreSQL, MS SQL, SQLite) through the application's dialect classes.
 
 ### Implementation Goals
-Refactor these scripts to be dynamically generated and maintained:
-1. **Event Architecture Integration**: Derive the database state definitions directly from the established event sourcing architecture, ensuring the schema and seed data remain synchronized with the core domain events.
-2. **Automated Execution Task**: Create an automated execution task (e.g., a build script or CLI command) that compiles the latest event-derived states into the final `.sql` scripts, preventing manual drift and ensuring new tenants are always provisioned with the latest schema baseline.
+Refactor the database initialization to be driven by an XML-based migration mechanism:
+1. **XML Schema Definitions**: Define the baseline DDL and DML in XML files (e.g., `./conf/common/01_db_ddl.xml` and `./conf/common/02_db_dml.xml`).
+2. **Automated Migration Execution Task**: Create a migration mechanism (e.g., `migrate.php`) for CI/CD that evaluates the XML definition against the live database and executes operations (like creating tables or adding columns) without destroying data.
+
+### Definition of Done (DoD)
+- [x] **XML Schema Definitions**: The `01_db_ddl.sql` and `02_db_dml.sql` files are successfully converted into `01_db_ddl.xml` and `02_db_dml.xml`.
+- [x] **Dialect Extensions**: The `DatabaseDialect` interface and its vendor implementations support schema operations (`compileCreateTable`, `compileAddColumn`, `tableExists`, `columnExists`).
+- [x] **XML Migrator Service**: A robust `XMLMigrator` service is created to parse the XML files and execute necessary non-destructive schema additions and seed data inserts.
+- [x] **Migration CLI Script**: The `migrate.php` script is refactored to utilize the `XMLMigrator` service.
+- [x] **Docker Initialization Support**: The deployment flow correctly triggers the migration script to initialize an empty database container.

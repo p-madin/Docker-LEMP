@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema>
+    <table name="sysConfig">
+        <row>
+            <column name="scName">myDomain</column>
+            <column name="scValue">responsivefx.dpdns.org</column>
+        </row>
+        <row>
+            <column name="scName">myDomainProtocol</column>
+            <column name="scValue">https</column>
+        </row>
+        <row>
+            <column name="scName">clientAddress</column>
+            <column name="scValue">HTTP_X_FORWARDED_FOR</column>
+        </row>
+        <row>
+            <column name="scName">EXTERNAL_PORT</column>
+            <column name="scValue">443</column>
+        </row>
+    </table>
+</schema>

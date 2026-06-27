@@ -4,7 +4,7 @@ class PageDataProvider implements DataProviderInterface {
         return [
             ['key' => 'pagPK', 'label' => 'ID'],
             ['key' => 'pagTitle', 'label' => 'Title'],
-            ['key' => 'nbPath', 'label' => 'Primary URL'],
+            ['key' => 'nbPath', 'label' => 'Nav Bar Path(s)'],
             ['key' => 'pagCreated', 'label' => 'Created'],
             ['key' => 'actions', 'label' => 'Actions', 'action' => 'multi', 'actions' => [
                 ['type' => 'button_form', 'config' => ['url' => '/page_editor?id=', 'param' => 'pagPK', 'buttonLabel' => 'Edit']],
@@ -16,12 +16,33 @@ class PageDataProvider implements DataProviderInterface {
 
     public function getData(): array {
         global $db;
-        $sql = "SELECT p.pagPK, p.pagTitle, p.pagCreated, 
-                       (SELECT nbPath FROM tblNavBar WHERE nbPageFK = p.pagPK ORDER BY nbPK ASC LIMIT 1) as nbPath
-                FROM tblPages p WHERE p.pagDeleted IS NULL ORDER BY p.pagPK ASC";
+        $sql = "SELECT p.pagPK, p.pagTitle, p.pagCreated, n.nbPath
+                FROM tblPages p
+                LEFT JOIN tblNavBar n ON n.nbPageFK = p.pagPK
+                WHERE p.pagDeleted IS NULL 
+                ORDER BY p.pagPK ASC, n.nbPK ASC";
         $stmt = $db->prepare($sql);
         $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Unnormalize: concatenate multiple nbPaths for each page
+        $uniquePages = [];
+        foreach ($rows as $row) {
+            $pk = $row['pagPK'];
+            if (!isset($uniquePages[$pk])) {
+                $uniquePages[$pk] = $row;
+            } else {
+                if (!empty($row['nbPath'])) {
+                    if (!empty($uniquePages[$pk]['nbPath'])) {
+                        $uniquePages[$pk]['nbPath'] .= ', ' . $row['nbPath'];
+                    } else {
+                        $uniquePages[$pk]['nbPath'] = $row['nbPath'];
+                    }
+                }
+            }
+        }
+
+        return array_values($uniquePages);
     }
 
     public function getNestedKey(): ?string {

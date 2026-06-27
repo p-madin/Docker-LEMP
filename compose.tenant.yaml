@@ -33,11 +33,6 @@ services:
       MYSQL_DATABASE: ${TENANT_DB_NAME}
       MYSQL_USER: ${TENANT_DB_USER}
       MYSQL_PASSWORD: ${TENANT_DB_PASS}
-    volumes:
-      - ${HOST_PROJECT_ROOT}/conf/common/01_db_ddl.sql:/docker-entrypoint-initdb.d/01_db_ddl.sql
-      - ${HOST_PROJECT_ROOT}/conf/common/02_db_dml.sql:/docker-entrypoint-initdb.d/02_db_dml.sql
-      - ${HOST_PROJECT_ROOT}/conf/${TARGET_ENV}/03_db_dml.sql:/docker-entrypoint-initdb.d/03_db_dml.sql:ro
-      - ${HOST_PROJECT_ROOT}/tenants/${TENANT_NAME}/99_tenant_admin.sql:/docker-entrypoint-initdb.d/99_tenant_admin.sql:ro
     networks:
       - tenant-network
     deploy:

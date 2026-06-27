@@ -235,4 +235,85 @@ abstract class ANSIStandardDialect implements DatabaseDialect {
         $db->beginTransaction();
         return true;
     }
+
+    public function compileCreateTable(string $tableName, array $columns, array $foreignKeys = [], array $indexes = []): string {
+        $quotedTable = $this->quoteIdentifier($tableName);
+        $lines = [];
+        foreach ($columns as $column) {
+            $lines[] = $this->compileColumnDefinition($column);
+        }
+        
+        $primaryKeys = array_filter($columns, fn($c) => !empty($c['primaryKey']));
+        if (!empty($primaryKeys)) {
+            $pkNames = array_map(fn($c) => $this->quoteIdentifier($c['name']), $primaryKeys);
+            $lines[] = "PRIMARY KEY (" . implode(', ', $pkNames) . ")";
+        }
+
+        foreach ($foreignKeys as $fk) {
+            $lines[] = "FOREIGN KEY (" . $this->quoteIdentifier($fk['column']) . ") REFERENCES " . 
+                       $this->quoteIdentifier($fk['referencesTable']) . " (" . $this->quoteIdentifier($fk['referencesColumn']) . ")" .
+                       (isset($fk['onDelete']) ? " ON DELETE " . $fk['onDelete'] : "");
+        }
+
+        $sql = "CREATE TABLE " . $quotedTable . " (\n  " . implode(",\n  ", $lines) . "\n)";
+        
+        foreach ($indexes as $index) {
+            $unique = !empty($index['unique']) ? "UNIQUE " : "";
+            $idxCols = array_map(fn($c) => $this->quoteIdentifier(trim($c)), explode(',', $index['columns']));
+            $sql .= ";\nCREATE " . $unique . "INDEX " . $this->quoteIdentifier($index['name']) . " ON " . $quotedTable . " (" . implode(', ', $idxCols) . ")";
+        }
+        
+        return $sql;
+    }
+
+    public function compileAddColumn(string $tableName, array $column): string {
+        return "ALTER TABLE " . $this->quoteIdentifier($tableName) . " ADD COLUMN " . $this->compileColumnDefinition($column);
+    }
+
+    public function compileColumnDefinition(array $column): string {
+        $def = $this->quoteIdentifier($column['name']) . " " . strtoupper($column['type']);
+        if (!empty($column['length'])) {
+            $def .= "(" . $column['length'] . ")";
+        }
+        
+        if (!empty($column['autoIncrement'])) {
+            $def .= " AUTO_INCREMENT"; // By default assume MySQL-like syntax
+        }
+        
+        if (!empty($column['notNull'])) {
+            $def .= " NOT NULL";
+        }
+        
+        if (isset($column['default']) && $column['default'] !== '') {
+            if (strtoupper($column['default']) === 'CURRENT_TIMESTAMP') {
+                $def .= " DEFAULT CURRENT_TIMESTAMP";
+            } elseif (strtoupper($column['default']) === 'NULL') {
+                $def .= " DEFAULT NULL";
+            } else {
+                $def .= " DEFAULT " . (is_numeric($column['default']) ? $column['default'] : "'" . str_replace("'", "''", $column['default']) . "'");
+            }
+        }
+        
+        return $def;
+    }
+
+    public function tableExists(PDO $db, string $tableName): bool {
+        // Fallback generic implementation
+        try {
+            $db->query("SELECT 1 FROM " . $this->quoteIdentifier($tableName) . " LIMIT 1");
+            return true;
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    public function columnExists(PDO $db, string $tableName, string $columnName): bool {
+        // Fallback generic implementation
+        try {
+            $db->query("SELECT " . $this->quoteIdentifier($columnName) . " FROM " . $this->quoteIdentifier($tableName) . " LIMIT 1");
+            return true;
+        } catch (Exception $e) {
+            return false;
+        }
+    }
 }

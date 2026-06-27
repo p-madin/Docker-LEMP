@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data>
+    <table name="appUsers">
+        <row>
+            <column name="name">Stack</column>
+            <column name="age">1</column>
+            <column name="city">Stack</column>
+            <column name="username">Stack</column>
+            <column name="password">$2y$10$m3vCndDU2/CavRvxwB2Gne5lnusLha8NJpgrARhwbzJN.uqqIePUq</column>
+            <column name="email">Stack@stack.com</column>
+            <column name="verified">1</column>
+        </row>
+        <row>
+            <column name="name">Stack_Two</column>
+            <column name="age">2</column>
+            <column name="city">Stack_Two</column>
+            <column name="username">Stack_Two</column>
+            <column name="password">$2y$10$fkjGHwVncM0YQ9Jg0gHvku.E7TUTMvXeUbIdmUOwyoDaBcFUm432i</column>
+            <column name="email">Stack_Two@stack.com</column>
+            <column name="verified">1</column>
+        </row>
+    </table>
+
+    <table name="tblPages">
+        <row><column name="pagPK">1</column><column name="pagAuthorFK">1</column><column name="pagTitle">Account Management</column></row>
+        <row><column name="pagPK">2</column><column name="pagAuthorFK">1</column><column name="pagTitle">Error Log</column></row>
+        <row><column name="pagPK">3</column><column name="pagAuthorFK">1</column><column name="pagTitle">Navbar Management</column></row>
+        <row><column name="pagPK">4</column><column name="pagAuthorFK">1</column><column name="pagTitle">Form Management</column></row>
+        <row><column name="pagPK">5</column><column name="pagAuthorFK">1</column><column name="pagTitle">Page Management</column></row>
+        <row><column name="pagPK">6</column><column name="pagAuthorFK">1</column><column name="pagTitle">Banned IP Management</column></row>
+        <row><column name="pagPK">7</column><column name="pagAuthorFK">1</column><column name="pagTitle">Platform Recovery</column></row>
+        <row><column name="pagPK">8</column><column name="pagAuthorFK">1</column><column name="pagTitle">Child Services</column></row>
+        <row><column name="pagPK">9</column><column name="pagAuthorFK">1</column><column name="pagTitle">Home</column></row>
+        <row><column name="pagPK">10</column><column name="pagAuthorFK">1</column><column name="pagTitle">Edit Account</column></row>
+        <row><column name="pagPK">11</column><column name="pagAuthorFK">1</column><column name="pagTitle">Edit Column</column></row>
+        <row><column name="pagPK">12</column><column name="pagAuthorFK">1</column><column name="pagTitle">Edit Form</column></row>
+        <row><column name="pagPK">13</column><column name="pagAuthorFK">1</column><column name="pagTitle">Edit Navbar</column></row>
+    </table>
+
+    <table name="tblElements">
+        <row><column name="elePK">1</column><column name="eleType">heading</column><column name="eleContent">Account Management</column></row>
+        <row><column name="elePK">2</column><column name="eleType">table</column><column name="eleContent">{"dataProvider":"AccountDataProvider"}</column></row>
+        <row><column name="elePK">3</column><column name="eleType">heading</column><column name="eleContent">Error Log</column></row>
+        <row><column name="elePK">4</column><column name="eleType">table</column><column name="eleContent">{"dataProvider":"ErrorLogDataProvider"}</column></row>
+        <row><column name="elePK">5</column><column name="eleType">heading</column><column name="eleContent">Navbar Management</column></row>
+        <row><column name="elePK">6</column><column name="eleType">table</column><column name="eleContent">{"dataProvider":"NavbarDataProvider"}</column></row>
+        <row><column name="elePK">7</column><column name="eleType">heading</column><column name="eleContent">Form Management</column></row>
+        <row><column name="elePK">8</column><column name="eleType">table</column><column name="eleContent">{"dataProvider":"FormDataProvider"}</column></row>
+        <row><column name="elePK">9</column><column name="eleType">heading</column><column name="eleContent">Page Management</column></row>
+        <row><column name="elePK">10</column><column name="eleType">table</column><column name="eleContent">{"dataProvider":"PageDataProvider"}</column></row>
+        <row><column name="elePK">11</column><column name="eleType">heading</column><column name="eleContent">Banned IPs</column></row>
+        <row><column name="elePK">12</column><column name="eleType">table</column><column name="eleContent">{"dataProvider":"BannedIpDataProvider"}</column></row>
+        <row><column name="elePK">13</column><column name="eleType">heading</column><column name="eleContent">Platform Recovery</column></row>
+        <row><column name="elePK">14</column><column name="eleType">table</column><column name="eleContent">{"dataProvider":"PlatformRecoveryDataProvider"}</column></row>
+        <row><column name="elePK">15</column><column name="eleType">heading</column><column name="eleContent">Child Services</column></row>
+        <row><column name="elePK">16</column><column name="eleType">table</column><column name="eleContent">{"dataProvider":"ChildServiceDataProvider"}</column></row>
+        <row><column name="elePK">21</column><column name="eleType">hyperlink</column><column name="eleContent">{"label":"Create New Navbar Item", "url":"/edit_navbar"}</column></row>
+        <row><column name="elePK">22</column><column name="eleType">hyperlink</column><column name="eleContent">{"label":"Create New Form", "url":"/edit_form"}</column></row>
+        <row><column name="elePK">23</column><column name="eleType">hyperlink</column><column name="eleContent">{"label":"Create New Page", "url":"/page_editor"}</column></row>
+        <row><column name="elePK">17</column><column name="eleType">form</column><column name="eleContent">{"dataProvider":"FormSchemaDataProvider", "source":"createChildService"}</column></row>
+        <row><column name="elePK">50</column><column name="eleType">heading</column><column name="eleContent">Archived Pages</column></row>
+        <row><column name="elePK">51</column><column name="eleType">table</column><column name="eleContent">{"dataProvider":"ArchivedPageDataProvider"}</column></row>
+        <row><column name="elePK">100</column><column name="eleType">heading</column><column name="eleContent">Visits per hour</column></row>
+        <row><column name="elePK">101</column><column name="eleType">chart</column><column name="eleContent">{"dataProvider":"DashboardGraphDataProvider"}</column></row>
+        <row><column name="elePK">102</column><column name="eleType">heading</column><column name="eleContent">Login form</column></row>
+        <row><column name="elePK">103</column><column name="eleType">form</column><column name="eleContent">{"dataProvider":"FormSchemaDataProvider", "source":"login"}</column></row>
+        <row><column name="elePK">104</column><column name="eleType">heading</column><column name="eleContent">Register form</column></row>
+        <row><column name="elePK">105</column><column name="eleType">form</column><column name="eleContent">{"dataProvider":"FormSchemaDataProvider", "source":"register"}</column></row>
+        <row><column name="elePK">106</column><column name="eleType">heading</column><column name="eleContent">Edit Account</column></row>
+        <row><column name="elePK">107</column><column name="eleType">form</column><column name="eleContent">{"dataProvider":"FormSchemaDataProvider", "source":"editUser", "valueProvider":"AccountFormDataProvider", "initialValidate":true}</column></row>
+        <row><column name="elePK">108</column><column name="eleType">hyperlink</column><column name="eleContent">{"label":"Back to Account List", "url":"/account_management"}</column></row>
+        <row><column name="elePK">109</column><column name="eleType">heading</column><column name="eleContent">Edit Column</column></row>
+        <row><column name="elePK">110</column><column name="eleType">form</column><column name="eleContent">{"dataProvider":"FormSchemaDataProvider", "source":"editColumn", "valueProvider":"ColumnFormDataProvider"}</column></row>
+        <row><column name="elePK">111</column><column name="eleType">heading</column><column name="eleContent">Edit Form</column></row>
+        <row><column name="elePK">112</column><column name="eleType">form</column><column name="eleContent">{"dataProvider":"FormSchemaDataProvider", "source":"editForm", "valueProvider":"FormFormDataProvider"}</column></row>
+        <row><column name="elePK">113</column><column name="eleType">heading</column><column name="eleContent">Edit Navbar</column></row>
+        <row><column name="elePK">114</column><column name="eleType">form</column><column name="eleContent">{"dataProvider":"FormSchemaDataProvider", "source":"navbar", "valueProvider":"NavbarFormDataProvider"}</column></row>
+    </table>
+
+    <table name="brgPageElements">
+        <row><column name="pelPageFK">1</column><column name="pelElementFK">1</column><column name="pelOrder">1</column></row>
+        <row><column name="pelPageFK">1</column><column name="pelElementFK">2</column><column name="pelOrder">2</column></row>
+        <row><column name="pelPageFK">2</column><column name="pelElementFK">3</column><column name="pelOrder">1</column></row>
+        <row><column name="pelPageFK">2</column><column name="pelElementFK">4</column><column name="pelOrder">2</column></row>
+        <row><column name="pelPageFK">3</column><column name="pelElementFK">5</column><column name="pelOrder">1</column></row>
+        <row><column name="pelPageFK">3</column><column name="pelElementFK">6</column><column name="pelOrder">2</column></row>
+        <row><column name="pelPageFK">3</column><column name="pelElementFK">21</column><column name="pelOrder">3</column></row>
+        <row><column name="pelPageFK">4</column><column name="pelElementFK">7</column><column name="pelOrder">1</column></row>
+        <row><column name="pelPageFK">4</column><column name="pelElementFK">8</column><column name="pelOrder">2</column></row>
+        <row><column name="pelPageFK">4</column><column name="pelElementFK">22</column><column name="pelOrder">3</column></row>
+        <row><column name="pelPageFK">5</column><column name="pelElementFK">9</column><column name="pelOrder">1</column></row>
+        <row><column name="pelPageFK">5</column><column name="pelElementFK">10</column><column name="pelOrder">2</column></row>
+        <row><column name="pelPageFK">5</column><column name="pelElementFK">23</column><column name="pelOrder">3</column></row>
+        <row><column name="pelPageFK">6</column><column name="pelElementFK">11</column><column name="pelOrder">1</column></row>
+        <row><column name="pelPageFK">6</column><column name="pelElementFK">12</column><column name="pelOrder">2</column></row>
+        <row><column name="pelPageFK">7</column><column name="pelElementFK">13</column><column name="pelOrder">1</column></row>
+        <row><column name="pelPageFK">7</column><column name="pelElementFK">14</column><column name="pelOrder">2</column></row>
+        <row><column name="pelPageFK">8</column><column name="pelElementFK">15</column><column name="pelOrder">1</column></row>
+        <row><column name="pelPageFK">8</column><column name="pelElementFK">16</column><column name="pelOrder">2</column></row>
+        <row><column name="pelPageFK">8</column><column name="pelElementFK">17</column><column name="pelOrder">2</column></row>
+        <row><column name="pelPageFK">5</column><column name="pelElementFK">50</column><column name="pelOrder">4</column></row>
+        <row><column name="pelPageFK">5</column><column name="pelElementFK">51</column><column name="pelOrder">5</column></row>
+        <row><column name="pelPageFK">9</column><column name="pelElementFK">100</column><column name="pelOrder">1</column></row>
+        <row><column name="pelPageFK">9</column><column name="pelElementFK">101</column><column name="pelOrder">2</column></row>
+        <row><column name="pelPageFK">9</column><column name="pelElementFK">102</column><column name="pelOrder">3</column></row>
+        <row><column name="pelPageFK">9</column><column name="pelElementFK">103</column><column name="pelOrder">4</column></row>
+        <row><column name="pelPageFK">9</column><column name="pelElementFK">104</column><column name="pelOrder">5</column></row>
+        <row><column name="pelPageFK">9</column><column name="pelElementFK">105</column><column name="pelOrder">6</column></row>
+        <row><column name="pelPageFK">10</column><column name="pelElementFK">106</column><column name="pelOrder">1</column></row>
+        <row><column name="pelPageFK">10</column><column name="pelElementFK">107</column><column name="pelOrder">2</column></row>
+        <row><column name="pelPageFK">10</column><column name="pelElementFK">108</column><column name="pelOrder">3</column></row>
+        <row><column name="pelPageFK">11</column><column name="pelElementFK">109</column><column name="pelOrder">1</column></row>
+        <row><column name="pelPageFK">11</column><column name="pelElementFK">110</column><column name="pelOrder">2</column></row>
+        <row><column name="pelPageFK">12</column><column name="pelElementFK">111</column><column name="pelOrder">1</column></row>
+        <row><column name="pelPageFK">12</column><column name="pelElementFK">112</column><column name="pelOrder">2</column></row>
+        <row><column name="pelPageFK">13</column><column name="pelElementFK">113</column><column name="pelOrder">1</column></row>
+        <row><column name="pelPageFK">13</column><column name="pelElementFK">114</column><column name="pelOrder">2</column></row>
+    </table>
+
+    <table name="tblNavBar">
+        <row><column name="nbText">Home</column><column name="nbDiscriminator">c</column><column name="nbPageFK">9</column><column name="nbPath">/</column><column name="nbControllerClass" null="true"></column><column name="nbProtected">0</column><column name="nbOrder">1</column><column name="nbParentFK" null="true"></column></row>
+        <row><column name="nbText">Dashboard</column><column name="nbDiscriminator">p</column><column name="nbPageFK" null="true"></column><column name="nbPath">/dashboard</column><column name="nbControllerClass">DashboardController</column><column name="nbProtected">1</column><column name="nbOrder">2</column><column name="nbParentFK" null="true"></column></row>
+        <row><column name="nbText">Settings</column><column name="nbDiscriminator">p</column><column name="nbPageFK" null="true"></column><column name="nbPath" null="true"></column><column name="nbControllerClass" null="true"></column><column name="nbProtected">1</column><column name="nbOrder">3</column><column name="nbParentFK" null="true"></column></row>
+        <row><column name="nbText">Accounts</column><column name="nbDiscriminator">p</column><column name="nbPageFK">1</column><column name="nbPath">/account_management</column><column name="nbControllerClass" null="true"></column><column name="nbProtected">1</column><column name="nbOrder">1</column><column name="nbParentFK">3</column></row>
+        <row><column name="nbText">Error Log</column><column name="nbDiscriminator">c</column><column name="nbPageFK" null="true"></column><column name="nbPath">/error_log</column><column name="nbControllerClass">ErrorLogController</column><column name="nbProtected">1</column><column name="nbOrder">2</column><column name="nbParentFK">3</column></row>
+        <row><column name="nbText">Banned IPs</column><column name="nbDiscriminator">p</column><column name="nbPageFK">6</column><column name="nbPath">/banned_ips</column><column name="nbControllerClass" null="true"></column><column name="nbProtected">1</column><column name="nbOrder">3</column><column name="nbParentFK">3</column></row>
+        <row><column name="nbText">Platform Recovery</column><column name="nbDiscriminator">c</column><column name="nbPageFK" null="true"></column><column name="nbPath">/platform_recovery</column><column name="nbControllerClass">PlatformRecoveryController</column><column name="nbProtected">1</column><column name="nbOrder">5</column><column name="nbParentFK">3</column></row>
+        <row><column name="nbText">Child Services</column><column name="nbDiscriminator">p</column><column name="nbPageFK">8</column><column name="nbPath">/child_management</column><column name="nbControllerClass" null="true"></column><column name="nbProtected">1</column><column name="nbOrder">6</column><column name="nbParentFK">3</column></row>
+        <row><column name="nbText">CMS</column><column name="nbDiscriminator">p</column><column name="nbPageFK" null="true"></column><column name="nbPath" null="true"></column><column name="nbControllerClass" null="true"></column><column name="nbProtected">1</column><column name="nbOrder">4</column><column name="nbParentFK" null="true"></column></row>
+        <row><column name="nbText">Navbars</column><column name="nbDiscriminator">p</column><column name="nbPageFK">3</column><column name="nbPath">/navbar_management</column><column name="nbControllerClass" null="true"></column><column name="nbProtected">1</column><column name="nbOrder">1</column><column name="nbParentFK">9</column></row>
+        <row><column name="nbText">Forms</column><column name="nbDiscriminator">p</column><column name="nbPageFK">4</column><column name="nbPath">/form_management</column><column name="nbControllerClass" null="true"></column><column name="nbProtected">1</column><column name="nbOrder">2</column><column name="nbParentFK">9</column></row>
+        <row><column name="nbText">Pages</column><column name="nbDiscriminator">p</column><column name="nbPageFK">5</column><column name="nbPath">/page_management</column><column name="nbControllerClass" null="true"></column><column name="nbProtected">1</column><column name="nbOrder">3</column><column name="nbParentFK">9</column></row>
+        <row><column name="nbText">Logout</column><column name="nbDiscriminator">c</column><column name="nbPageFK" null="true"></column><column name="nbPath">/logout</column><column name="nbControllerClass">LogoutAction</column><column name="nbProtected">1</column><column name="nbOrder">5</column><column name="nbParentFK" null="true"></column></row>
+        <row><column name="nbText">Login Action</column><column name="nbDiscriminator">a</column><column name="nbPageFK" null="true"></column><column name="nbPath">/login</column><column name="nbControllerClass">LoginAction</column><column name="nbProtected">0</column><column name="nbOrder">0</column></row>
+        <row><column name="nbText">Register Action</column><column name="nbDiscriminator">a</column><column name="nbPageFK" null="true"></column><column name="nbPath">/register</column><column name="nbControllerClass">RegisterAction</column><column name="nbProtected">0</column><column name="nbOrder">0</column></row>
+        <row><column name="nbText">Update Account</column><column name="nbDiscriminator">a</column><column name="nbPageFK" null="true"></column><column name="nbPath">/editAccount</column><column name="nbControllerClass">UpdateAccountAction</column><column name="nbProtected">1</column><column name="nbOrder">0</column></row>
+        <row><column name="nbText">Edit Column</column><column name="nbDiscriminator">a</column><column name="nbPageFK">11</column><column name="nbPath">/edit_column</column><column name="nbControllerClass" null="true"></column><column name="nbProtected">1</column><column name="nbOrder">0</column></row>
+        <row><column name="nbText">Edit Form</column><column name="nbDiscriminator">a</column><column name="nbPageFK">12</column><column name="nbPath">/edit_form</column><column name="nbControllerClass" null="true"></column><column name="nbProtected">1</column><column name="nbOrder">0</column></row>
+        <row><column name="nbText">Edit Navbar</column><column name="nbDiscriminator">a</column><column name="nbPageFK">13</column><column name="nbPath">/edit_navbar</column><column name="nbControllerClass" null="true"></column><column name="nbProtected">1</column><column name="nbOrder">0</column></row>
+        <row><column name="nbText">Edit Account</column><column name="nbDiscriminator">a</column><column name="nbPageFK">10</column><column name="nbPath">/edit_account</column><column name="nbControllerClass" null="true"></column><column name="nbProtected">1</column><column name="nbOrder">0</column></row>
+        <row><column name="nbText">Edit Column Action</column><column name="nbDiscriminator">a</column><column name="nbPageFK" null="true"></column><column name="nbPath">/editColumn</column><column name="nbControllerClass">EditColumnAction</column><column name="nbProtected">1</column><column name="nbOrder">0</column></row>
+        <row><column name="nbText">Edit Form Action</column><column name="nbDiscriminator">a</column><column name="nbPageFK" null="true"></column><column name="nbPath">/editForm</column><column name="nbControllerClass">EditFormAction</column><column name="nbProtected">1</column><column name="nbOrder">0</column></row>
+        <row><column name="nbText">Edit Navbar Action</column><column name="nbDiscriminator">a</column><column name="nbPageFK" null="true"></column><column name="nbPath">/editNavbar</column><column name="nbControllerClass">EditNavbarAction</column><column name="nbProtected">1</column><column name="nbOrder">0</column></row>
+        <row><column name="nbText">Unban IP Action</column><column name="nbDiscriminator">a</column><column name="nbPageFK" null="true"></column><column name="nbPath">/unban_ip</column><column name="nbControllerClass">UnbanIpAction</column><column name="nbProtected">1</column><column name="nbOrder">0</column></row>
+        <row><column name="nbText">Undo Redo Action</column><column name="nbDiscriminator">h</column><column name="nbPageFK" null="true"></column><column name="nbPath">/undo</column><column name="nbControllerClass">UndoRedoController</column><column name="nbProtected">1</column><column name="nbOrder">0</column></row>
+        <row><column name="nbText">Page Action</column><column name="nbDiscriminator">a</column><column name="nbPageFK" null="true"></column><column name="nbPath">/pageAction</column><column name="nbControllerClass">PageAction</column><column name="nbProtected">1</column><column name="nbOrder">0</column></row>
+        <row><column name="nbText">Element Action</column><column name="nbDiscriminator">a</column><column name="nbPageFK" null="true"></column><column name="nbPath">/elementAction</column><column name="nbControllerClass">ElementAction</column><column name="nbProtected">1</column><column name="nbOrder">0</column></row>
+        <row><column name="nbText">Page Editor</column><column name="nbDiscriminator">a</column><column name="nbPageFK" null="true"></column><column name="nbPath">/page_editor</column><column name="nbControllerClass">PageController</column><column name="nbProtected">1</column><column name="nbOrder">0</column></row>
+        <row><column name="nbText">Form JSON Action</column><column name="nbDiscriminator">a</column><column name="nbPageFK" null="true"></column><column name="nbPath">/formAction</column><column name="nbControllerClass">FormAction</column><column name="nbProtected">1</column><column name="nbOrder">0</column></row>
+        <row><column name="nbText">Preview Page</column><column name="nbDiscriminator">a</column><column name="nbPageFK" null="true"></column><column name="nbPath">/preview</column><column name="nbControllerClass">PreviewController</column><column name="nbProtected">1</column><column name="nbOrder">0</column></row>
+        <row><column name="nbText">Data Provider JSON Action</column><column name="nbDiscriminator">a</column><column name="nbPageFK" null="true"></column><column name="nbPath">/dataProviders</column><column name="nbControllerClass">DataProviderAction</column><column name="nbProtected">1</column><column name="nbOrder">0</column></row>
+        <row><column name="nbText">Boot Child Action</column><column name="nbDiscriminator">a</column><column name="nbPageFK" null="true"></column><column name="nbPath">/bootChild</column><column name="nbControllerClass">BootChildAction</column><column name="nbProtected">1</column><column name="nbOrder">0</column></row>
+        <row><column name="nbText">Create Child Service Action</column><column name="nbDiscriminator">a</column><column name="nbPageFK" null="true"></column><column name="nbPath">/createChildService</column><column name="nbControllerClass">CreateChildServiceAction</column><column name="nbProtected">1</column><column name="nbOrder">0</column></row>
+        <row><column name="nbText">Child Service Action</column><column name="nbDiscriminator">a</column><column name="nbPageFK" null="true"></column><column name="nbPath">/childServiceAction</column><column name="nbControllerClass">ChildServiceAction</column><column name="nbProtected">1</column><column name="nbOrder">0</column></row>
+    </table>
+
+    <table name="tblForm">
+        <row><column name="tfName">login</column><column name="tfAction">login</column><column name="tfReadOnly">0</column></row>
+        <row><column name="tfName">register</column><column name="tfAction">register</column><column name="tfReadOnly">0</column></row>
+        <row><column name="tfName">editUser</column><column name="tfAction">editAccount</column><column name="tfReadOnly">0</column></row>
+        <row><column name="tfName">navbar</column><column name="tfAction">editNavbar</column><column name="tfReadOnly">0</column></row>
+        <row><column name="tfName">editForm</column><column name="tfAction">editForm</column><column name="tfReadOnly">1</column></row>
+        <row><column name="tfName">editColumn</column><column name="tfAction">editColumn</column><column name="tfReadOnly">1</column></row>
+        <row><column name="tfName">banned_ips</column><column name="tfAction">banned_ips</column><column name="tfReadOnly">1</column></row>
+        <row><column name="tfName">platform_recovery</column><column name="tfAction">platform_recovery</column><column name="tfReadOnly">0</column></row>
+        <row><column name="tfName">page</column><column name="tfAction">page</column><column name="tfReadOnly">0</column></row>
+        <row><column name="tfName">element</column><column name="tfAction">element</column><column name="tfReadOnly">0</column></row>
+        <row><column name="tfName">createChildService</column><column name="tfAction">createChildService</column><column name="tfReadOnly">0</column></row>
+    </table>
+
+    <table name="tblColumns">
+        <row><column name="tcFormFK">1</column><column name="tcName">username</column><column name="tcLabel">Username</column><column name="tcType">text</column><column name="tcRules">{"required":true}</column><column name="tcOrder">1</column></row>
+        <row><column name="tcFormFK">1</column><column name="tcName">password</column><column name="tcLabel">Password</column><column name="tcType">password</column><column name="tcRules">{"required":true}</column><column name="tcOrder">2</column></row>
+        <row><column name="tcFormFK">2</column><column name="tcName">username</column><column name="tcLabel">Username</column><column name="tcType">text</column><column name="tcRules">{"required":true,"min":3,"unique":"registration_username"}</column><column name="tcOrder">1</column></row>
+        <row><column name="tcFormFK">2</column><column name="tcName">password</column><column name="tcLabel">Password</column><column name="tcType">password</column><column name="tcRules">{"required":true,"min":6}</column><column name="tcOrder">2</column></row>
+        <row><column name="tcFormFK">2</column><column name="tcName">confirm_password</column><column name="tcLabel">Confirm Password</column><column name="tcType">password</column><column name="tcRules">{"required":true,"match":"password"}</column><column name="tcOrder">3</column></row>
+        <row><column name="tcFormFK">2</column><column name="tcName">name</column><column name="tcLabel">Name</column><column name="tcType">text</column><column name="tcRules">{"required":true}</column><column name="tcOrder">4</column></row>
+        <row><column name="tcFormFK">2</column><column name="tcName">age</column><column name="tcLabel">Age</column><column name="tcType">number</column><column name="tcRules">{"required":true,"numeric":true}</column><column name="tcOrder">5</column></row>
+        <row><column name="tcFormFK">2</column><column name="tcName">city</column><column name="tcLabel">City</column><column name="tcType">text</column><column name="tcRules">{}</column><column name="tcOrder">6</column></row>
+        <row><column name="tcFormFK">2</column><column name="tcName">email</column><column name="tcLabel">Email</column><column name="tcType">email</column><column name="tcRules">{"required":true,"email":true}</column><column name="tcOrder">7</column></row>
+        <row><column name="tcFormFK">3</column><column name="tcName">auPK</column><column name="tcLabel"></column><column name="tcType">hidden</column><column name="tcRules">{}</column><column name="tcOrder">1</column></row>
+        <row><column name="tcFormFK">3</column><column name="tcName">username</column><column name="tcLabel">Username</column><column name="tcType">text</column><column name="tcRules">{"required":true,"min":3}</column><column name="tcOrder">2</column></row>
+        <row><column name="tcFormFK">3</column><column name="tcName">name</column><column name="tcLabel">Name</column><column name="tcType">text</column><column name="tcRules">{"required":true}</column><column name="tcOrder">3</column></row>
+        <row><column name="tcFormFK">3</column><column name="tcName">age</column><column name="tcLabel">Age</column><column name="tcType">number</column><column name="tcRules">{"required":true,"numeric":true}</column><column name="tcOrder">4</column></row>
+        <row><column name="tcFormFK">3</column><column name="tcName">city</column><column name="tcLabel">City</column><column name="tcType">text</column><column name="tcRules">{}</column><column name="tcOrder">5</column></row>
+        <row><column name="tcFormFK">3</column><column name="tcName">email</column><column name="tcLabel">Email</column><column name="tcType">email</column><column name="tcRules">{"required":true,"email":true}</column><column name="tcOrder">6</column></row>
+        <row><column name="tcFormFK">3</column><column name="tcName">verified</column><column name="tcLabel">Verified:</column><column name="tcType">checkbox</column><column name="tcRules">{}</column><column name="tcOrder">7</column></row>
+        <row><column name="tcFormFK">4</column><column name="tcName">nbPK</column><column name="tcLabel"></column><column name="tcType">hidden</column><column name="tcRules">{}</column><column name="tcOrder">1</column></row>
+        <row><column name="tcFormFK">4</column><column name="tcName">nbText</column><column name="tcLabel">Display Text</column><column name="tcType">text</column><column name="tcRules">{"required":true,"min":1}</column><column name="tcOrder">2</column></row>
+        <row><column name="tcFormFK">4</column><column name="tcName">nbDiscriminator</column><column name="tcLabel">Discriminator (c/p/h)</column><column name="tcType">text</column><column name="tcRules">{"required":true,"min":1,"max":1}</column><column name="tcOrder">3</column></row>
+        <row><column name="tcFormFK">4</column><column name="tcName">nbPath</column><column name="tcLabel">Route/Path</column><column name="tcType">text</column><column name="tcRules">{"required":true}</column><column name="tcOrder">4</column></row>
+        <row><column name="tcFormFK">4</column><column name="tcName">nbPageFK</column><column name="tcLabel">Target Page ID (Optional)</column><column name="tcType">number</column><column name="tcRules">{"numeric":true}</column><column name="tcOrder">5</column></row>
+        <row><column name="tcFormFK">4</column><column name="tcName">nbOrder</column><column name="tcLabel">Display Order</column><column name="tcType">number</column><column name="tcRules">{"required":true,"numeric":true}</column><column name="tcOrder">6</column></row>
+        <row><column name="tcFormFK">4</column><column name="tcName">nbParentFK</column><column name="tcLabel">Parent Item ID (Optional)</column><column name="tcType">number</column><column name="tcRules">{"numeric":true}</column><column name="tcOrder">7</column></row>
+        <row><column name="tcFormFK">5</column><column name="tcName">tfPK</column><column name="tcLabel"></column><column name="tcType">hidden</column><column name="tcRules">{}</column><column name="tcOrder">1</column></row>
+        <row><column name="tcFormFK">5</column><column name="tcName">tfName</column><column name="tcLabel">Form Name</column><column name="tcType">text</column><column name="tcRules">{"required":true,"min":1}</column><column name="tcOrder">2</column></row>
+        <row><column name="tcFormFK">6</column><column name="tcName">tcPK</column><column name="tcLabel"></column><column name="tcType">hidden</column><column name="tcRules">{}</column><column name="tcOrder">1</column></row>
+        <row><column name="tcFormFK">6</column><column name="tcName">tcFormFK</column><column name="tcLabel"></column><column name="tcType">hidden</column><column name="tcRules">{"required":true,"numeric":true}</column><column name="tcOrder">2</column></row>
+        <row><column name="tcFormFK">6</column><column name="tcName">tcName</column><column name="tcLabel">Field Name</column><column name="tcType">text</column><column name="tcRules">{"required":true,"min":1}</column><column name="tcOrder">3</column></row>
+        <row><column name="tcFormFK">6</column><column name="tcName">tcLabel</column><column name="tcLabel">Field Label</column><column name="tcType">text</column><column name="tcRules">{"required":true}</column><column name="tcOrder">4</column></row>
+        <row><column name="tcFormFK">6</column><column name="tcName">tcType</column><column name="tcLabel">Field Type (e.g. text/password)</column><column name="tcType">text</column><column name="tcRules">{"required":true}</column><column name="tcOrder">5</column></row>
+        <row><column name="tcFormFK">6</column><column name="tcName">tcRules</column><column name="tcLabel">Validation Rules JSON (e.g. {"required":true})</column><column name="tcType">text</column><column name="tcRules">{}</column><column name="tcOrder">6</column></row>
+        <row><column name="tcFormFK">6</column><column name="tcName">tcOrder</column><column name="tcLabel">Display Order</column><column name="tcType">number</column><column name="tcRules">{"required":true,"numeric":true}</column><column name="tcOrder">7</column></row>
+        <row><column name="tcFormFK">8</column><column name="tcName">tcPK</column><column name="tcLabel"></column><column name="tcType">hidden</column><column name="tcRules">{}</column><column name="tcOrder">1</column></row>
+        <row><column name="tcFormFK">8</column><column name="tcName">action</column><column name="tcLabel"></column><column name="tcType">hidden</column><column name="tcRules">{}</column><column name="tcOrder">2</column></row>
+        <row><column name="tcFormFK">8</column><column name="tcName">target_time</column><column name="tcLabel">Recover to Timestamp</column><column name="tcType">datetime-local</column><column name="tcRules">{"required":true}</column><column name="tcOrder">3</column></row>
+        <row><column name="tcFormFK">9</column><column name="tcName">pagPK</column><column name="tcLabel">ID</column><column name="tcType">hidden</column><column name="tcRules">{}</column><column name="tcOrder">10</column></row>
+        <row><column name="tcFormFK">9</column><column name="tcName">pagTitle</column><column name="tcLabel">Title</column><column name="tcType">text</column><column name="tcRules">{"required":true}</column><column name="tcOrder">20</column></row>
+        <row><column name="tcFormFK">10</column><column name="tcName">elePK</column><column name="tcLabel">ID</column><column name="tcType">hidden</column><column name="tcRules">{}</column><column name="tcOrder">10</column></row>
+        <row><column name="tcFormFK">10</column><column name="tcName">eleType</column><column name="tcLabel">Type</column><column name="tcType">text</column><column name="tcRules">{"required":true}</column><column name="tcOrder">20</column></row>
+        <row><column name="tcFormFK">10</column><column name="tcName">eleContent</column><column name="tcLabel">Content</column><column name="tcType">textarea</column><column name="tcRules">{}</column><column name="tcOrder">30</column></row>
+        <row><column name="tcFormFK">10</column><column name="tcName">eleCSSClasses</column><column name="tcLabel">CSS Classes</column><column name="tcType">css_class</column><column name="tcRules">{"regex":"/^[a-zA-Z0-9\\\\-_ ]*$/"}</column><column name="tcOrder">40</column></row>
+        <row><column name="tcFormFK">10</column><column name="tcName">eleParentFK</column><column name="tcLabel">Parent ID</column><column name="tcType">number</column><column name="tcRules">{}</column><column name="tcOrder">50</column></row>
+        <row><column name="tcFormFK">11</column><column name="tcName">csName</column><column name="tcLabel">Service Name</column><column name="tcType">alpha_dash</column><column name="tcRules">{"required":true,"alpha_dash":true}</column><column name="tcOrder">1</column></row>
+        <row><column name="tcFormFK">11</column><column name="tcName">csAdminFK</column><column name="tcLabel">Tenant Administrator</column><column name="tcType">user_select</column><column name="tcRules">{"required":true,"numeric":true}</column><column name="tcOrder">2</column></row>
+    </table>
+
+    <table name="tblSession">
+        <row><column name="sessChars">64 byte key</column><column name="sessTransactionActive">0</column></row>
+    </table>
+
+    <table name="tblSessionAtt">
+        <row><column name="sattSessionFK">1</column><column name="sattDisc">r</column><column name="sattKey">Local array</column><column name="sattPrimaryValueFK">1</column></row>
+        <row><column name="sattSessionFK">1</column><column name="sattDisc">l</column><column name="sattKey">user</column><column name="sattPrimaryValueFK">2</column></row>
+        <row><column name="sattSessionFK">1</column><column name="sattDisc">l</column><column name="sattKey">roles</column><column name="sattPrimaryValueFK">2</column></row>
+        <row><column name="sattSessionFK">1</column><column name="sattDisc">b</column><column name="sattKey">pages</column><column name="sattPrimaryValueFK">4</column></row>
+        <row><column name="sattSessionFK">1</column><column name="sattDisc">l</column><column name="sattKey">1</column><column name="sattPrimaryValueFK">4</column></row>
+        <row><column name="sattSessionFK">1</column><column name="sattDisc">l</column><column name="sattKey">2</column><column name="sattPrimaryValueFK">4</column></row>
+    </table>
+
+    <table name="tblSessionAttValue">
+        <row><column name="sattvAttFK">1</column><column name="sattvValueFK">1</column><column name="sattvValue" null="true"></column></row>
+        <row><column name="sattvAttFK">2</column><column name="sattvValueFK" null="true"></column><column name="sattvValue">John</column></row>
+        <row><column name="sattvAttFK">3</column><column name="sattvValueFK" null="true"></column><column name="sattvValue">admin</column></row>
+        <row><column name="sattvAttFK">3</column><column name="sattvValueFK" null="true"></column><column name="sattvValue">editor</column></row>
+        <row><column name="sattvAttFK">4</column><column name="sattvValueFK">4</column><column name="sattvValue" null="true"></column></row>
+        <row><column name="sattvAttFK">4</column><column name="sattvValueFK">5</column><column name="sattvValue" null="true"></column></row>
+        <row><column name="sattvAttFK">5</column><column name="sattvValueFK" null="true"></column><column name="sattvValue">home</column></row>
+        <row><column name="sattvAttFK">6</column><column name="sattvValueFK" null="true"></column><column name="sattvValue">contact us</column></row>
+    </table>
+
+    <table name="tblAnalytics">
+        <row><column name="anaLabel">Jan</column><column name="anaValue">100</column><column name="anaCategory">Sales</column></row>
+        <row><column name="anaLabel">Feb</column><column name="anaValue">150</column><column name="anaCategory">Sales</column></row>
+        <row><column name="anaLabel">Mar</column><column name="anaValue">200</column><column name="anaCategory">Sales</column></row>
+        <row><column name="anaLabel">Apr</column><column name="anaValue">180</column><column name="anaCategory">Sales</column></row>
+        <row><column name="anaLabel">May</column><column name="anaValue">250</column><column name="anaCategory">Sales</column></row>
+        <row><column name="anaLabel">Jun</column><column name="anaValue">300</column><column name="anaCategory">Sales</column></row>
+    </table>
+</data>

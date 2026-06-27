@@ -38,9 +38,6 @@ services:
       dockerfile: Dockerfile.sqlite.db
     volumes:
       - sqlite_data:/var/sqlite
-      - ./sqlite conf/common/01_db_ddl.sql:/docker-entrypoint-initdb.d/01_db_ddl.sql:ro
-      - ./sqlite conf/common/02_db_dml.sql:/docker-entrypoint-initdb.d/02_db_dml.sql:ro
-      - ./conf/${TARGET_ENV:-dev}/03_db_dml.sql:/docker-entrypoint-initdb.d/03_db_dml.sql:ro
     networks:
       - stack-network
     deploy:

@@ -48,13 +48,22 @@ class DatabaseConfigMiddleware implements MiddlewareInterface {
 
         // 3. System Config
         $systemConfigController = new SystemConfigController($db, $dialect);
-        $scvRows = $systemConfigController->getSysConfig();
+        try {
+            $scvRows = $systemConfigController->getSysConfig();
+        } catch (Exception $e) {
+            // Ignore during initial migration/setup where the table may not exist yet
+            $scvRows = [];
+        }
 
         // 4. Initialize Router from Database (Lazy Resolution)
         // Since the router registry depends on the DB, we do it here.
         // Guard: $router may not exist in CLI contexts (e.g., cron worker).
         if (isset($router)) {
-            $router->initializeFromDatabase($systemConfigController);
+            try {
+                $router->initializeFromDatabase($systemConfigController);
+            } catch (Exception $e) {
+                // Ignore during initial migration/setup where the table may not exist yet
+            }
         }
 
         return $next($request);

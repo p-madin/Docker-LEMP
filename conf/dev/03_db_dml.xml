@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema>
+    <table name="sysConfig">
+        <row>
+            <column name="scName">myDomain</column>
+            <column name="scValue">localhost</column>
+        </row>
+        <row>
+            <column name="scName">myDomainProtocol</column>
+            <column name="scValue">https</column>
+        </row>
+        <row>
+            <column name="scName">clientAddress</column>
+            <column name="scValue">REMOTE_ADDR</column>
+        </row>
+        <row>
+            <column name="scName">EXTERNAL_PORT</column>
+            <column name="scValue">8443</column>
+        </row>
+        <row>
+            <column name="scName">TENANT_APP_IMAGE</column>
+            <column name="scValue">local-dockerlempapp:latest</column>
+        </row>
+        <row>
+            <column name="scName">TENANT_DB_IMAGE</column>
+            <column name="scValue">local-dockerlempdb:latest</column>
+        </row>
+    </table>
+</schema>

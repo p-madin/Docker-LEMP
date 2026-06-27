@@ -53,9 +53,6 @@ class SQLiteDialect extends ANSIStandardDialect {
         return true;
     }
 
-    /**
-     * Extracts a date part from a column using SQLite's strftime.
-     */
     public function extractDatePart(string $part, string $column): string {
         $formatMapping = [
             'YEAR' => '%Y',
@@ -74,5 +71,62 @@ class SQLiteDialect extends ANSIStandardDialect {
         }
 
         return "strftime('" . $format . "', " . $this->quoteIdentifier($column) . ")";
+    }
+
+    public function compileCreateTable(string $tableName, array $columns, array $foreignKeys = [], array $indexes = []): string {
+        foreach ($columns as &$column) {
+            if (!empty($column['autoIncrement'])) {
+                $column['primaryKey'] = false;
+            }
+        }
+        return parent::compileCreateTable($tableName, $columns, $foreignKeys, $indexes);
+    }
+
+    public function compileColumnDefinition(array $column): string {
+        if (!empty($column['autoIncrement'])) {
+            return $this->quoteIdentifier($column['name']) . " INTEGER PRIMARY KEY AUTOINCREMENT";
+        }
+
+        $type = strtoupper($column['type']);
+        if ($type === 'TINYINT' || $type === 'INT') {
+            $type = 'INTEGER';
+        }
+        
+        $def = $this->quoteIdentifier($column['name']) . " " . $type;
+        if (!empty($column['length']) && $type !== 'INTEGER') {
+            $def .= "(" . $column['length'] . ")";
+        }
+        
+        if (!empty($column['notNull'])) {
+            $def .= " NOT NULL";
+        }
+        
+        if (isset($column['default']) && $column['default'] !== '') {
+            if (strtoupper($column['default']) === 'CURRENT_TIMESTAMP') {
+                $def .= " DEFAULT CURRENT_TIMESTAMP";
+            } else {
+                $def .= " DEFAULT " . (is_numeric($column['default']) ? $column['default'] : "'" . $column['default'] . "'");
+            }
+        }
+        
+        return $def;
+    }
+
+    public function tableExists(PDO $db, string $tableName): bool {
+        $stmt = $db->prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name=:name");
+        $stmt->execute([':name' => $tableName]);
+        return (bool)$stmt->fetch();
+    }
+
+    public function columnExists(PDO $db, string $tableName, string $columnName): bool {
+        $stmt = $db->prepare("PRAGMA table_info(" . $this->quoteIdentifier($tableName) . ")");
+        $stmt->execute();
+        $columns = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($columns as $col) {
+            if (strcasecmp($col['name'], $columnName) === 0) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -15,11 +15,7 @@ if [ ! -f /var/opt/mssql/.initialized ]; then
         sleep 2
     done
 
-    /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -C -i /docker-entrypoint-initdb.d/01_db_ddl.sql
-    /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -C -i /docker-entrypoint-initdb.d/02_db_dml.sql
-    if [ -f /docker-entrypoint-initdb.d/03_db_dml.sql ]; then
-        /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -C -i /docker-entrypoint-initdb.d/03_db_dml.sql
-    fi
+    /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -C -i /docker-entrypoint-initdb.d/01_setup_stack.sql
 
     touch /var/opt/mssql/.initialized
     echo "Initialization finished."

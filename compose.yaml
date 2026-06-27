@@ -10,6 +10,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./tenants:/tenants
       - ./compose.tenant.yaml:/home/ubuntu/Workspace/compose.tenant.yaml
+      - ./conf:/home/ubuntu/Workspace/conf
     depends_on:
       - db
     environment:
@@ -42,9 +43,6 @@ services:
       TZ: Australia/Sydney
     volumes:
       - db_data:/var/lib/mysql
-      - ./conf/common/01_db_ddl.sql:/docker-entrypoint-initdb.d/01_db_ddl.sql
-      - ./conf/common/02_db_dml.sql:/docker-entrypoint-initdb.d/02_db_dml.sql
-      - ./conf/${TARGET_ENV}/03_db_dml.sql:/docker-entrypoint-initdb.d/03_db_dml.sql:ro
     ports:
       - "3306:3306"
     networks:

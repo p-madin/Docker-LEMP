@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema>
+    <table name="appUsers">
+        <column name="auPK" type="INT" autoIncrement="true" primaryKey="true" notNull="true" />
+        <column name="name" type="VARCHAR" length="32" notNull="true" />
+        <column name="age" type="INT" notNull="true" />
+        <column name="city" type="VARCHAR" length="32" notNull="true" />
+        <column name="username" type="VARCHAR" length="16" notNull="true" />
+        <column name="password" type="VARCHAR" length="256" notNull="true" />
+        <column name="email" type="VARCHAR" length="32" notNull="true" />
+        <column name="dateAdded" type="DATETIME" notNull="true" default="CURRENT_TIMESTAMP" />
+        <column name="dateVerified" type="DATETIME" />
+        <column name="verified" type="TINYINT" notNull="true" default="0" />
+    </table>
+
+    <table name="tblPages">
+        <column name="pagPK" type="INT" autoIncrement="true" primaryKey="true" notNull="true" />
+        <column name="pagCreated" type="DATETIME" notNull="true" default="CURRENT_TIMESTAMP" />
+        <column name="pagUpdated" type="DATETIME" />
+        <column name="pagDeleted" type="DATETIME" />
+        <column name="pagAuthorFK" type="INT" notNull="true" />
+        <column name="pagTitle" type="VARCHAR" length="128" notNull="true" />
+    </table>
+
+    <table name="tblElements">
+        <column name="elePK" type="INT" autoIncrement="true" primaryKey="true" notNull="true" />
+        <column name="eleType" type="VARCHAR" length="32" notNull="true" />
+        <column name="eleContent" type="TEXT" />
+        <column name="eleCSSClasses" type="VARCHAR" length="255" />
+        <column name="eleParentFK" type="INT" />
+        <column name="eleCreated" type="DATETIME" notNull="true" default="CURRENT_TIMESTAMP" />
+        <foreignKey column="eleParentFK" referencesTable="tblElements" referencesColumn="elePK" onDelete="CASCADE" />
+    </table>
+
+    <table name="brgPageElements">
+        <column name="pelPK" type="INT" autoIncrement="true" primaryKey="true" notNull="true" />
+        <column name="pelPageFK" type="INT" notNull="true" />
+        <column name="pelElementFK" type="INT" notNull="true" />
+        <column name="pelOrder" type="INT" notNull="true" />
+        <foreignKey column="pelPageFK" referencesTable="tblPages" referencesColumn="pagPK" onDelete="CASCADE" />
+        <foreignKey column="pelElementFK" referencesTable="tblElements" referencesColumn="elePK" onDelete="CASCADE" />
+    </table>
+
+    <table name="tblSession">
+        <column name="sessPK" type="INT" autoIncrement="true" primaryKey="true" notNull="true" />
+        <column name="sessCreated" type="DATETIME" notNull="true" default="CURRENT_TIMESTAMP" />
+        <column name="sessUpdated" type="DATETIME" />
+        <column name="sessDeleted" type="DATETIME" />
+        <column name="sessChars" type="VARCHAR" length="64" notNull="true" />
+        <column name="sessUser" type="INT" />
+        <column name="sessTransactionActive" type="INT" notNull="true" />
+        <index name="idx_session_chars" unique="true" columns="sessChars" />
+    </table>
+
+    <table name="tblSessionAtt">
+        <column name="sattPK" type="INT" autoIncrement="true" primaryKey="true" notNull="true" />
+        <column name="sattSessionFK" type="INT" notNull="true" />
+        <column name="sattDisc" type="CHAR" length="1" notNull="true" />
+        <column name="sattKey" type="VARCHAR" length="32" notNull="true" />
+        <column name="sattPrimaryValueFK" type="INT" notNull="true" />
+        <index name="idx_session_att_lookup" columns="sattSessionFK,sattKey,sattDisc" />
+    </table>
+
+    <table name="tblSessionAttValue">
+        <column name="sattvPK" type="INT" autoIncrement="true" primaryKey="true" notNull="true" />
+        <column name="sattvAttFK" type="INT" notNull="true" />
+        <column name="sattvValueFK" type="INT" />
+        <column name="sattvValue" type="VARCHAR" length="128" />
+        <index name="idx_session_val_lookup" columns="sattvAttFK" />
+    </table>
+
+    <table name="sysConfig">
+        <column name="scPK" type="INT" autoIncrement="true" primaryKey="true" notNull="true" />
+        <column name="scName" type="VARCHAR" length="32" notNull="true" />
+        <column name="scValue" type="VARCHAR" length="128" notNull="true" />
+    </table>
+
+    <table name="tblNavBar">
+        <column name="nbPK" type="INT" autoIncrement="true" primaryKey="true" notNull="true" />
+        <column name="nbText" type="VARCHAR" length="32" notNull="true" />
+        <column name="nbDiscriminator" type="CHAR" length="1" notNull="true" />
+        <column name="nbPageFK" type="INT" />
+        <column name="nbPath" type="VARCHAR" length="64" />
+        <column name="nbControllerClass" type="VARCHAR" length="64" />
+        <column name="nbProtected" type="TINYINT" notNull="true" />
+        <column name="nbOrder" type="INT" notNull="true" />
+        <column name="nbParentFK" type="INT" />
+        <foreignKey column="nbParentFK" referencesTable="tblNavBar" referencesColumn="nbPK" onDelete="SET NULL" />
+        <foreignKey column="nbPageFK" referencesTable="tblPages" referencesColumn="pagPK" onDelete="SET NULL" />
+    </table>
+
+    <table name="httpAction">
+        <column name="haPK" type="INT" autoIncrement="true" primaryKey="true" notNull="true" />
+        <column name="haDate" type="DATETIME" notNull="true" default="CURRENT_TIMESTAMP" />
+        <column name="haSessionFK" type="INT" notNull="true" />
+        <column name="haUserFK" type="INT" />
+        <column name="haIP" type="VARCHAR" length="45" notNull="true" />
+        <column name="haURL" type="VARCHAR" length="512" notNull="true" />
+        <column name="haReferrer" type="VARCHAR" length="512" />
+        <column name="haMethod" type="VARCHAR" length="8" notNull="true" />
+        <column name="haUserAgent" type="VARCHAR" length="512" notNull="true" />
+        <column name="haHeaders" type="TEXT" />
+        <column name="haWafRuleTriggered" type="VARCHAR" length="255" />
+        <column name="haWafPayload" type="TEXT" />
+    </table>
+
+    <table name="phpErrorLog">
+        <column name="pelPK" type="INT" autoIncrement="true" primaryKey="true" notNull="true" />
+        <column name="pelTimestamp" type="DATETIME" notNull="true" default="CURRENT_TIMESTAMP" />
+        <column name="pelSeverity" type="VARCHAR" length="32" notNull="true" />
+        <column name="pelMessage" type="TEXT" notNull="true" />
+        <column name="pelFile" type="VARCHAR" length="512" notNull="true" />
+        <column name="pelLine" type="INT" notNull="true" />
+    </table>
+
+    <table name="tblForm">
+        <column name="tfPK" type="INT" autoIncrement="true" primaryKey="true" notNull="true" />
+        <column name="tfName" type="VARCHAR" length="32" notNull="true" />
+        <column name="tfAction" type="VARCHAR" length="255" />
+        <column name="tfReadOnly" type="TINYINT" notNull="true" default="0" />
+    </table>
+
+    <table name="tblColumns">
+        <column name="tcPK" type="INT" autoIncrement="true" primaryKey="true" notNull="true" />
+        <column name="tcFormFK" type="INT" notNull="true" />
+        <column name="tcName" type="VARCHAR" length="32" notNull="true" />
+        <column name="tcLabel" type="VARCHAR" length="64" notNull="true" />
+        <column name="tcType" type="VARCHAR" length="32" notNull="true" />
+        <column name="tcRules" type="TEXT" notNull="true" />
+        <column name="tcOrder" type="INT" notNull="true" />
+        <foreignKey column="tcFormFK" referencesTable="tblForm" referencesColumn="tfPK" onDelete="CASCADE" />
+    </table>
+
+    <table name="banned_ips">
+        <column name="biPK" type="INT" autoIncrement="true" primaryKey="true" notNull="true" />
+        <column name="biIP" type="VARCHAR" length="45" notNull="true" />
+        <column name="biReason" type="VARCHAR" length="255" notNull="true" />
+        <column name="biExpires" type="DATETIME" notNull="true" />
+        <column name="biDateAdded" type="DATETIME" notNull="true" default="CURRENT_TIMESTAMP" />
+    </table>
+
+    <table name="tblEventStore">
+        <column name="evsPK" type="INT" autoIncrement="true" primaryKey="true" notNull="true" />
+        <column name="evsAggregateFK" type="INT" />
+        <column name="evsEventType" type="VARCHAR" length="128" notNull="true" />
+        <column name="evsPayload" type="TEXT" notNull="true" />
+        <column name="evsPreviousPayload" type="TEXT" />
+        <column name="evsStatus" type="VARCHAR" length="32" notNull="true" default="pending" />
+        <column name="evsUserFK" type="INT" />
+        <column name="evsIsReversal" type="TINYINT" notNull="true" default="0" />
+        <column name="evsPredecessorFK" type="INT" />
+        <column name="evsCreatedAt" type="DATETIME" notNull="true" default="CURRENT_TIMESTAMP" />
+    </table>
+
+    <table name="tblAnalytics">
+        <column name="anaPK" type="INT" autoIncrement="true" primaryKey="true" notNull="true" />
+        <column name="anaLabel" type="VARCHAR" length="32" notNull="true" />
+        <column name="anaValue" type="INT" notNull="true" />
+        <column name="anaCategory" type="VARCHAR" length="32" notNull="true" />
+        <column name="anaDate" type="DATETIME" notNull="true" default="CURRENT_TIMESTAMP" />
+    </table>
+
+    <table name="absChildServices">
+        <column name="csPK" type="INT" autoIncrement="true" primaryKey="true" notNull="true" />
+        <column name="csCreatedDate" type="DATETIME" notNull="true" default="CURRENT_TIMESTAMP" />
+        <column name="csCreatedByFK" type="INT" notNull="true" />
+        <column name="csUpdatedDate" type="DATETIME" />
+        <column name="csAdminFK" type="INT" notNull="true" />
+        <column name="csUptimeDate" type="DATETIME" />
+        <column name="csCheckDate" type="DATETIME" />
+        <column name="csName" type="VARCHAR" length="32" notNull="true" />
+        <column name="csStatus" type="CHAR" length="1" notNull="true" />
+        <column name="csDockerID" type="VARCHAR" length="64" />
+        <column name="csSubdomain" type="VARCHAR" length="64" />
+        <column name="csFailureCount" type="INT" notNull="true" default="0" />
+    </table>
+</schema>

@@ -14,6 +14,13 @@ cat /etc/cron.d/worker-source >> /etc/cron.d/worker-cron
 crontab /etc/cron.d/worker-cron
 chmod 0644 /etc/cron.d/worker-cron
 
+php /var/www/html/migrate.php
+
+if [ "$DB_VENDOR" = "sqlite" ]; then
+    chown -R www-data:www-data /var/sqlite
+    chmod -R 775 /var/sqlite
+fi
+
 /usr/local/nginx/nginx
 php-fpm
 cron

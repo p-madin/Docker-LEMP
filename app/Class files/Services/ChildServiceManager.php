@@ -37,26 +37,36 @@ class ChildServiceManager {
             mkdir($tenantDir, 0755, true);
         }
 
-        // 1 — Pull admin user info and generate SQL script
-        $sqlContent = "-- No admin user mapped for this tenant.\n";
+        // 1 — Pull admin user info and generate XML script
+        $xmlContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<data>\n";
         $qb = new \QueryBuilder($dialect);
         $service = $qb->table('absChildServices')->select(['csAdminFK'])->where('csName', '=', $tenant)->executeFetch($db);
         if ($service && !empty($service['csAdminFK'])) {
             $qb2 = new \QueryBuilder($dialect);
             $adminUser = $qb2->table('appUsers')->where('auPK', '=', $service['csAdminFK'])->executeFetch($db);
             if ($adminUser) {
-                // Ensure values are properly escaped for SQL (this uses basic string replacement, PDO would be better but we're generating a static script)
-                $name = str_replace("'", "''", $adminUser['name']);
+                $name = htmlspecialchars((string)$adminUser['name'], ENT_XML1);
                 $age = (int)$adminUser['age'];
-                $city = str_replace("'", "''", $adminUser['city']);
-                $username = str_replace("'", "''", $adminUser['username']);
-                $password = str_replace("'", "''", $adminUser['password']);
-                $email = str_replace("'", "''", $adminUser['email']);
+                $city = htmlspecialchars((string)$adminUser['city'], ENT_XML1);
+                $username = htmlspecialchars((string)$adminUser['username'], ENT_XML1);
+                $password = htmlspecialchars((string)$adminUser['password'], ENT_XML1);
+                $email = htmlspecialchars((string)$adminUser['email'], ENT_XML1);
                 
-                $sqlContent = "use stackDB;\n\nINSERT INTO appUsers (name, age, city, username, password, email, verified) VALUES ('{$name}', {$age}, '{$city}', '{$username}', '{$password}', '{$email}', true);\n";
+                $xmlContent .= "    <table name=\"appUsers\">\n";
+                $xmlContent .= "        <row>\n";
+                $xmlContent .= "            <column name=\"name\">{$name}</column>\n";
+                $xmlContent .= "            <column name=\"age\">{$age}</column>\n";
+                $xmlContent .= "            <column name=\"city\">{$city}</column>\n";
+                $xmlContent .= "            <column name=\"username\">{$username}</column>\n";
+                $xmlContent .= "            <column name=\"password\">{$password}</column>\n";
+                $xmlContent .= "            <column name=\"email\">{$email}</column>\n";
+                $xmlContent .= "            <column name=\"verified\">1</column>\n";
+                $xmlContent .= "        </row>\n";
+                $xmlContent .= "    </table>\n";
             }
         }
-        file_put_contents("{$tenantDir}/99_tenant_admin.sql", $sqlContent);
+        $xmlContent .= "</data>\n";
+        file_put_contents("{$tenantDir}/99_tenant_admin.xml", $xmlContent);
 
         // 2 — write the tenant compose file from template
         $compose = $this->generateComposeFile($tenant);
@@ -72,7 +82,7 @@ class ChildServiceManager {
         
         // 3 — bring the stack up
         $cleanEnv = "env -u DB_VENDOR -u TENANT_DB_NAME -u TENANT_DB_USER -u TENANT_DB_PASS -u TENANT_DB_ROOT -u TARGET_ENV -u EXTERNAL_PORT ";
-        $output = shell_exec("{$cmdPrefix}{$cleanEnv}docker-compose -p {$tenant} -f {$tenantDir}/compose.yaml --env-file {$tenantDir}/.env up -d 2>&1");
+        $output = shell_exec("{$cleanEnv}{$cmdPrefix}docker-compose -p {$tenant} -f {$tenantDir}/compose.yaml --env-file {$tenantDir}/.env up -d 2>&1");
         
         // wait for the compose to complete...
         sleep(3);
@@ -113,7 +123,7 @@ class ChildServiceManager {
 
         if (file_exists("{$tenantDir}/compose.yaml")) {
             $cleanEnv = "env -u DB_VENDOR -u TENANT_DB_NAME -u TENANT_DB_USER -u TENANT_DB_PASS -u TENANT_DB_ROOT -u TARGET_ENV -u EXTERNAL_PORT ";
-            $output = shell_exec("{$cmdPrefix}{$cleanEnv}docker-compose -p {$tenant} -f {$tenantDir}/compose.yaml --env-file {$tenantDir}/.env down 2>&1");
+            $output = shell_exec("{$cleanEnv}{$cmdPrefix}docker-compose -p {$tenant} -f {$tenantDir}/compose.yaml --env-file {$tenantDir}/.env down 2>&1");
             return ['status' => 'success', 'output' => $output];
         }
         return ['status' => 'error', 'message' => 'Tenant configuration not found.'];
@@ -126,7 +136,7 @@ class ChildServiceManager {
         $output = "";
         if (file_exists("{$tenantDir}/compose.yaml")) {
             $cleanEnv = "env -u DB_VENDOR -u TENANT_DB_NAME -u TENANT_DB_USER -u TENANT_DB_PASS -u TENANT_DB_ROOT -u TARGET_ENV -u EXTERNAL_PORT ";
-            $output = shell_exec("{$cmdPrefix}{$cleanEnv}docker-compose -p {$tenant} -f {$tenantDir}/compose.yaml --env-file {$tenantDir}/.env down -v 2>&1");
+            $output = shell_exec("{$cleanEnv}{$cmdPrefix}docker-compose -p {$tenant} -f {$tenantDir}/compose.yaml --env-file {$tenantDir}/.env down -v 2>&1");
         }
         
         // Remove nginx conf and reload
@@ -208,9 +218,17 @@ class ChildServiceManager {
         $template = file_exists($templatePath) ? file_get_contents($templatePath) : '';
 
         $tenantAppVolume = $this->getTenantAppVolume();
-        $volumeSection = "";
+        $hostRoot = $this->getHostProjectRoot();
+        
+        $volumeSection = "    volumes:";
+        if ($hostRoot) {
+            $volumeSection .= "\n      - \"{$hostRoot}/tenants/{$tenant}/99_tenant_admin.xml:/etc/tenant_admin.xml\"";
+        } else {
+            $volumeSection .= "\n      - \"/tenants/{$tenant}/99_tenant_admin.xml:/etc/tenant_admin.xml\"";
+        }
+
         if ($tenantAppVolume) {
-            $volumeSection = "    volumes:\n      - \"{$tenantAppVolume}\"";
+            $volumeSection .= "\n      - \"{$tenantAppVolume}\"";
         }
         $template = str_replace('#TENANT_APP_VOLUME_PLACEHOLDER#', $volumeSection, $template);
 
