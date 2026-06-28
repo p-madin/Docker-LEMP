@@ -1,27 +1,3 @@
-## Idea: Event Sourcing Snapshots & Compaction
-### Description
-Prevent the `event_store` replay sequence from taking an unacceptably long time as the application ages.
-
-### Ground Running tips
-- Store snapshot payloads in a dedicated snapshots table (`tblSnapshots`) rather than appending them as raw events in `tblEventStore`. 
-- This allows quick retrieval of the latest state and its ID, enabling the replayer to read only events with `evsPK > snapshot.last_event_id`.
-
-### Metrics (Qualities & Quantities)
-- **Complexity**: High
-- **Risk Level**: Medium
-- **Estimated Time**: 3-4 Days
-- **Number of Files**: ~3
-
-### Prerequisites
-- Event Store implementation ([EventStore.php](app/Class%20files/EventStore.php)).
-- Cron background worker ([worker.php](app/Cron/worker.php)).
-
-### Related Components
-- [EventStore.php](app/Class%20files/EventStore.php)
-- [worker.php](app/Cron/worker.php)
-
----
-
 ## Idea: CMS Draft & Publish Workflow
 ### Description
 Address the limitation where all Page Builder edits are instantly pushed live.
@@ -41,30 +17,6 @@ Address the limitation where all Page Builder edits are instantly pushed live.
 
 ### Related Components
 - [PageRendererController.php](app/Class%20files/Controllers/PageRendererController.php)
-- [01_db_ddl.xml](conf/common/01_db_ddl.xml)
-
----
-
-## Idea: The Schema Dictionary for PostgreSQL & MSSQL Case-Sensitivity
-### Description
-Address the limitation where PostgreSQL natively folds unquoted identifiers to lowercase, and where `ANSIStandardDialect` forces identifiers to lowercase for maximum portability. This destroys camelCase column names (e.g., `nbPK` becomes `nbpk`) when using wildcard `SELECT *` queries in databases like PostgreSQL and MSSQL. This breaks Memento JSON payloads that require exact case matching.
-
-### Ground Running tips
-- Parse the XML schema definition `01_db_ddl.xml` directly rather than SQL files to ensure single source-of-truth alignment. 
-- In `QueryBuilder::executeFetch` and `executeFetchAll`, check if the active dialect is PostgreSQL or MSSQL; if so, intercept the resulting array keys and map them back to camelCase using the dictionary.
-
-### Metrics (Qualities & Quantities)
-- **Complexity**: Medium
-- **Risk Level**: Medium-High (Direct impact on all database SELECT operations)
-- **Estimated Time**: 2-3 Days
-- **Number of Files**: ~3
-
-### Prerequisites
-- Basic XML parsing skills (`SimpleXML`).
-- QueryBuilder database retrieval wrappers ([QueryBuilder.php](app/Class%20files/QueryBuilder.php)).
-
-### Related Components
-- [QueryBuilder.php](app/Class%20files/QueryBuilder.php)
 - [01_db_ddl.xml](conf/common/01_db_ddl.xml)
 
 ---
@@ -90,29 +42,6 @@ The current `ChildServiceManager` relies heavily on brittle shell execution (`sh
 ### Related Components
 - [ChildServiceManager.php](app/Class%20files/Services/ChildServiceManager.php)
 - [worker.php](app/Cron/worker.php)
-
----
-
-## Idea: Action Tracker Event Dictionary
-### Description
-Generate user-friendly titles and contextual descriptions for events in the UI.
-
-### Ground Running tips
-- Create a dictionary class or helper (e.g. `EventDictionary`) mapping event names to templates. 
-- Use a basic regex template engine (e.g. `str_replace` or placeholder replacement) to inject values like username, ID, and action names into the titles.
-
-### Metrics (Qualities & Quantities)
-- **Complexity**: Low
-- **Risk Level**: Low
-- **Estimated Time**: 1-2 Days
-- **Number of Files**: ~2
-
-### Prerequisites
-- Understanding of event payloads and JSON parsing in PHP.
-
-### Related Components
-- [EventStore.php](app/Class%20files/EventStore.php)
-- [action-tracker.js](app/Static/action-tracker.js)
 
 ---
 
@@ -255,78 +184,6 @@ Expose the application's content structure via secure RESTful endpoints, allowin
 
 ---
 
-## Idea: Pagination Standardization
-### Description
-Pagination should be considered in a separate project. Implement a unified pagination standard for components like `FlexTableComponent` when handling large datasets.
-
-### Ground Running tips
-- Standardize pagination metadata structure (`page`, `limit`, `total_records`, `total_pages`) in raw data mapper.
-- Pass pagination config objects directly to component rendering.
-
-### Metrics (Qualities & Quantities)
-- **Complexity**: Low-Medium
-- **Risk Level**: Low
-- **Estimated Time**: 2 Days
-- **Number of Files**: ~3
-
-### Prerequisites
-- Database limit/offset support in dialect mapping.
-
-### Related Components
-- [QueryBuilder.php](app/Class%20files/QueryBuilder.php)
-- [FlexTableComponent.php](app/Class%20files/Components/FlexTableComponent.php)
-
----
-
-## Idea: WAF & Rate Limiter Database Performance Optimization
-### Description
-`WafMiddleware` runs on every HTTP request and queries the `httpAction` and `banned_ips` tables to check for bans, rate-limit clients, and detect cookie rotation. Currently, these tables lack indexes on the columns used in query filtering (like `haIP`, `haDate`, and `biIP`), which forces the database to perform slow full-table scans on every page view. Furthermore, without log rotation, the table size will grow unbounded.
-
-### Ground Running tips
-- Apply compound indexes explicitly in `01_db_ddl.xml` so that they migrate correctly across all DBMS engines. 
-- Schedule the log pruning task in the background worker (`worker.php`) to avoid slowing down HTTP request processing.
-
-### Metrics (Qualities & Quantities)
-- **Complexity**: Low-Medium
-- **Risk Level**: Medium (Modifying migration schema and middleware query performance)
-- **Estimated Time**: 1-2 Days
-- **Number of Files**: ~3
-
-### Prerequisites
-- Database schema indexes configuration.
-- Background worker execution flow.
-
-### Related Components
-- [01_db_ddl.xml](conf/common/01_db_ddl.xml)
-- [WafMiddleware.php](app/Class%20files/Middleware/WafMiddleware.php)
-- [worker.php](app/Cron/worker.php)
-
----
-
-## Idea: Optimistic Concurrency Control (OCC) for Event Store
-### Description
-With background jobs executing event sourcing projections asynchronously, concurrently running commands or projections can cause race conditions or split-brain states where events are applied out-of-order, causing database corruption.
-
-### Ground Running tips
-- Verify that every event appended checking an aggregate root queries the latest event ID or aggregate version first. 
-- Throw a descriptive custom validation exception when a version mismatch is encountered, allowing the caller controller to catch it and notify the client.
-
-### Metrics (Qualities & Quantities)
-- **Complexity**: Medium-High
-- **Risk Level**: High (Impacts write transaction flow and event logging)
-- **Estimated Time**: 2-3 Days
-- **Number of Files**: ~3
-
-### Prerequisites
-- Relational database schema modifications.
-- Event serialization constraints.
-
-### Related Components
-- [EventStore.php](app/Class%20files/EventStore.php)
-- [01_db_ddl.xml](conf/common/01_db_ddl.xml)
-
----
-
 ## Idea: Centralized Exception Handling & System Integrity Dashboard
 ### Description
 Currently, the system lacks a centralized uncaught exception handler (`set_exception_handler`). Custom exceptions (e.g., in background tasks like `worker.php` and Docker API commands) are handled fragmentedly or written to system log files (like `/var/log/action.log`) that are invisible to administrators. To prevent integrity failures from passing unnoticed, we need to:
@@ -351,6 +208,136 @@ Currently, the system lacks a centralized uncaught exception handler (`set_excep
 - Admin console routing and rendering layouts (Phase 6).
 
 ### Related Components
-- [errorHandler.php](app/Class%20files/errorHandler.php)
-- [ErrorLogController.php](app/Class%20files/Controllers/ErrorLogController.php)
+- [errorHandler.php](app/Class files/errorHandler.php)
+- [ErrorLogController.php](app/Class files/Controllers/ErrorLogController.php)
 - [error_log.php](app/views/management/error_log.php)
+
+---
+
+## Idea: ERP Unified Database Schema & EERD Design
+### Description
+Before implementing the individual ERP modules, conduct a comprehensive data-modeling phase to produce an Enhanced Entity-Relationship Diagram (EERD). This mapping ensures all many-to-many associations (e.g., Products to multiple Vendors, Companies to multiple addresses/roles, and General Ledger double-entries) are structurally aligned, preventing schema drift and database migration conflicts in `01_db_ddl.xml`.
+
+### Ground Running tips
+- Model the primary many-to-many pivot tables:
+  - `tblProductVendors` (handling vendor-specific SKU overrides, purchasing unit costs, and lead times).
+  - `tblCompanyAddresses` (handling shipping, billing, and warehouse locations mapped to a single company).
+  - `tblPurchaseOrderItems` (mapping POs to Products with ordered vs. received quantities).
+- Create a visual database schema representation (using Mermaid syntax or an SVG layout) and store it in the documentation directory to guide all subsequent migrations.
+
+### Metrics (Qualities & Quantities)
+- **Complexity**: Low-Medium (Heavy design, minimal initial code)
+- **Risk Level**: Low (High mitigation value for schema regression)
+- **Estimated Time**: 1-2 Days
+- **Number of Files**: ~1 (Documentation / Diagram file)
+
+### Prerequisites
+- Understanding of the XML migration syntax ([01_db_ddl.xml](conf/common/01_db_ddl.xml)).
+
+### Related Components
+- [01_db_ddl.xml](conf/common/01_db_ddl.xml)
+
+---
+
+## Idea: ERP Product Management (Catalog & Inventory)
+### Description
+Add basic product management to support a catalog with dynamic attributes, stock tracking, and price lists. This will allow the platform to serve e-commerce or inventory management use cases, and prepares the data model for procurement processes.
+
+### Ground Running tips
+- Define `tblProducts` and `tblProductInventory` in the migration schema, utilizing the Event Store to track inventory changes (stock additions, audits, adjustments) as transactional events.
+- Implement a dynamic attributes schema using the Entity-Attribute-Value (EAV) pattern (e.g., `tblProductAttributes` and `tblProductAttributeValues`) to support varying product configurations database-agnostically without rigid table schema alterations.
+- Include a `pdDefaultVendorID` foreign key column linking products to companies (`tblCompanies`) to enable automated and manual purchase ordering paths.
+
+### Metrics (Qualities & Quantities)
+- **Complexity**: Medium-High
+- **Risk Level**: Low-Medium
+- **Estimated Time**: 3-4 Days
+- **Number of Files**: ~4
+
+### Prerequisites
+- Relational database schema migrations configuration ([01_db_ddl.xml](conf/common/01_db_ddl.xml)).
+- Event Store for transactional auditing of stock levels ([EventStore.php](app/Class files/EventStore.php)).
+
+### Related Components
+- [01_db_ddl.xml](conf/common/01_db_ddl.xml)
+- [EventStore.php](app/Class files/EventStore.php)
+- [QueryBuilder.php](app/Class files/QueryBuilder.php)
+
+---
+
+## Idea: ERP Partner & Customer Management (The Party Pattern)
+### Description
+Introduce a unified business relationship/party management framework. Instead of segregating customers and vendors into isolated schemas, implement a consolidated companies table that supports dual-role partners (e.g., entities that are both suppliers and customers). This prepares the database schema for purchase orders, sales billing, and client/vendor portals.
+
+### Ground Running tips
+- Implement a central `tblCompanies` table containing common attributes (name, email, shipping/billing addresses, tax ID).
+- Add boolean flags `coIsCustomer` and `coIsVendor` (or a `tblCompanyRoles` join table) along with a flexible JSON metadata column for role-specific settings (like credit limits for customers, or payment terms for vendors).
+- Enforce security boundaries in `ExtranetMiddleware` to restrict customer logins from accessing vendor dashboards or core database administrations.
+
+### Metrics (Qualities & Quantities)
+- **Complexity**: Medium
+- **Risk Level**: Medium (Involves user security and profile separation)
+- **Estimated Time**: 2-3 Days
+- **Number of Files**: ~4
+
+### Prerequisites
+- User authentication and role boundaries ([ExtranetMiddleware.php](app/Class files/Middleware/ExtranetMiddleware.php)).
+- Standardized listing layouts ([FlexTableComponent.php](app/Class files/Components/FlexTableComponent.php)).
+
+### Related Components
+- [01_db_ddl.xml](conf/common/01_db_ddl.xml)
+- [ExtranetMiddleware.php](app/Class files/Middleware/ExtranetMiddleware.php)
+- [FlexTableComponent.php](app/Class files/Components/FlexTableComponent.php)
+
+---
+
+## Idea: ERP Vendor Purchase Orders (PO)
+### Description
+Implement a procurement subsystem enabling administrators to issue Purchase Orders (POs) to suppliers (vendors). This tracks orders, updates product inventory when goods are received, and links directly to accounts payable.
+
+### Ground Running tips
+- Create `tblPurchaseOrders` and `tblPurchaseOrderItems` referencing `tblCompanies` (filtered for `coIsVendor = 1`) and `tblProducts`.
+- Hook purchase receipt events into the Event Store (e.g., `GoodsReceivedEvent`) to trigger automatic stock level increments in `tblProductInventory` and log transaction history.
+- Implement a simple approval workflow state (Draft -> Pending -> Approved -> Received).
+
+### Metrics (Qualities & Quantities)
+- **Complexity**: Medium
+- **Risk Level**: Low-Medium
+- **Estimated Time**: 2-3 Days
+- **Number of Files**: ~3
+
+### Prerequisites
+- Partner database schema (`tblCompanies`) from the Party Pattern idea.
+- Product inventory database schema (`tblProductInventory`).
+- Event Store workflow support ([EventStore.php](app/Class files/EventStore.php)).
+
+### Related Components
+- [01_db_ddl.xml](conf/common/01_db_ddl.xml)
+- [EventStore.php](app/Class files/EventStore.php)
+- [QueryBuilder.php](app/Class files/QueryBuilder.php)
+
+---
+
+## Idea: ERP Double-Entry Accounting General Ledger (GL)
+### Description
+Introduce a double-entry accounting General Ledger (GL) to record financial transactions. This provides a single source of truth for the platform's financial health, compiling journals from customer sales invoices and vendor purchase orders into ledger entries.
+
+### Ground Running tips
+- Establish a Chart of Accounts (`tblGLAccounts`) containing Asset, Liability, Equity, Revenue, and Expense accounts.
+- Implement a transaction journal table (`tblGLJournalEntries`) and a split lines table (`tblGLJournalLines`). Ensure that every entry enforces double-entry rules (total debits must exactly equal total credits).
+- Generate ledger records automatically by subscribing background worker events to invoice creation, payment capture, and purchase receipts.
+
+### Metrics (Qualities & Quantities)
+- **Complexity**: High
+- **Risk Level**: High (Involves strict financial accuracy and auditing)
+- **Estimated Time**: 4-5 Days
+- **Number of Files**: ~5
+
+### Prerequisites
+- Standardized database migrations ([01_db_ddl.xml](conf/common/01_db_ddl.xml)).
+- Event Store auditing and background execution flow ([EventStore.php](app/Class files/EventStore.php), [worker.php](app/Cron/worker.php)).
+
+### Related Components
+- [01_db_ddl.xml](conf/common/01_db_ddl.xml)
+- [EventStore.php](app/Class files/EventStore.php)
+- [worker.php](app/Cron/worker.php)
